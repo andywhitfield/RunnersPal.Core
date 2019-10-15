@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0">
+    <title>@ViewBag.Title | Runners:Pal</title>
+    <link href="@Url.Content("~/Content/main.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/themes/base/jquery-ui.css")" rel="stylesheet" type="text/css" />
+    @if (ViewBag.Stylesheets != null)
+    {
+        foreach (var css in ViewBag.Stylesheets)
+        {
+    <link href="@Url.Content(css)" rel="stylesheet" type="text/css" />
+        }
+    }
+    <script src="@Url.Content("~/Scripts/respond.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/jquery-3.1.1.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/jquery-ui-1.12.1.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/modernizr-2.8.3.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/knockout-3.4.0.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/runnerspal-models.js")" type="text/javascript"></script>
+    @if (ViewBag.Scripts != null)
+    {
+        foreach (var script in ViewBag.Scripts)
+        {
+    <script src="@Url.Content(script)" type="text/javascript"></script>
+        }
+    }
+    <script type="text/javascript">
+        var loginAccountModel;
+        var unitsModel;
+
+        Models.urls = {
+            calcPace: '@Url.Action("calcpace", "calculators")', autoCalcCalories: '@Url.Action("autocalccalories", "calculators")',
+            calcDist: '@Url.Action("calcdistance", "calculators")', myRoutes: '@Url.Action("myroutes", "routepal")',
+            runLogBase: '@(Url.Action("index", "runlog"))', runLog: '@(Url.Action("index", "runlog"))#addEvent=',
+            viewRunLog: '@Url.Action("view", "runlog")', runLogEvents: '@Url.Action("allevents", "runlog")',
+            addRun: '@Url.Action("add", "runlog")', updateRun: '@Url.Action("edit", "runlog")',
+            deleteRun: '@Url.Action("delete", "runlog")', find: '@Url.Action("find", "routepal")',
+            loadRoute: '@Url.Action("load", "routepal")', routeBeforeLogin: '@Url.Action("beforelogin", "routepal")',
+            routeNew: '@(Url.Action("index", "routepal"))?route=0', routeSave: '@Url.Action("save", "routepal")',
+            routeDelete: '@Url.Action("delete", "routepal")'
+        };
+
+        $(function () {
+            loginAccountModel = new LoginAccountModel('@Url.Action("logout", "user")');
+            loginAccountModel.isLoggedIn = @if (Context.HasValidUserAccount()) {<text>true</text>} else {<text>false</text>};
+            loginAccountModel.loginError = @if (!string.IsNullOrWhiteSpace(Context.Session.GetString("login_errorMessage"))) {<text>true</text>} else {<text>false</text>};
+            loginAccountModel.initDialogs();
+
+            unitsModel = new UnitsModel('@Url.Action("updatedistanceunits", "home")', '@Context.UserDistanceUnits("a")', '@Context.UserDistanceUnits("a.s")', $("input[name='unit-prefs']"));
+            unitsModel.milesId = @((int)DistanceUnits.Miles);
+            unitsModel.milesName = '@(DistanceUnits.Miles.UnitsToString("a"))';
+            unitsModel.milesSingular = '@(DistanceUnits.Miles.UnitsToString("a.s"))';
+            unitsModel.kmId = @((int)DistanceUnits.Kilometers);
+            unitsModel.kmName = '@(DistanceUnits.Kilometers.UnitsToString("a"))';
+            unitsModel.kmSingular = '@(DistanceUnits.Kilometers.UnitsToString("a.s"))';
+        });
+    </script>
+</head>
+<body>
+    <header>
+      <div id="logo">
+        <div id="logo_text">
+          <h1><a href="@Url.Content("~/")">runners<span class="logo_colour">:pal</span></a></h1>
+        </div>
+        <form action="@Url.Action("login", "home")" method="post" id="loginForm">
+        <input type="hidden" name="openid_identifier" value="" />
+        <input type="hidden" name="return_page" value="" />
+        <h2>
+            <span class="loginLogout">
+                <a class="login" href="#">Login</a>
+                <span class="loggedIn">
+                    <a class="loggedInUser" href="@Url.Action("profile", "user")" title="Edit your profile">@if (Context.HasValidUserAccount()) {<text>@Context.UserAccount().DisplayName</text>}</a>
+                    <a class="logout" href="#">Logout</a>
+                </span>
+            </span>
+
+            <span id="loginCreateAccount">
+                <span id="loginOptions">
+                Login using
+                <input type="button" class="loginLogoutSelection loginGoogle" name="loginWithGoogle" value="    Google" title="Login using your Google account" data-url="https://www.google.com/accounts/o8/id" />
+                <input type="button" class="loginLogoutSelection loginTwitter" name="loginWithTwitter" value="    Twitter" title="Login using your Twitter account" data-url="https://twitter.com/" />
+                <input type="button" class="loginLogoutSelection loginYahoo" name="loginWithYahoo" value="    Yahoo" title="Login using your Yahoo account" data-url="https://me.yahoo.com" />
+                <input type="button" class="loginLogoutSelection loginSymantec" name="loginWithSymantec" value="    Symantec" title="Login using your Symantec/Verisign account" data-url="https://pip.verisignlabs.com/" />
+                <input type="button" class="loginLogoutSelection loginOpenId" name="loginOther" value="    Other..." title="Login using your custom OpenID URL" />
+                <input type="button" value="" title="Help" class="loginHelp" />
+                <input type="button" value="" title="Cancel" class="loginCancel cancel" />
+                </span>
+                <span id="loginCustomOpenId">
+                Login with your OpenID URL:
+                <input type="url" class="loginLogoutSelection" name="loginWithOpenId" value="" title="Enter your OpenID URL (for example, http://yourid.myopenid.com/)" />
+                <input type="button" class="loginLogoutSelection" name="loginWithOpenIdGo" value="Login" />
+                <input type="button" value="" title="Help" class="loginHelp" />
+                <input type="button" value="" title="Cancel" class="loginCancel cancel" />
+                </span>
+            </span>
+            <span id="logoutAccount" class="loginLogoutSection">
+                <input type="button" class="loginLogoutSelection" id="confirmLogout" value="Yes, log me out" title="Click to confirm logout" />
+                <input type="button" value="" title="Cancel" class="loginCancel cancel" />
+            </span>
+        </h2>
+        </form>
+      </div>
+
+      <menu>
+        <ul id="menu">
+          <li class="@{if (ViewBag.SelectedTab == "RunLog") {<text> selected</text>}}">@Html.ActionLink("Run:Log", "", "runlog")</li>
+          <li class="@{if (ViewBag.SelectedTab == "RoutePal") {<text> selected</text>}}">@Html.ActionLink("Route:Pal", "", "routepal")</li>
+          <li class="@{if (ViewBag.SelectedTab == "MyStats") {<text> selected</text>}}">@Html.ActionLink("My:Stats", "", "user")</li>
+          <li class="@{if (ViewBag.SelectedTab == "Calculators") {<text> selected</text>}}">@Html.ActionLink("Calculators", "", "calculators")</li>
+        </ul>
+      </menu>
+    </header>
+
+    <article>
+        <section id="content-full">
+        @RenderBody()
+        </section>
+    </article>
+
+    <footer>
+        <form>
+        <p>
+        Preferred units:
+        <label accesskey="ui"><input type="radio" name="unit-prefs" value="0" @if(Context.UserDistanceUnits() == DistanceUnits.Miles) {<text> checked</text>}/>miles</label>
+        <label accesskey="ui"><input type="radio" name="unit-prefs" value="1" @if(Context.UserDistanceUnits() == DistanceUnits.Kilometers) {<text> checked</text>}/>kilometers</label>
+        </p>
+        <p>
+        <a href="http://awhitfield.ltd.uk" target="_blank">&copy; A.Whitfield Ltd</a>
+        </p>
+        </form>
+    </footer>
+
+    @if (!Context.HasValidUserAccount()) {
+    <div id="loginHelpDialog" title="Login Help">
+        <p>
+        It only takes a few moments to login or create an account. If you've
+        <strong>previously created an account</strong> on runners:pal, simply click on
+        either Google, Twitter, Yahoo, or MyOpenID to re-enter your password.
+        </p>
+        <p>
+        For <strong>new users</strong>, use or create an account from one of
+        Google, Twitter, Yahoo, or MyOpenID. Once you've logged in you there, you
+        will be returned to runners:pal and we will simply ask for your name.
+        That's it.
+        </p>
+        <p>
+        <i>More</i>: We use <a href="http://openid.net/" target="_blank">OpenID</a> - which means
+        we don't know or store your username or password - you login
+        securely on the Google/Twitter/Yahoo/MyOpenID site. We don't have access
+        to your email address (i.e. we don't know your gmail address).
+        </p>
+        <p>
+        If you have an alternative OpenID, simple click the <i>Other</i> button
+        and then enter your custom OpenID URL.
+        </p>
+    </div>
+
+    <div id="loginErrorDialog" title="Login Error">
+        <p><strong>Sorry!</strong></p>
+        <p>
+        There was an error logging in using your chosen login site. This may be a temporary problem
+        so please try again.
+        </p>
+        <p><strong>More Details</strong></p>
+        <p>
+        @Context.Session.GetString("login_errorMessage")
+        </p>
+    </div>
+    }
+    @{ Context.Session.Remove("login_errorMessage"); }
+</body>
+</html>
