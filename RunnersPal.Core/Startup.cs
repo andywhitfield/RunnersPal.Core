@@ -20,6 +20,7 @@ namespace RunnersPal.Core
         {
             services.AddRazorPages();
             services.AddSession();
+            services.AddMvc(opt => opt.EnableEndpointRouting = false);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,6 +48,10 @@ namespace RunnersPal.Core
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+            });
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

@@ -1,0 +1,210 @@
+﻿@model RunnersPal.Core.ViewModels.RunLogViewModel
+@{
+    ViewBag.Title = "Run:Log";
+    ViewBag.SelectedTab = "RunLog";
+    ViewBag.Stylesheets = new[] { "~/Content/fullcalendar.css" };
+    ViewBag.Scripts = new[] { "https://www.bing.com/api/maps/mapcontrol", "~/Scripts/moment.min.js", "~/Scripts/fullcalendar.min.js", "~/Scripts/latlon.js", "~/Scripts/geo.js", "~/Scripts/runnerspal-routemapping.js", "~/Scripts/runnerspal-maproute.js" };
+}
+<script type="text/javascript">
+    $(function () {
+        setTimeout(function() {
+	        var newRunModel = new AddRunModel();
+	        var addRunDialog = $('#addRunDialog').hide();
+	        var loginPromptDialog = AddRunModel.createLoginPromptDialog('#loginPromptDialog');
+	        var calendar = AddRunModel.createCalendar('#calendar', newRunModel, loginPromptDialog, addRunDialog);
+
+	        newRunModel.createDistanceSelection($("#distanceSelection"), $('.distanceSelectionCommonRoutes > li > a'));
+	        newRunModel.createMap($('#mapDiv'));
+	        newRunModel.fetchMyRoutes();
+
+	        ko.applyBindings(newRunModel);
+
+	        $('#add-run-submit-button').click(function () { newRunModel.addRun(calendar, addRunDialog); });
+	        $('#update-run-submit-button').click(function () { newRunModel.updateRun(calendar, addRunDialog); });
+	        $('#delete-run-submit-button').click(function () { newRunModel.deleteRun(calendar, addRunDialog); });
+	        $('#add-run-cancel-button').click(function () { addRunDialog.slideUp('fast'); });
+
+	        $('#routeNew').button({ icons: { primary: "ui-icon-newwin" }, text: false }).click(function () { newRunModel.startNew(); });
+	        $('#routeUndo').button({ icons: { primary: "ui-icon-arrowreturnthick-1-w" }, text: false }).click(function () { newRunModel.undo(); });
+	        $('#findARoute').submit(function () { return newRunModel.find('#q'); });
+	        $('#downloadRunLogEvents').button({ icons: { primary: "ui-icon-arrowthickstop-1-s"} });
+	        $('.toggleDistUnits').click(function () { unitsModel.toggle(); });
+
+	        AddRunModel.checkAddEvent(loginAccountModel, calendar);
+
+	        unitsModel.change(function (u) {
+	            calendar.fullCalendar('refetchEvents');
+	            newRunModel.updateFromUnitsModel();
+	        });
+        }, 500);
+    });
+</script>
+
+<h1>Run Log</h1>
+
+<div id="addRunDialog">
+    <fieldset>
+    <legend><h3>Add a Run</h3></legend>
+
+    <div class="grid">
+		<div class="grid-row">
+			<div class="grid-cell grid-cell-20"><strong>Date:</strong></div>
+			<div class="grid-cell-last grid-cell-80"><span id="add-run-date" data-bind="text: runDate"></span></div>
+			<div class="grid-cell-end"></div>
+		</div>
+        <div class="grid-row grid-row-separator"></div>
+		<div class="grid-row">
+			<div class="grid-cell grid-cell-20"><strong>Distance:</strong></div>
+			<div class="grid-cell-last grid-cell-80">
+                <div id="add-run-distance-selection"><a class="openRoute" href="#" target="_blank" title="Open a map of the route in a new window" data-bind="visible: showViewRoute, attr: { href: '@Url.Action("", "routepal")' + '?route=' + route() }"></a> <strong><span data-bind="text: distanceDescription"></span></strong></div>
+                <div id="distanceSelection">
+	                <h3><a>Common routes</a></h3>
+	                <div>
+                        <div class="grid">
+                            <div class="grid-row">
+                                <div class="grid-cell grid-cell-50">
+                                    <ul class="distanceSelectionCommonRoutes">
+                                    @foreach (var route in RunnersPal.Core.Data.MassiveDB.Current.GetCommonRoutes().Take(4)) {
+                                    <li><a href="#" data-route="@route.Id" data-distancedesc="@route.Name"></a></li>
+                                    }
+                                    </ul>
+                                </div>
+                                <div class="grid-cell grid-cell-50">
+                                    <ul class="distanceSelectionCommonRoutes">
+                                    @foreach (var route in RunnersPal.Core.Data.MassiveDB.Current.GetCommonRoutes().Skip(4)) {
+                                    <li><a href="#" data-route="@route.Id" data-distancedesc="@route.Name"></a></li>
+                                    }
+                                    </ul>
+                                </div>
+                                <div class="grid-cell-end"></div>
+                            </div>
+                        </div>
+	                </div>
+	                <h3 data-bind="visible: myRoutes().length > 0"><a>My routes</a></h3>
+	                <div style="max-height: 200px;">
+                        <ul data-bind="template: { foreach: myRoutes, afterRender: applyOpenRouteBtn }">
+                            <li>
+                                <a class="openRoute" href="#" target="_blank" title="Open a map of the route in a new window" data-bind="attr: { href: '@Url.Action("", "routepal")' + '?route=' + routeId() }"></a> <a href="#" data-bind="click: chooseRoute, text: routeName, attr: { title: routeNotes }"></a>, <span data-bind="text: distance"></span> <span data-bind="text: distanceUnits"></span>.
+                                <span data-bind="visible: showLastRun, text: lastRunText"></span>
+                            </li>
+                        </ul>
+	                </div>
+	                <h3 id="tabFindARoute"><a>Find a route</a></h3>
+	                <div style="max-height: 200px;">
+                    <form id="findARoute">
+                    <div>
+                        <label for="findRouteName"><strong>Find route:</strong></label>
+                        <input type="text" id="q" />
+                        <input id="findRouteGo" type="submit" value="Find..." />
+                    </div>
+        
+                    <div data-bind="visible: foundRoutes().length == 0 && foundRouteText() == ''">Enter a search term to find a route.</div>
+                    <div data-bind="visible: foundRoutes().length == 0 && foundRouteText() != '', text: foundRouteText"></div>
+                    <ul data-bind="template: { foreach: foundRoutes, afterRender: applyOpenRouteBtn }">
+                        <li>
+                            <a class="openRoute" href="#" target="_blank" title="Open a map of the route in a new window" data-bind="attr: { href: '@Url.Action("", "routepal")' + '?route=' + routeId() }"></a> <a href="#" data-bind="click: chooseRoute, text: routeName, attr: { title: routeNotes }"></a>, <span data-bind="text: distance"></span> <span data-bind="text: distanceUnits"></span>.
+                            <span data-bind="visible: showLastRun, text: lastRunText"></span>
+                        </li>
+                    </ul>
+                    </form>
+	                </div>
+	                <h3 id="tabMapNewRoute"><a>Map a new route</a></h3>
+	                <div style="height:400px;">
+                        <div style="position: relative; float: left; z-index: 10; background-color: #efefef; width: 180px; padding: 5px;">
+                            <button id="routeNew" title="Clear all the points and start a new route">New</button>
+                            <button id="routeUndo" data-bind="buttonEnabled: mapping.allowUndo()" title="Undo the last point added to the route">Undo</button>
+
+                            <div><label for="route-name"><strong>Name:</strong> (* required)</label></div>
+                            <div><input type="text" id="route-name" data-bind="value: mapping.routeName, valueUpdate: 'afterkeydown'" /></div>
+
+                            <div>
+                                <strong>Distance:</strong>
+                                <span data-bind="text: mapping.distanceDisplay">0</span> <span data-bind="text: mapping.distanceUnits" class="toggleDistUnits" title="Toggle between miles and kilometers">miles</span>
+                            </div>
+
+                            <div><label for="route-notes"><strong>Route Notes:</strong></label></div>
+                            <div><textarea id="route-notes" rows="4" cols="20" style="width: 150px;" data-bind="value: mapping.routeNotes, valueUpdate: 'afterkeydown'"></textarea></div>
+
+                            <div>
+                                <label for="route-public" title="If checked, allows everyone to view this route"><strong>Public Route:</strong></label>
+                                <input type="checkbox" id="route-public" data-bind="checked: mapping.routePublic" title="If checked, allows everyone to view this route" />
+                            </div>
+                        </div>
+                        <div id="mapDiv" style="position:relative;"></div>
+	                </div>
+	                <h3 id="enterManualDistance"><a>Enter a manual distance</a></h3>
+	                <div>
+                        <input type="number" min="0.0" step="any" data-bind="value: distance, valueUpdate: 'afterkeydown'" /> <span data-bind="text: distanceUnits" class="distanceUnits">miles</span> (<button class="toggleDistUnits" title="Toggle between miles and kilometers">toggle</button>)
+	                </div>
+                </div>
+            </div>
+			<div class="grid-cell-end"></div>
+		</div>
+        <div class="grid-row grid-row-separator"></div>
+		<div class="grid-row">
+			<div class="grid-cell grid-cell-20"><strong>Time taken:</strong></div>
+			<div class="grid-cell-last grid-cell-80">
+                <div class="grid">
+		            <div class="grid-row">
+			            <div class="grid-cell grid-cell-40"><input type="text" data-bind="value: time, valueUpdate: 'afterkeydown'" id="add-run-time" title="Enter mm or mm:ss or hh:mm:ss" /></div>
+			            <div class="grid-cell grid-cell-20"><strong>Pace:</strong></div>
+			            <div class="grid-cell-last grid-cell-40"><span id="add-run-pace" data-bind="text: pace">0</span> min/<span data-bind="text: distanceUnitsSingular" class="distanceUnitsSingular">mile</span></div>
+			            <div class="grid-cell-end"></div>
+		            </div>
+		            <div class="grid-row">
+			            <div class="grid-cell grid-cell-40"><small>[hh:]mm[:ss]</small></div>
+			            <div class="grid-cell grid-cell-20">
+                            @if (Context.HasUserAccountWeight()) {
+                            <strong>Calories:</strong>
+                            }
+                        </div>
+			            <div class="grid-cell-last grid-cell-40">
+                            @if (Context.HasUserAccountWeight()) {
+                            <span data-bind="text: calories">0</span>
+                            }
+                        </div>
+			            <div class="grid-cell-end"></div>
+		            </div>
+                </div>
+            </div>
+			<div class="grid-cell-end"></div>
+		</div>
+        <div class="grid-row grid-row-separator"></div>
+		<div class="grid-row">
+			<div class="grid-cell grid-cell-20"><strong>Comment:</strong> (optional)</div>
+			<div class="grid-cell-last grid-cell-80"><textarea id="add-run-comment" data-bind="value: comment, valueUpdate: 'afterkeydown'" rows="2" cols="30" maxlength="1000"></textarea></div>
+			<div class="grid-cell-end"></div>
+		</div>
+        <div class="grid-row grid-row-separator"></div>
+		<div class="grid-row">
+			<div class="grid-cell grid-cell-20"></div>
+			<div class="grid-cell-last grid-cell-80"><input type="button" class="submit" id="add-run-submit-button" value="Add" data-bind="visible: showAdd"/>
+             <input type="button" class="submit" id="update-run-submit-button" value="Update" data-bind="visible: showEdit"/>
+             <input type="button" class="submit" id="delete-run-submit-button" value="Delete" data-bind="visible: showDelete"/>
+             <input type="button" class="submit" id="add-run-cancel-button" value="Cancel"/></div>
+			<div class="grid-cell-end"></div>
+		</div>
+    </div>
+    </fieldset>
+    <br /><br />
+    <input type="hidden" id="add-run-date-utc" />
+</div>
+
+<div id="loginPromptDialog" title="Please login">
+	<p>
+    Before you can create your first Run Log, you need to login or create an account
+    at the <span class="important">top of the page</span>.
+    </p>
+
+    <p>
+    <strong>First time users: </strong> Don't worry, it will only take a few moments
+    and we only ask for your name. Simply use your Google, Twitter, Yahoo, or MyOpenID
+    account to login - and you're done! We won't have access to your password or email address.
+    </p>
+</div>
+
+<div id="calendar"></div>
+
+<div>
+<a id="downloadRunLogEvents" href="@Url.Action("download", "user")">Download all Run:Log events</a>
+</div>
