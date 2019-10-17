@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RunnersPal.Core.ViewModels.Binders;
 
 namespace RunnersPal.Core
 {
@@ -20,7 +21,13 @@ namespace RunnersPal.Core
         {
             services.AddRazorPages();
             services.AddSession();
-            services.AddMvc(opt => opt.EnableEndpointRouting = false);
+            services
+                .AddMvc(options =>
+                {
+                    options.EnableEndpointRouting = false;
+                    options.ModelBinderProviders.Insert(0, new CustomModelsBinderProvider());
+                })
+                .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

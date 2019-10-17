@@ -1,12 +1,12 @@
-﻿namespace RunnersPal.Core.ViewModels.Binders
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+namespace RunnersPal.Core.ViewModels.Binders
 {
-    /*
     public static class ModelBindingContextExtensions
     {
-        public static string GetString(this ModelBindingContext bindingContext, string field)
+        public static string GetString(this ModelBindingContext bindingContext, string key)
         {
-            var value = bindingContext.ValueProvider.GetValue(field);
-            return value != null ? value.AttemptedValue : "";
+            return bindingContext.ValueProvider.GetValue(key).FirstValue;
         }
 
         public static int? GetInt(this ModelBindingContext bindingContext, string field)
@@ -45,5 +45,4 @@
             return val;
         }
     }
-    */
 }

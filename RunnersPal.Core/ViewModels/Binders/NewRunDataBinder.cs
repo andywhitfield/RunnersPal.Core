@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using RunnersPal.Core.Extensions;
 
 namespace RunnersPal.Core.ViewModels.Binders
 {
-    /*
-    public class NewRunDataBinder : DefaultModelBinder
+    public class NewRunDataBinder : IModelBinder
     {
-        public override object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             DateTime? date = null;
             DateTime parsedDate;
@@ -17,8 +19,7 @@ namespace RunnersPal.Core.ViewModels.Binders
             if (DateTime.TryParseExact(bindingContext.GetString("date"), "ddd, d MMM yyyy HH':'mm':'ss 'GMT'", null, DateTimeStyles.AssumeUniversal, out parsedDate))
                 date = parsedDate;
 
-            OnModelUpdating(controllerContext, bindingContext);
-            bindingContext.ModelMetadata.Model = new NewRunData
+            bindingContext.Result = ModelBindingResult.Success(new NewRunData
             {
                 RunLogId = bindingContext.GetLong("runLogId"),
                 Date = date,
@@ -34,10 +35,9 @@ namespace RunnersPal.Core.ViewModels.Binders
                     Points = bindingContext.GetString("newRoutePoints"),
                     Public = bindingContext.GetBool("newRoutePublic")
                 }
-            };
-            OnModelUpdated(controllerContext, bindingContext);
-            return bindingContext.Model;
+            });
+
+            return Task.CompletedTask;
         }
     }
-    */
 }

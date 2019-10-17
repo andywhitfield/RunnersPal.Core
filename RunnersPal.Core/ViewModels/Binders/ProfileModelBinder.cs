@@ -1,12 +1,14 @@
-﻿namespace RunnersPal.Core.ViewModels.Binders
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using RunnersPal.Core.Calculators;
+
+namespace RunnersPal.Core.ViewModels.Binders
 {
-    /*
-    public class ProfileModelBinder : DefaultModelBinder
+    public class ProfileModelBinder : IModelBinder
     {
-        public override object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
-            OnModelUpdating(controllerContext, bindingContext);
-            bindingContext.ModelMetadata.Model = new ProfileModel
+            bindingContext.Result = ModelBindingResult.Success(new ProfileModel
             {
                 DistUnits = bindingContext.GetInt("distUnits"),
                 Name = bindingContext.GetString("name"),
@@ -18,10 +20,9 @@
                     StLbs = bindingContext.GetDouble("weightStLbs"),
                     Units = bindingContext.GetString("weightUnits"),
                 }
-            };
-            OnModelUpdated(controllerContext, bindingContext);
-            return bindingContext.Model;
+            });
+
+            return Task.CompletedTask;
         }
     }
-    */
 }
