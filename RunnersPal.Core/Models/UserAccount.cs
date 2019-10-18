@@ -8,7 +8,7 @@ namespace RunnersPal.Core.Models
 {
     public class UserAccount : DynamicModel
     {
-        public UserAccount() : base(MassiveDB.ConnectionStringName, "UserAccount", "Id") { }
+        public UserAccount() : base(MassiveDB.ConnectionStringName, "UserAccount", "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
 
     public static class UserAccountExtensions

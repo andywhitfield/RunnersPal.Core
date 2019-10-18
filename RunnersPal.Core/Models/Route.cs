@@ -11,7 +11,7 @@ namespace RunnersPal.Core.Models
         public static readonly char SystemRoute = 'Z';
         public static readonly char DeletedRoute = 'D';
 
-        public Route() : base(MassiveDB.ConnectionStringName, "Route", "Id") { }
+        public Route() : base(MassiveDB.ConnectionStringName, "Route", "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
 
     public static class RouteExtensions

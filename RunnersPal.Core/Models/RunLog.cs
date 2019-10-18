@@ -5,7 +5,7 @@ namespace RunnersPal.Core.Models
 {
     public class RunLog : DynamicModel
     {
-        public RunLog() : base(MassiveDB.ConnectionStringName, "RunLog", "Id") { }
+        public RunLog() : base(MassiveDB.ConnectionStringName, "RunLog", "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
 
     public static class RunLogExtensions

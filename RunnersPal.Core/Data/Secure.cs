@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using RunnersPal.Core.Data;
 
 namespace RunnersPal.Core.Data
 {

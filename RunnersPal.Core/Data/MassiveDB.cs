@@ -1,13 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
+using Massive;
+using Microsoft.Extensions.Configuration;
 using RunnersPal.Core.Models;
 
 namespace RunnersPal.Core.Data
 {
     public class MassiveDB
     {
-        public static string ConnectionStringName { get; set; }
+        public const string ConnectionStringName = "runnerspal";
+        public static IConnectionStringProvider ConnectionStringProvider { get; set; }
+
+        public static void Configure(IConfiguration configuration)
+        {
+            DbProviderFactories.RegisterFactory("System.Data.SQLite", new System.Data.SQLite.SQLiteFactory());
+            ConnectionStringProvider = new ConnectionStringProvider(configuration);
+        }
 
         [ThreadStatic]
         private static MassiveDB threadInstance;
@@ -19,11 +29,6 @@ namespace RunnersPal.Core.Data
                 if (threadInstance == null) threadInstance = new MassiveDB();
                 return threadInstance;
             }
-        }
-
-        static MassiveDB()
-        {
-            ConnectionStringName = "runnerspal";
         }
 
         public dynamic FindUser(string openId)
@@ -39,6 +44,7 @@ namespace RunnersPal.Core.Data
             userAccount.LastActivityDate = DateTime.UtcNow;
             new UserAccount().Update(userAccount, userAccount.Id);
         }
+
         public dynamic CreateUser(string openId, string originalHost, DistanceUnits currentDistanceUnits)
         {
             var userAccount = new UserAccount().Insert(new { DisplayName = "", CreatedDate = DateTime.UtcNow, LastActivityDate = DateTime.UtcNow, OriginalHostAddress = originalHost, UserType = "N", DistanceUnits = currentDistanceUnits });

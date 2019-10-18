@@ -4,6 +4,9 @@ project.lock.json
 .DS_Store
 *.pyc
 
+# local database file
+runnerspal.db
+
 # Visual Studio Code
 .vscode
 
