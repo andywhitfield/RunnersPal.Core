@@ -11,7 +11,7 @@ namespace RunnersPal.Core.Models
         public static readonly char SystemRoute = 'Z';
         public static readonly char DeletedRoute = 'D';
 
-        public Route() : base(MassiveDB.ConnectionStringName, "Route", "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
+        public Route() : base(MassiveDB.ConnectionStringName, "Route", "Id", primaryKeyFieldSequence: "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
 
     public static class RouteExtensions
@@ -24,7 +24,7 @@ namespace RunnersPal.Core.Models
             if (Enum.IsDefined(typeof(DistanceUnits), distanceUnitInt))
                 distanceUnit = (DistanceUnits)distanceUnitInt;
 
-            return new Distance(dynRoute.Distance, distanceUnit);
+            return new Distance((double)dynRoute.Distance, distanceUnit);
         }
     }
 }

@@ -54,10 +54,11 @@ namespace RunnersPal.Core.Extensions
             else
             {
                 // save/retrieve from the session
-                if (!context.Session.TryGetValue("rp_UserDistanceUnits", out var sessionDistanceUnits))
-                    context.Session.Set("rp_UserDistanceUnits", BitConverter.GetBytes((int)distanceUnits));
+                var sessionDistanceUnits = context.Session.Keys.Contains("rp_UserDistanceUnits") ? (DistanceUnits?)context.Session.Get<DistanceUnits>("rp_UserDistanceUnits") : null;
+                if (sessionDistanceUnits == null)
+                    context.Session.Set("rp_UserDistanceUnits", distanceUnits);
                 else
-                    distanceUnits = (DistanceUnits)BitConverter.ToInt32(sessionDistanceUnits);
+                    distanceUnits = sessionDistanceUnits.Value;
             }
             return distanceUnits;
         }
@@ -70,25 +71,22 @@ namespace RunnersPal.Core.Extensions
 
         public static dynamic UserAccount(this HttpContext context)
         {
-            dynamic userAccount = null;
-            if (context.Session.Keys.Contains("rp_UserAccount"))
-                userAccount = context.Session.Get<UserAccount>("rp_UserAccount");
+            long? userId = context.Session.Get<long?>("rp_UserAccount");
 
-            if (userAccount == null)
+            if (userId == null)
             {
                 var userCookie = context.Request.Cookies["rp_UserAccount"];
                 if (userCookie != null)
-                {
-                    long userId;
-                    if (long.TryParse(Secure.DecryptValue(userCookie, null), out userId))
-                    {
-                        userAccount = MassiveDB.Current.FindUser(userId);
-                        if (userAccount != null)
-                        {
-                            context.Session.Set<UserAccount>("rp_UserAccount", (UserAccount)userAccount);
-                        }
-                    }
-                }
+                    userId = long.TryParse(Secure.DecryptValue(userCookie, null), out var parsedUserId) ? (long?)parsedUserId : null;
+            }
+
+            dynamic userAccount = null;
+
+            if (userId != null)
+            {
+                userAccount = MassiveDB.Current.FindUser(userId.Value);
+                if (userAccount != null)
+                    context.Session.Set<long?>("rp_UserAccount", (long?)userAccount.Id);
             }
 
             return userAccount;

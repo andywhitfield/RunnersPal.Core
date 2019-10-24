@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Extensions;
@@ -62,7 +63,7 @@ namespace RunnersPal.Core.Controllers
             if (runLogEvent.UserAccountId != HttpContext.UserAccount().Id)
                 return Json(new { Completed = false, Reason = "You are not allowed to delete this event - please refresh and try again." });
 
-            runLogEvent.LogState = 'D';
+            runLogEvent.LogState = "D";
             MassiveDB.Current.UpdateRunLogEvent(runLogEvent);
 
             var model = new RunLogViewModel(HttpContext, runLogEvent);
@@ -113,7 +114,7 @@ namespace RunnersPal.Core.Controllers
                 {
                     route = MassiveDB.Current.FindRoute(routeId);
                     if (route != null)
-                        distance = new Distance(route.Distance, (DistanceUnits)route.DistanceUnits);
+                        distance = new Distance((double)route.Distance, (DistanceUnits)route.DistanceUnits);
                 }
                 else if (routeId == -1)
                 {

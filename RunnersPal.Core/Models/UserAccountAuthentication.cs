@@ -5,6 +5,6 @@ namespace RunnersPal.Core.Models
 {
     public class UserAccountAuthentication : DynamicModel
     {
-        public UserAccountAuthentication() : base(MassiveDB.ConnectionStringName, "UserAccountAuthentication", "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
+        public UserAccountAuthentication() : base(MassiveDB.ConnectionStringName, "UserAccountAuthentication", "Id", primaryKeyFieldSequence: "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
 }

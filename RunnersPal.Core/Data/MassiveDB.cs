@@ -94,7 +94,7 @@ where l.UserAccountId = ua.Id", string.Join(", ", routeIds.Select(id => id.ToStr
             if (route == null)
                 route = CreateRoute(userAccount, string.Format("{0} {1}", distance.BaseDistance.ToString("0.##"), distance.BaseUnits), null, distance, 'M');
 
-            return new RunLog().Insert(new { Date = runDate, RouteId = route.Id, TimeTaken = time, UserAccountId = userAccount.Id, CreatedDate = DateTime.UtcNow, Comment = comment ?? "", LogState = 'V' });
+            return new RunLog().Insert(new { Date = runDate, RouteId = route.Id, TimeTaken = time, UserAccountId = userAccount.Id, CreatedDate = DateTime.UtcNow, Comment = comment ?? "", LogState = "V" });
         }
         public void UpdateRunLogEvent(dynamic runLogEvent)
         {

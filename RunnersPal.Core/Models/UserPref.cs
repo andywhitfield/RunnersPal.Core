@@ -8,7 +8,7 @@ namespace RunnersPal.Core.Models
 {
     public class UserPref : DynamicModel
     {
-        public UserPref() : base(MassiveDB.ConnectionStringName, "UserPref", "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
+        public UserPref() : base(MassiveDB.ConnectionStringName, "UserPref", "Id", primaryKeyFieldSequence: "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
 
     public static class UserPrefExtensions

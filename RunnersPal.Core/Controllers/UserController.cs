@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Calculators;
 using RunnersPal.Core.Data;
@@ -219,7 +220,7 @@ namespace RunnersPal.Core.Controllers
                 MassiveDB.Current.UpdateUser(userAccount);
             }
 
-            var returnPage = HttpContext.Session.Get<string>("login_returnPage");
+            var returnPage = HttpContext.Session.GetString("login_returnPage");
             if (string.IsNullOrWhiteSpace(returnPage))
                 return RedirectToAction("Index", "Home");
             return Redirect(returnPage);

@@ -5,6 +5,6 @@ namespace RunnersPal.Core.Models
 {
     public class SiteSettings : DynamicModel
     {
-        public SiteSettings() : base(MassiveDB.ConnectionStringName, "SiteSettings", "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
+        public SiteSettings() : base(MassiveDB.ConnectionStringName, "SiteSettings", "Id", primaryKeyFieldSequence: "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
 }

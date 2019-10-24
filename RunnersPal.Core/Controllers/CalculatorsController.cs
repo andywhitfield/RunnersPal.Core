@@ -34,7 +34,7 @@ namespace RunnersPal.Core.Controllers
                 var userUnits = paceCalculation.Distance.BaseUnits;
                 var route = MassiveDB.Current.FindRoute(paceCalculation.Route.Value);
                 if (route != null)
-                    paceCalculation.Distance = new Distance(route.Distance, (DistanceUnits)route.DistanceUnits).ConvertTo(userUnits);
+                    paceCalculation.Distance = new Distance((double)route.Distance, (DistanceUnits)route.DistanceUnits).ConvertTo(userUnits);
             }
 
             paceCalc.Calculate(paceCalculation);
@@ -118,7 +118,7 @@ namespace RunnersPal.Core.Controllers
             {
                 var dbRoute = MassiveDB.Current.FindRoute(route.Value);
                 if (dbRoute != null)
-                    actualDistance = new Distance(dbRoute.Distance, (DistanceUnits)dbRoute.DistanceUnits).ConvertTo(HttpContext.UserDistanceUnits());
+                    actualDistance = new Distance((double)dbRoute.Distance, (DistanceUnits)dbRoute.DistanceUnits).ConvertTo(HttpContext.UserDistanceUnits());
             }
 
             if (distance.HasValue && distance.Value > 0)

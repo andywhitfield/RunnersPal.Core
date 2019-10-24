@@ -49,7 +49,7 @@ namespace RunnersPal.Core.ViewModels
             {
                 get
                 {
-                    var dist = new Distance(route.Distance, (DistanceUnits)route.DistanceUnits).ConvertTo(context.UserDistanceUnits());
+                    var dist = new Distance((double)route.Distance, (DistanceUnits)route.DistanceUnits).ConvertTo(context.UserDistanceUnits());
                     return dist.BaseDistance.ToString("0.##");
                 }
             }
