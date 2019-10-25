@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Extensions;

@@ -92,7 +92,7 @@ where l.UserAccountId = ua.Id", string.Join(", ", routeIds.Select(id => id.ToStr
         public dynamic CreateRunLogEvent(dynamic userAccount, DateTime runDate, Distance distance, dynamic route, string time, string comment)
         {
             if (route == null)
-                route = CreateRoute(userAccount, string.Format("{0} {1}", distance.BaseDistance.ToString("0.##"), distance.BaseUnits), null, distance, 'M');
+                route = CreateRoute(userAccount, string.Format("{0} {1}", distance.BaseDistance.ToString("0.##"), distance.BaseUnits), null, distance, Route.PrivateRoute);
 
             return new RunLog().Insert(new { Date = runDate, RouteId = route.Id, TimeTaken = time, UserAccountId = userAccount.Id, CreatedDate = DateTime.UtcNow, Comment = comment ?? "", LogState = "V" });
         }
@@ -149,7 +149,7 @@ where l.UserAccountId = ua.Id", string.Join(", ", routeIds.Select(id => id.ToStr
 
             return routeMatches;
         }
-        public dynamic CreateRoute(dynamic creator, string name, string notes, Distance distance, char type, string points = null, long? replacesRouteId = null)
+        public dynamic CreateRoute(dynamic creator, string name, string notes, Distance distance, string type, string points = null, long? replacesRouteId = null)
         {
             return new Route().Insert(new { Name = name, Notes = notes, Distance = distance.BaseDistance, DistanceUnits = (int)distance.BaseUnits, Creator = creator.Id, CreatedDate = DateTime.UtcNow, RouteType = type, MapPoints = points, ReplacesRouteId = replacesRouteId });
         }

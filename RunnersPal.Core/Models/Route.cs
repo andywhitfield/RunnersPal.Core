@@ -6,10 +6,10 @@ namespace RunnersPal.Core.Models
 {
     public class Route : DynamicModel
     {
-        public static readonly char PublicRoute = 'P';
-        public static readonly char PrivateRoute = 'M';
-        public static readonly char SystemRoute = 'Z';
-        public static readonly char DeletedRoute = 'D';
+        public static readonly string PublicRoute = "P";
+        public static readonly string PrivateRoute = "M";
+        public static readonly string SystemRoute = "Z";
+        public static readonly string DeletedRoute = "D";
 
         public Route() : base(MassiveDB.ConnectionStringName, "Route", "Id", primaryKeyFieldSequence: "Id", connectionStringProvider: MassiveDB.ConnectionStringProvider) { }
     }
