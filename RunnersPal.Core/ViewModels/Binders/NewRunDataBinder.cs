@@ -15,8 +15,8 @@ namespace RunnersPal.Core.ViewModels.Binders
             DateTime parsedDate;
             Trace.TraceInformation("Parsing date: {0}", bindingContext.GetString("date"));
             if (DateTime.TryParseExact(bindingContext.GetString("date"), "ddd, d MMM yyyy HH':'mm':'ss 'UTC'", null, DateTimeStyles.AssumeUniversal, out parsedDate))
-                date = parsedDate;
-            if (DateTime.TryParseExact(bindingContext.GetString("date"), "ddd, d MMM yyyy HH':'mm':'ss 'GMT'", null, DateTimeStyles.AssumeUniversal, out parsedDate))
+                date = parsedDate.ToUniversalTime();
+            else if (DateTime.TryParseExact(bindingContext.GetString("date"), "ddd, d MMM yyyy HH':'mm':'ss 'GMT'", null, DateTimeStyles.AssumeUniversal, out parsedDate))
                 date = parsedDate;
 
             var model = new NewRunData {
