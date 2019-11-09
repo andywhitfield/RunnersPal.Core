@@ -58,14 +58,14 @@ namespace RunnersPal.Core.Controllers
             var userAccount = HttpContext.UserAccount();
 
             var csv = string.Format("Date,Distance ({0}),Time,Pace (min/{1}),Route Name,Comment{2}", HttpContext.UserDistanceUnits("a"), HttpContext.UserDistanceUnits("a.s"), Environment.NewLine);
-            
+
             IEnumerable<dynamic> runEvents = MassiveDB.Current.FindRunLogEvents(userAccount, false);
 
             csv += string.Join(Environment.NewLine, runEvents
-                .OrderBy(e => e.Date)
-                .Select(e => new { Date = (DateTime)e.Date, TimeTaken = (string)e.TimeTaken, Comment = CsvSafeString(e.Comment), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) })
-                .Select(d => string.Format("{0},{1},{2},{3},\"{4}\",\"{5}\"", d.Date.ToString("yyyy-MM-dd"), d.DistanceAndPace.Item1.BaseDistance, d.TimeTaken, d.DistanceAndPace.Item2.Pace, d.DistanceAndPace.Item3, d.Comment)));
-            
+                .OrderBy(e => ((object)e.Date).ToDateTime())
+                .Select(e => new { Date = ((object)e.Date).ToDateTime(), TimeTaken = (string)e.TimeTaken, Comment = CsvSafeString(e.Comment), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) })
+                .Select(d => string.Format("{0},{1},{2},{3},\"{4}\",\"{5}\"", d.Date.GetValueOrDefault(DateTime.UtcNow).ToString("yyyy-MM-dd"), d.DistanceAndPace.Item1.BaseDistance, d.TimeTaken, d.DistanceAndPace.Item2.Pace, d.DistanceAndPace.Item3, d.Comment)));
+
             return File(Encoding.UTF8.GetBytes(csv), "text/csv", "runlogevents.csv");
         }
 
@@ -84,9 +84,9 @@ namespace RunnersPal.Core.Controllers
                 Trace.TraceInformation("Loaded {0} run log events", runEvents.Count());
                 if (!runEvents.Any()) return;
 
-                var datesAndDistances = runEvents.Select(e => new { Date = (DateTime)e.Date, DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
+                var datesAndDistances = runEvents.Select(e => new { Date = ((object)e.Date).ToDateTime(), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
                 var groupedByWeek = datesAndDistances
-                    .GroupBy(d => WeekEnding(d.Date))
+                    .GroupBy(d => WeekEnding(d.Date.GetValueOrDefault()))
                     .OrderBy(g => g.Key);
 
                 var aggregated = Enumerable
@@ -115,9 +115,9 @@ namespace RunnersPal.Core.Controllers
                 Trace.TraceInformation("Loaded {0} run log events", runEvents.Count());
                 if (!runEvents.Any()) return;
 
-                var datesAndDistances = runEvents.Select(e => new { Date = (DateTime)e.Date, DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
+                var datesAndDistances = runEvents.Select(e => new { Date = ((object)e.Date).ToDateTime(), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
                 var groupedByMonth = datesAndDistances
-                    .GroupBy(d => new DateTime(d.Date.Year, d.Date.Month, 1))
+                    .GroupBy(d => new DateTime(d.Date.GetValueOrDefault().Year, d.Date.GetValueOrDefault().Month, 1))
                     .OrderBy(g => g.Key);
 
                 var aggregated = Enumerable
@@ -146,9 +146,9 @@ namespace RunnersPal.Core.Controllers
                 Trace.TraceInformation("Loaded {0} run log events", runEvents.Count());
                 if (!runEvents.Any()) return;
 
-                var datesAndDistances = runEvents.Select(e => new { Date = (DateTime)e.Date, DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
+                var datesAndDistances = runEvents.Select(e => new { Date = ((object)e.Date).ToDateTime(), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
                 var groupedByYear = datesAndDistances
-                    .GroupBy(d => new DateTime(d.Date.Year, 1, 1))
+                    .GroupBy(d => new DateTime(d.Date.GetValueOrDefault().Year, 1, 1))
                     .OrderBy(g => g.Key);
 
                 var aggregated = Enumerable
@@ -160,14 +160,15 @@ namespace RunnersPal.Core.Controllers
                         return new { Year = dt, Distance = yearGrouping == null ? 0 : yearGrouping.Sum(a => a.DistanceAndPace.Item1.BaseDistance), Pace = yearGrouping == null ? 0 : yearGrouping.Average(a => a.DistanceAndPace.Item2.PaceInSeconds.Value / 60) };
                     })
                     .TakeWhile(agg => agg.Year >= groupedByYear.First().Key)
-                    .Reverse();
+                    .Reverse()
+                    .ToList();
 
                 m.DistanceStats = aggregated.Select(g => new StatValue { Category = g.Year.ToString("yyyy"), Value = g.Distance });
                 m.PaceStats = aggregated.Select(g => new StatValue { Category = g.Year.ToString("yyyy"), Value = g.Pace });
             });
         }
 
-        private Tuple<Distance,PaceData,string> DistanceAndPaceOfLogEvent(dynamic runLogEvent)
+        private Tuple<Distance, PaceData, string> DistanceAndPaceOfLogEvent(dynamic runLogEvent)
         {
             var route = ((object)runLogEvent).Route();
             var distance = ((object)route).Distance().ConvertTo(HttpContext.UserDistanceUnits());

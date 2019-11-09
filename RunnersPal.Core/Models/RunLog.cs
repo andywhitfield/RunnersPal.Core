@@ -13,7 +13,7 @@ namespace RunnersPal.Core.Models
         public static dynamic Route(this object runLog)
         {
             dynamic dynRunLog = runLog as dynamic;
-            return new Route().Single(dynRunLog.RouteId);
+            return new Route().Single((long)dynRunLog.RouteId);
         }
     }
 }

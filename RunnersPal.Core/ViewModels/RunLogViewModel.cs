@@ -62,13 +62,14 @@ namespace RunnersPal.Core.ViewModels
             public object RunLogEventToJson()
             {
                 var systemRoute = Route.RouteType == RunnersPal.Core.Models.Route.SystemRoute.ToString();
+                var runLogEventDate = ((object)RunLogEvent.Date).ToDateTime().GetValueOrDefault();
                 return new
                 {
                     Completed = true,
                     id = RunLogEvent.Id,
                     title = Title,
-                    start = RunLogEvent.Date.ToString("dd MMM yyyy"),
-                    date = RunLogEvent.Date.ToString("dd MMM yyyy"),
+                    start = runLogEventDate.ToString("dd MMM yyyy"),
+                    date = runLogEventDate.ToString("dd MMM yyyy"),
                     distance = string.IsNullOrWhiteSpace(Route.MapPoints) && !systemRoute
                                ? Distance.BaseDistance.ToString("0.##")
                                : systemRoute ? Route.Name : (Route.Name + ", " + Distance.BaseDistance.ToString("0.##") + " " + Distance.BaseUnits.UnitsToString("a")),

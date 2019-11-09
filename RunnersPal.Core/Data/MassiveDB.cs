@@ -66,13 +66,15 @@ namespace RunnersPal.Core.Data
         {
             return new RunLog().Single(runLogId);
         }
-        public IEnumerable<dynamic> FindRunLogEvents(dynamic userAccount, bool includeDeletedEvents = true)
+        public IEnumerable<dynamic> FindRunLogEvents(dynamic userAccount, bool includeDeletedEvents = true, DateTime? startDate = null, DateTime? endDate = null)
         {
             if (userAccount == null) return Enumerable.Empty<dynamic>();
 
             var whereClause = "UserAccountId = @0";
             if (!includeDeletedEvents) whereClause += " and LogState = 'V'";
-            return new RunLog().All(where: whereClause, args: new object[] { userAccount.Id });
+            if (startDate.HasValue) whereClause += " and CreatedDate >= @1";
+            if (endDate.HasValue) whereClause += " and CreatedDate <= @2";
+            return new RunLog().All(where: whereClause, args: new object[] { userAccount.Id, startDate, endDate });
         }
         public IEnumerable<dynamic> FindLatestRunLogForRoutes(IEnumerable<long> routeIds, bool includeDeletedEvents = false)
         {
@@ -103,7 +105,7 @@ where l.UserAccountId = ua.Id", string.Join(", ", routeIds.Select(id => id.ToStr
 
         public IEnumerable<dynamic> GetCommonRoutes()
         {
-            return new Route().Query("select r.* from route r join UserAccount ua on r.Creator = ua.Id and ua.DisplayName = 'Admin' and ua.UserType = 'A' and r.RouteType = '" + Route.SystemRoute + "' order by r.Id");
+            return new Route().Query("select r.* from Route r join UserAccount ua on r.Creator = ua.Id and ua.DisplayName = 'Admin' and ua.UserType = 'A' and r.RouteType = '" + Route.SystemRoute + "' order by r.Id");
         }
         public dynamic FindRoute(long routeId, bool returnDeleted = false)
         {

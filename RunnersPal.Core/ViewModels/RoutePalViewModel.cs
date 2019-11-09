@@ -25,7 +25,7 @@ namespace RunnersPal.Core.ViewModels
                 var runInfo = runInfos.FirstOrDefault(r => r.RouteId == route.Id);
                 if (runInfo == null) continue;
                 route.LastRunBy = runInfo.DisplayName;
-                route.LastRunDate = runInfo.Date;
+                route.LastRunDate = ((object)runInfo.Date).ToDateTime();
             }
 
             return routeModels.OrderByDescending(r => r.LastRunDate ?? r.CreatedDate);
@@ -53,7 +53,7 @@ namespace RunnersPal.Core.ViewModels
                     return dist.BaseDistance.ToString("0.##");
                 }
             }
-            public DateTime CreatedDate { get { return route.CreatedDate; } }
+            public DateTime CreatedDate { get { return ((object)route.CreatedDate).ToDateTime() ?? DateTime.UtcNow; } }
             public string LastRunBy { get; set; }
             public string LastRun { get { return LastRunDate.HasValue ? LastRunDate.Value.ToString("ddd, dd/MMM/yyyy") : ""; } }
             public DateTime? LastRunDate { get; set; }

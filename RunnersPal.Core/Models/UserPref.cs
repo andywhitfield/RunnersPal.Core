@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Massive;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Extensions;
 
 namespace RunnersPal.Core.Models
 {
@@ -17,20 +18,14 @@ namespace RunnersPal.Core.Models
         {
             return userPrefs.LastOrDefault();
         }
-        public static dynamic Latest(this IEnumerable<dynamic> userPrefs, DateTime ondate)
+        public static dynamic Latest(this IEnumerable<dynamic> userPrefs, DateTime onDate)
         {
-            var lastValidPref = userPrefs.FirstOrDefault(p => p.ValidTo != null && ((DateTime)p.ValidTo) >= ondate);
-            return lastValidPref ?? Latest(userPrefs);
-            /*
-            dynamic userPrefOnDate = null;
-            foreach (var userPref in userPrefs)
+            var lastValidPref = userPrefs.FirstOrDefault(p =>
             {
-                DateTime validTo = userPref.ValidTo == null ? DateTime.UtcNow : (DateTime)userPref.ValidTo;
-                if (validTo > ondate) break;
-                userPrefOnDate = userPref;
-            }
-            return userPrefOnDate;
-             */
+                DateTime? validTo = ((object)p.ValidTo).ToDateTime();
+                return validTo != null && validTo >= onDate;
+            });
+            return lastValidPref ?? Latest(userPrefs);
         }
     }
 }

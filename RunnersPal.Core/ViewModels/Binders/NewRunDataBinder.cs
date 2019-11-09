@@ -27,7 +27,7 @@ namespace RunnersPal.Core.ViewModels.Binders
                 Time = bindingContext.GetString("time"),
                 Comment = bindingContext.GetString("comment").MaxLength(1000)
             };
-            if ((model.Route ?? 0) <= 0)
+            if ((model.Route ?? 0) == -2)
                 model.NewRoute = new RouteData {
                     Distance = bindingContext.GetDouble("distance") ?? 0.0,
                     Name = bindingContext.GetString("newRouteName"),

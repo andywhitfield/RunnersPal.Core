@@ -140,7 +140,8 @@ namespace RunnersPal.Core.Controllers
                     else
                     {
                         lastRunBy = runInfo.DisplayName;
-                        lastRun = runInfo.Date == null ? "" : runInfo.Date.ToString("ddd, dd/MMM/yyyy");
+                        var runDate = ((object)runInfo.Date).ToDateTime();
+                        lastRun = runDate == null ? "" : runDate.Value.ToString("ddd, dd/MMM/yyyy");
                     }
                 }
             }
@@ -189,7 +190,7 @@ namespace RunnersPal.Core.Controllers
                 var runInfo = runInfos.FirstOrDefault(r => r.RouteId == route.Id);
                 if (runInfo == null) continue;
                 route.LastRunBy = runInfo.DisplayName;
-                route.LastRunDate = runInfo.Date;
+                route.LastRunDate = ((object)runInfo.Date).ToDateTime();
             }
 
             return Json(new { Completed = true, Routes = routeModels.OrderByDescending(r => r.LastRunDate ?? r.CreatedDate) });

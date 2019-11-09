@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Massive;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Extensions;
 
 namespace RunnersPal.Core.Models
 {
@@ -24,7 +25,7 @@ namespace RunnersPal.Core.Models
         {
             dynamic dynUserAccount = userAccount as dynamic;
             IEnumerable<dynamic> userPrefs = new UserPref().All("UserAccountId=@0", args: new object[] { dynUserAccount.Id });
-            return userPrefs.OrderBy(userPref => userPref.ValidTo ?? DateTime.MaxValue);
+            return userPrefs.OrderBy(userPref => ((object)userPref.ValidTo).ToDateTime() ?? DateTime.MaxValue);
         }
     }
 }

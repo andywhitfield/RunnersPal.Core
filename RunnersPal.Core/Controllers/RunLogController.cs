@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Data;
@@ -16,9 +17,11 @@ namespace RunnersPal.Core.Controllers
             return View(new RunLogViewModel(HttpContext, Enumerable.Empty<dynamic>()));
         }
 
-        public ActionResult AllEvents()
+        public ActionResult AllEvents(string start, string end)
         {
-            var model = new RunLogViewModel(HttpContext, MassiveDB.Current.FindRunLogEvents(HttpContext.UserAccount(), false));
+            DateTime.TryParseExact(start, "yyyy-MM-dd", null, DateTimeStyles.AssumeUniversal, out var startDate);
+            DateTime.TryParseExact(end, "yyyy-MM-dd", null, DateTimeStyles.AssumeUniversal, out var endDate);
+            var model = new RunLogViewModel(HttpContext, MassiveDB.Current.FindRunLogEvents(HttpContext.UserAccount(), false, startDate, endDate));
             return Json(model.RunLogEventsToJson());
         }
 
@@ -112,8 +115,10 @@ namespace RunnersPal.Core.Controllers
                 if (routeId > 0)
                 {
                     route = MassiveDB.Current.FindRoute(routeId);
-                    if (route != null)
-                        distance = new Distance((double)route.Distance, (DistanceUnits)route.DistanceUnits);
+                    if (route == null)
+                        return Tuple.Create(new JsonResult(new { Completed = false, Reason = "Cannot find selected route, please choose another route and try again." }), (object)null);
+
+                    distance = new Distance((double)route.Distance, (DistanceUnits)route.DistanceUnits);
                 }
                 else if (routeId == -1)
                 {
@@ -132,6 +137,8 @@ namespace RunnersPal.Core.Controllers
                         return Tuple.Create(new JsonResult(new { Completed = false, Reason = "Please add some points to the new route by double-clicking the map." }), (object)null);
                     route = MassiveDB.Current.CreateRoute(HttpContext.UserAccount(), newRunData.NewRoute.Name, newRunData.NewRoute.Notes ?? "", distance, (newRunData.NewRoute.Public ?? false) ? Route.PublicRoute : Route.PrivateRoute, newRunData.NewRoute.Points);
                 }
+                else
+                    return Tuple.Create(new JsonResult(new { Completed = false, Reason = "Please select or create a route for your run and try again." }), (object)null);
             }
 
             var runLogEvent = MassiveDB.Current.CreateRunLogEvent(HttpContext.UserAccount(), newRunData.Date.Value, distance, route, newRunData.NormalizedTime, newRunData.Comment);
