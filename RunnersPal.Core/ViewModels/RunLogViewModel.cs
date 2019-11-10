@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using RunnersPal.Core.Calculators;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Extensions;
 using RunnersPal.Core.Models;
 
@@ -9,10 +10,10 @@ namespace RunnersPal.Core.ViewModels
 {
     public class RunLogViewModel
     {
-        public RunLogViewModel(HttpContext context, dynamic runLogEvent) : this(context, new[] { runLogEvent }) { }
-        public RunLogViewModel(HttpContext context, IEnumerable<dynamic> runLogEvents)
+        public RunLogViewModel(HttpContext context, dynamic runLogEvent, IDataCache dataCache) : this(context, new[] { runLogEvent }, dataCache) { }
+        public RunLogViewModel(HttpContext context, IEnumerable<dynamic> runLogEvents, IDataCache dataCache)
         {
-            RunLogModels = runLogEvents.Select(e => new RunLogModel(context, e));
+            RunLogModels = runLogEvents.Select(e => new RunLogModel(context, e, dataCache));
             Routes = Enumerable.Empty<RoutePalViewModel.RouteModel>();
         }
 
@@ -28,15 +29,16 @@ namespace RunnersPal.Core.ViewModels
         {
             private readonly HttpContext context;
             public readonly dynamic RunLogEvent;
+            private readonly IDataCache dataCache;
 
-            public RunLogModel(HttpContext context, dynamic runLogEvent)
+            public RunLogModel(HttpContext context, dynamic runLogEvent, IDataCache dataCache)
             {
                 this.context = context;
                 RunLogEvent = runLogEvent;
-
+                this.dataCache = dataCache;
                 TimeTaken = runLogEvent.TimeTaken;
-                Route = ((object)RunLogEvent).Route();
-                Distance = ((object)Route).Distance().ConvertTo(context.UserDistanceUnits());
+                Route = ((object)RunLogEvent).Route(dataCache);
+                Distance = ((object)Route).Distance().ConvertTo(context.UserDistanceUnits(dataCache));
 
                 var paceData = new PaceData { Distance = Distance, Time = TimeTaken, Calc = "Pace" };
                 var paceCalc = new PaceCalculator();
@@ -53,7 +55,7 @@ namespace RunnersPal.Core.ViewModels
             {
                 get
                 {
-                    var userUnits = context.UserDistanceUnits();
+                    var userUnits = context.UserDistanceUnits(dataCache);
                     return Distance.BaseDistance.ToString("0.##") + " " + userUnits.UnitsToString("a") +
                         " in " + TimeTaken + "\n" + Pace.Pace + " min/" + userUnits.UnitsToString("a.s");
                 }

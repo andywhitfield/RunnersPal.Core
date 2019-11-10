@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using Massive;
 using Microsoft.Extensions.Configuration;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Models;
 
 namespace RunnersPal.Core.Data
@@ -35,9 +36,10 @@ namespace RunnersPal.Core.Data
         {
             return new UserAccount().Query("select ua.* from UserAccount ua join UserAccountAuthentication uaa on ua.Id = uaa.UserAccountId where uaa.Identifier = @0", openId).SingleOrDefault();
         }
-        public dynamic FindUser(long userId)
+        public dynamic FindUser(long userId, IDataCache dataCache)
         {
-            return new UserAccount().Single(userId);
+            Func<dynamic> findUserFunc = () => new UserAccount().Single(userId);
+            return dataCache == null ? findUserFunc() : dataCache.Get($"user.{userId}", findUserFunc);
         }
         public void UpdateUser(dynamic userAccount)
         {

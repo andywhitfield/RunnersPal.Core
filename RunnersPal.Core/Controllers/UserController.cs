@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Calculators;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Extensions;
 using RunnersPal.Core.Models;
 using RunnersPal.Core.ViewModels;
@@ -15,6 +16,13 @@ namespace RunnersPal.Core.Controllers
 {
     public class UserController : Controller
     {
+        private readonly IDataCache dataCache;
+
+        public UserController(IDataCache dataCache)
+        {
+            this.dataCache = dataCache;
+        }
+        
         public ActionResult FirstTime() { return View(); }
         public ActionResult Index() { return ByWeek(); }
         public ActionResult Profile(bool? saved)
@@ -53,11 +61,11 @@ namespace RunnersPal.Core.Controllers
 
         public ActionResult Download()
         {
-            if (!HttpContext.HasValidUserAccount())
+            if (!HttpContext.HasValidUserAccount(dataCache))
                 return ByWeek();
-            var userAccount = HttpContext.UserAccount();
+            var userAccount = HttpContext.UserAccount(dataCache);
 
-            var csv = string.Format("Date,Distance ({0}),Time,Pace (min/{1}),Route Name,Comment{2}", HttpContext.UserDistanceUnits("a"), HttpContext.UserDistanceUnits("a.s"), Environment.NewLine);
+            var csv = string.Format("Date,Distance ({0}),Time,Pace (min/{1}),Route Name,Comment{2}", HttpContext.UserDistanceUnits("a", dataCache), HttpContext.UserDistanceUnits("a.s", dataCache), Environment.NewLine);
 
             IEnumerable<dynamic> runEvents = MassiveDB.Current.FindRunLogEvents(userAccount, false);
 
@@ -170,8 +178,8 @@ namespace RunnersPal.Core.Controllers
 
         private Tuple<Distance, PaceData, string> DistanceAndPaceOfLogEvent(dynamic runLogEvent)
         {
-            var route = ((object)runLogEvent).Route();
-            var distance = ((object)route).Distance().ConvertTo(HttpContext.UserDistanceUnits());
+            var route = ((object)runLogEvent).Route(dataCache);
+            var distance = ((object)route).Distance().ConvertTo(HttpContext.UserDistanceUnits(dataCache));
             var paceData = new PaceData { Distance = distance, Time = runLogEvent.TimeTaken, Calc = "Pace" };
             var paceCalc = new PaceCalculator();
             paceCalc.Calculate(paceData);
@@ -186,8 +194,8 @@ namespace RunnersPal.Core.Controllers
 
         private ActionResult ShowStats(MyStatsModel model, Action<dynamic, MyStatsModel> loadEventsCallback)
         {
-            if (!HttpContext.HasValidUserAccount()) return View("NotLoggedIn");
-            loadEventsCallback(HttpContext.UserAccount(), model);
+            if (!HttpContext.HasValidUserAccount(dataCache)) return View("NotLoggedIn");
+            loadEventsCallback(HttpContext.UserAccount(dataCache), model);
 
             Trace.TraceInformation("Completed stats, returning view");
 

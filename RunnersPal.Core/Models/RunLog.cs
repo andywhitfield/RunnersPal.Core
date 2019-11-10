@@ -1,5 +1,7 @@
-﻿using Massive;
+﻿using System;
+using Massive;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Data.Caching;
 
 namespace RunnersPal.Core.Models
 {
@@ -10,10 +12,12 @@ namespace RunnersPal.Core.Models
 
     public static class RunLogExtensions
     {
-        public static dynamic Route(this object runLog)
+        public static dynamic Route(this object runLog, IDataCache cache = null)
         {
             dynamic dynRunLog = runLog as dynamic;
-            return new Route().Single((long)dynRunLog.RouteId);
+            var routeId = (long)dynRunLog.RouteId;
+            Func<dynamic> getRouteFunc = () => new Route().Single(routeId);
+            return cache == null ? getRouteFunc() : cache.Get($"route.{routeId}", getRouteFunc);
         }
     }
 }

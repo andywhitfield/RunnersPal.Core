@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Extensions;
 using RunnersPal.Core.Models;
 using RunnersPal.Core.ViewModels;
@@ -12,6 +13,13 @@ namespace RunnersPal.Core.Controllers
 {
     public class RoutePalController : Controller
     {
+        private readonly IDataCache dataCache;
+
+        public RoutePalController(IDataCache dataCache)
+        {
+            this.dataCache = dataCache;
+        }
+        
         public ActionResult Index()
         {
             if (Request.Query["route"].FirstOrDefault() == "0" && HttpContext.HasValidUserAccount())
@@ -44,7 +52,7 @@ namespace RunnersPal.Core.Controllers
         [HttpPost]
         public ActionResult MyRoutes()
         {
-            return Json(new { Completed = true, Routes = RoutePalViewModel.RoutesForCurrentUser(HttpContext) });
+            return Json(new { Completed = true, Routes = RoutePalViewModel.RoutesForCurrentUser(HttpContext, dataCache) });
         }
 
         [HttpPost]
@@ -80,10 +88,10 @@ namespace RunnersPal.Core.Controllers
         {
             if (!ModelState.IsValid)
                 return Json(new { Completed = false, Reason = "Please provide a route name." });
-            if (!HttpContext.HasValidUserAccount())
+            if (!HttpContext.HasValidUserAccount(dataCache))
                 return Json(new { Completed = false, Reason = "Please create an account." });
 
-            var userUnits = HttpContext.UserDistanceUnits();
+            var userUnits = HttpContext.UserDistanceUnits(dataCache);
             Distance distance = new Distance(routeData.Distance, userUnits);
 
             Trace.TraceInformation("Saving route {0} name {1}, notes {2}, is public? {3}, points: {4}", routeData.Id, routeData.Name, routeData.Notes, routeData.Public, routeData.Points);
@@ -92,7 +100,7 @@ namespace RunnersPal.Core.Controllers
             string lastRunBy;
             if (routeData.Id == 0)
             {
-                var newRoute = MassiveDB.Current.CreateRoute(HttpContext.UserAccount(), routeData.Name, routeData.Notes ?? "", distance, (routeData.Public ?? false) ? Route.PublicRoute : Route.PrivateRoute, routeData.Points);
+                var newRoute = MassiveDB.Current.CreateRoute(HttpContext.UserAccount(dataCache), routeData.Name, routeData.Notes ?? "", distance, (routeData.Public ?? false) ? Route.PublicRoute : Route.PrivateRoute, routeData.Points);
                 routeData.Id = Convert.ToInt64(newRoute.Id);
                 lastRun = "";
                 lastRunBy = "";
@@ -100,7 +108,7 @@ namespace RunnersPal.Core.Controllers
             else
             {
                 var currentRoute = MassiveDB.Current.FindRoute(routeData.Id);
-                var currentUser = HttpContext.UserAccount();
+                var currentUser = HttpContext.UserAccount(dataCache);
                 var isRouteOwnedByAnotherUser = currentUser.Id != currentRoute.Creator;
 
                 if (isRouteOwnedByAnotherUser && currentRoute.RouteType != Route.PublicRoute.ToString())
@@ -179,7 +187,7 @@ namespace RunnersPal.Core.Controllers
             if (string.IsNullOrWhiteSpace(q))
                 return Json(new { Completed = true, Routes = new object[0] });
 
-            dynamic currentUser = HttpContext.HasValidUserAccount() ? HttpContext.UserAccount() : null;
+            dynamic currentUser = HttpContext.HasValidUserAccount(dataCache) ? HttpContext.UserAccount(dataCache) : null;
 
             IEnumerable<dynamic> routes = MassiveDB.Current.SearchForRoutes(currentUser, q);
             IEnumerable<dynamic> runInfos = MassiveDB.Current.FindLatestRunLogForRoutes(routes.Select(r => (long)r.Id));

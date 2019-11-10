@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Extensions;
 using RunnersPal.Core.Models;
 
@@ -10,9 +11,9 @@ namespace RunnersPal.Core.ViewModels
 {
     public class RoutePalViewModel
     {
-        public static IEnumerable<RoutePalViewModel.RouteModel> RoutesForCurrentUser(HttpContext context)
+        public static IEnumerable<RoutePalViewModel.RouteModel> RoutesForCurrentUser(HttpContext context, IDataCache dataCache)
         {
-            dynamic currentUser = context.HasValidUserAccount() ? context.UserAccount() : null;
+            dynamic currentUser = context.HasValidUserAccount(dataCache) ? context.UserAccount(dataCache) : null;
 
             IEnumerable<dynamic> routes = MassiveDB.Current.FindRoutes(currentUser);
             routes = routes.Where(r => !string.IsNullOrWhiteSpace(r.MapPoints));

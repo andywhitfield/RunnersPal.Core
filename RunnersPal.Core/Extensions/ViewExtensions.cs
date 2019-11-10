@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Models;
 
 namespace RunnersPal.Core.Extensions
@@ -37,17 +38,17 @@ namespace RunnersPal.Core.Extensions
             return distanceUnit.ToString();
         }
 
-        public static string UserDistanceUnits(this HttpContext context, string format)
+        public static string UserDistanceUnits(this HttpContext context, string format, IDataCache dataCache =  null)
         {
-            return UnitsToString(context.UserDistanceUnits(), format);
+            return UnitsToString(context.UserDistanceUnits(dataCache), format);
         }
 
-        public static DistanceUnits UserDistanceUnits(this HttpContext context)
+        public static DistanceUnits UserDistanceUnits(this HttpContext context, IDataCache dataCache =  null)
         {
             var distanceUnits = DistanceUnits.Miles;
-            if (context.HasValidUserAccount())
+            if (context.HasValidUserAccount(dataCache))
             {
-                object userUnits = context.UserAccount().DistanceUnits;
+                object userUnits = context.UserAccount(dataCache).DistanceUnits;
                 if (Enum.IsDefined(typeof(DistanceUnits), userUnits))
                     distanceUnits = (DistanceUnits)userUnits;
             }
@@ -63,13 +64,13 @@ namespace RunnersPal.Core.Extensions
             return distanceUnits;
         }
 
-        public static bool HasValidUserAccount(this HttpContext context)
+        public static bool HasValidUserAccount(this HttpContext context, IDataCache dataCache = null)
         {
-            var userAccount = UserAccount(context);
+            var userAccount = UserAccount(context, dataCache);
             return userAccount != null && userAccount.UserType != "N"; // 'New' - user is not quite a user until they give us their DisplayName.
         }
 
-        public static dynamic UserAccount(this HttpContext context)
+        public static dynamic UserAccount(this HttpContext context, IDataCache dataCache = null)
         {
             long? userId = context.Session.Get<long?>("rp_UserAccount");
 
@@ -84,7 +85,7 @@ namespace RunnersPal.Core.Extensions
 
             if (userId != null)
             {
-                userAccount = MassiveDB.Current.FindUser(userId.Value);
+                userAccount = MassiveDB.Current.FindUser(userId.Value, dataCache);
                 if (userAccount != null)
                     context.Session.Set<long?>("rp_UserAccount", (long?)userAccount.Id);
             }

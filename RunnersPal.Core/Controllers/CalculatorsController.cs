@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Calculators;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Extensions;
 using RunnersPal.Core.Models;
 using RunnersPal.Core.ViewModels;
@@ -16,7 +17,13 @@ namespace RunnersPal.Core.Controllers
         private DistanceCalculator distanceCalc = new DistanceCalculator();
         private WeightCalculator weightCalc = new WeightCalculator();
         private CaloriesCalculator caloriesCalc = new CaloriesCalculator();
+        private readonly IDataCache dataCache;
 
+        public CalculatorsController(IDataCache dataCache)
+        {
+            this.dataCache = dataCache;
+        }
+        
         public ActionResult Index() { return View(); }
         public ActionResult Pace() { return View(); }
         public ActionResult Distance() { return View(); }
@@ -79,9 +86,9 @@ namespace RunnersPal.Core.Controllers
         {
             WeightData weight = null;
 
-            if (HttpContext.HasValidUserAccount() && date != null)
+            if (HttpContext.HasValidUserAccount(dataCache) && date != null)
             {
-                var userAccount = HttpContext.UserAccount();
+                var userAccount = HttpContext.UserAccount(dataCache);
 
                 DateTime onDate;
                 if (!DateTime.TryParseExact(date, "ddd, d MMM yyyy HH':'mm':'ss 'UTC'", null, DateTimeStyles.AssumeUniversal, out onDate))
@@ -118,11 +125,11 @@ namespace RunnersPal.Core.Controllers
             {
                 var dbRoute = MassiveDB.Current.FindRoute(route.Value);
                 if (dbRoute != null)
-                    actualDistance = new Distance((double)dbRoute.Distance, (DistanceUnits)dbRoute.DistanceUnits).ConvertTo(HttpContext.UserDistanceUnits());
+                    actualDistance = new Distance((double)dbRoute.Distance, (DistanceUnits)dbRoute.DistanceUnits).ConvertTo(HttpContext.UserDistanceUnits(dataCache));
             }
 
             if (distance.HasValue && distance.Value > 0)
-                actualDistance = new Distance(distance.Value, HttpContext.UserDistanceUnits());
+                actualDistance = new Distance(distance.Value, HttpContext.UserDistanceUnits(dataCache));
 
             if (actualDistance == null)
                 return Json(new { Result = false });

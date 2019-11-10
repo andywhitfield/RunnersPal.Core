@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RunnersPal.Core.Data;
+using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.ViewModels.Binders;
 
 namespace RunnersPal.Core
@@ -61,6 +62,8 @@ namespace RunnersPal.Core
                 logging.AddConsole();
                 logging.AddDebug();
             });
+
+            services.AddTransient<IDataCache, SimpleDataCache>();
             
             MassiveDB.Configure(Configuration);
         }
