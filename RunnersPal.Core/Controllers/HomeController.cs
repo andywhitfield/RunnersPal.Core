@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Data;
@@ -17,11 +19,8 @@ namespace RunnersPal.Core.Controllers
         public ActionResult Error() => View("Error");
 
         [HttpPost]
-        public IActionResult Login([FromForm] string provider)
+        public IActionResult Login()
         {
-            if (string.IsNullOrWhiteSpace(provider))
-                return BadRequest();
-
             var returnPage = Request.Form["return_page"].FirstOrDefault();
             if (string.IsNullOrWhiteSpace(returnPage)) returnPage = Url.Content("~/");
             Uri returnPageUri;
@@ -30,20 +29,20 @@ namespace RunnersPal.Core.Controllers
                 returnPage = Url.Content("~/");
             HttpContext.Session.SetString("login_returnPage", returnPage);
 
-            return Challenge(new AuthenticationProperties { RedirectUri = Url.Action(nameof(LoggingIn)) }, provider);
+            return Challenge(new AuthenticationProperties { RedirectUri = Url.Action(nameof(LoggingIn)) }, OpenIdConnectDefaults.AuthenticationScheme);
         }
 
         [HttpGet]
         public IActionResult LoggingIn()
         {
             var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
-            var openId = User?.Claims?.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-            if (!isAuthenticated || string.IsNullOrWhiteSpace(openId))
+            var authId = User?.FindFirstValue("sub");
+            if (!isAuthenticated || string.IsNullOrWhiteSpace(authId))
                 return Redirect("/");
 
-            var userAccount = MassiveDB.Current.FindUser(openId);
+            var userAccount = MassiveDB.Current.FindUser(authId);
             if (userAccount == null)
-                userAccount = MassiveDB.Current.CreateUser(openId, HttpContext.Connection.RemoteIpAddress.ToString(), HttpContext.UserDistanceUnits());
+                userAccount = MassiveDB.Current.CreateUser(authId, HttpContext.Connection.RemoteIpAddress.ToString(), HttpContext.UserDistanceUnits());
 
             HttpContext.Session.Set<long?>("rp_UserAccount", (long?)userAccount.Id);
             HttpContext.Response.Cookies.Append("rp_UserAccount", Secure.EncryptValue(userAccount.Id.ToString()), new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
@@ -61,7 +60,7 @@ namespace RunnersPal.Core.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return SignOut(new AuthenticationProperties { RedirectUri = "/" }, CookieAuthenticationDefaults.AuthenticationScheme);
+            return SignOut(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
         }
 
         [HttpPost]

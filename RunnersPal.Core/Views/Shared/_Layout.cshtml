@@ -65,9 +65,7 @@
           <h1><a href="@Url.Content("~/")">runners<span class="logo_colour">:pal</span></a></h1>
         </div>
         <form action="@Url.Action("login", "home")" method="post" id="loginForm">
-        <input type="hidden" name="openid_identifier" value="" />
         <input type="hidden" name="return_page" value="" />
-        <input type="hidden" name="provider" value="SmallId" />
         <h2>
             <span class="loginLogout">
                 <a class="login" href="#">Login</a>
@@ -80,14 +78,7 @@
             <span id="loginCreateAccount">
                 <span id="loginOptions">
                 Login using
-                <input type="button" class="loginLogoutSelection loginOpenId" name="loginWithSmallId" value="    SmallId" title="Login via SmallId" data-url="https://smallid.nosuchblogger.com/openid/provider" />
-                <input type="button" value="" title="Help" class="loginHelp" />
-                <input type="button" value="" title="Cancel" class="loginCancel cancel" />
-                </span>
-                <span id="loginCustomOpenId">
-                Login with your OpenID URL:
-                <input type="url" class="loginLogoutSelection" name="loginWithOpenId" value="" title="Enter your OpenID URL (for example, http://yourid.myopenid.com/)" />
-                <input type="button" class="loginLogoutSelection" name="loginWithOpenIdGo" value="Login" />
+                <input type="button" class="loginLogoutSelection loginOpenId" name="loginWithSmallAuth" value="    SmallAuth" title="Login via SmallAuth" />
                 <input type="button" value="" title="Help" class="loginHelp" />
                 <input type="button" value="" title="Cancel" class="loginCancel cancel" />
                 </span>
@@ -131,11 +122,11 @@
         <p>
         It only takes a few moments to login or create an account. If you've
         <strong>previously created an account</strong> on runners:pal, simply click on
-        SmallId to re-enter your password.
+        SmallAuth to re-enter your password.
         </p>
         <p>
-        For <strong>new users</strong>, use or create an account at the OpenID provider
-        SmallId. Once you've logged in you there, you
+        For <strong>new users</strong>, use or create an account at the OpenID Connect
+        provider SmallAuth. Once you've logged in you there, you
         will be returned to runners:pal and we will simply ask for your name.
         That's it.
         </p>

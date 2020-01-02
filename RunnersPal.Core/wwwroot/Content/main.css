@@ -400,14 +400,7 @@ input.loginHelp
     background: url(themes/base/images/ui-icons_cd0a0a_256x240.png) no-repeat;
     background-position: -48px -144px;
 }
-input.loginGoogle { background-image: url(google.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginTwitter { background-image: url(twitter.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginFacebook { background-image: url(facebook.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginYahoo { background-image: url(yahoo.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginAOL { background-image: url(aol.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginMyOpenId { background-image: url(myopenid.ico.png); background-repeat: no-repeat; background-position: left; }
 input.loginOpenId { background-image: url(openid.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginSymantec { background-image: url(symantec.ico.png); background-repeat: no-repeat; background-position: left; }
 
 .distanceMarker div { color: black !important; }
 span.toggleDistUnits { text-decoration: underline; cursor: pointer; }
@@ -818,12 +811,6 @@ input.loginHelp
     background: url(themes/base/images/ui-icons_cd0a0a_256x240.png) no-repeat;
     background-position: -48px -144px;
 }
-input.loginGoogle { background-image: url(google.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginTwitter { background-image: url(twitter.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginFacebook { background-image: url(facebook.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginYahoo { background-image: url(yahoo.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginAOL { background-image: url(aol.ico.png); background-repeat: no-repeat; background-position: left; }
-input.loginMyOpenId { background-image: url(myopenid.ico.png); background-repeat: no-repeat; background-position: left; }
 input.loginOpenId { background-image: url(openid.ico.png); background-repeat: no-repeat; background-position: left; }
 
 .distanceMarker div { color: black !important; }

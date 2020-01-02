@@ -10,10 +10,8 @@ function LoginAccountModel(logoutUrl) {
     this.logoutSection = null;
     this.loginError = false;
     this.returnPage = '';
-    this.openId = '';
     this.isLoggedIn = false;
     this.loginCreateAccountDialog = null;
-    this.loginUsingOpenId = null;
     this.logoutUrl = logoutUrl;
 };
 LoginAccountModel.prototype.initLoginDialog = function () {
@@ -24,16 +22,9 @@ LoginAccountModel.prototype.initLoginDialog = function () {
     this.loginSection.css('cursor', 'pointer');
     this.loginSection.click(function () { self.showLoginDialog(); });
 
-    var customOpenIdUrl = $("#loginForm input[name='loginWithOpenId']");
-    $("#loginForm input[name='loginWithOpenIdGo']").click(function () {
-        self.openId = customOpenIdUrl.val();
-        self.login();
-    });
     $('#loginForm').submit(function () {
-        if (self.openId == "") self.openId = customOpenIdUrl.val();
         if (self.returnPage == "") self.returnPage = window.location.pathname;
         var loginForm = $('#loginForm');
-        loginForm.find("input[name='openid_identifier']").val(self.openId);
         loginForm.find("input[name='return_page']").val(self.returnPage);
     });
 
@@ -42,7 +33,6 @@ LoginAccountModel.prototype.initLoginDialog = function () {
 };
 LoginAccountModel.prototype.login = function() {
     var loginForm = $('#loginForm');
-    loginForm.find("input[name='openid_identifier']").val(this.openId);
     loginForm.submit();
 };
 LoginAccountModel.prototype.initLogoutDialog = function () {
@@ -77,7 +67,6 @@ LoginAccountModel.prototype.showLoginDialog = function() {
 
     if (this.loginCreateAccountDialog == null) this.initElements();
 
-    this.loginUsingOpenId.hide();
     this.loginCreateAccountDialog.show();
     this.loginCreateAccountDialog.children().first().show();
 };
@@ -100,15 +89,9 @@ LoginAccountModel.prototype.initElements = function () {
     if (this._initdElements) return;
     this.loggedInSection = $('.loggedIn');
     this.loginCreateAccountDialog = $('#loginCreateAccount');
-    this.loginUsingOpenId = this.loginCreateAccountDialog.find("#loginCustomOpenId");
 
     var self = this;
-    this.loginCreateAccountDialog.find("input[name='loginOther']").click(function () {
-        self.loginUsingOpenId.show();
-        self.loginCreateAccountDialog.children().first().hide();
-    });
-    this.loginCreateAccountDialog.find("input[data-url]").click(function () {
-        self.openId = $(this).attr('data-url');
+    this.loginCreateAccountDialog.find("input.loginOpenId").click(function () {
         self.login();
     });
 
