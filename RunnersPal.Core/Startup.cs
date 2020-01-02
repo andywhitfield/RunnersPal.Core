@@ -105,6 +105,7 @@ namespace RunnersPal.Core
             app.UseStaticFiles();
             app.UseRouting();
 
+            app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseSession();
