@@ -39,7 +39,9 @@ namespace RunnersPal.Core
                     o.LoginPath = "/login";
                     o.LogoutPath = "/logout";
                     o.Cookie.HttpOnly = true;
+                    o.Cookie.MaxAge = TimeSpan.FromDays(150);
                     o.ExpireTimeSpan = TimeSpan.FromDays(150);
+                    o.SlidingExpiration = true;
                 })
                 .AddOpenIdConnect(options =>
                 {
