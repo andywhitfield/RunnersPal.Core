@@ -6,7 +6,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OpenId" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="3.1.*" />
     <PackageReference Include="sqlite" Version="3.13.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.112" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
