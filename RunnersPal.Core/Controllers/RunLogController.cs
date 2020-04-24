@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Extensions;
@@ -14,16 +14,15 @@ namespace RunnersPal.Core.Controllers
     public class RunLogController : Controller
     {
         private readonly IDataCache dataCache;
+        private readonly ILogger<RunLogController> logger;
 
-        public RunLogController(IDataCache dataCache)
+        public RunLogController(ILogger<RunLogController> logger, IDataCache dataCache)
         {
+            this.logger = logger;
             this.dataCache = dataCache;
         }
-        
-        public ActionResult Index()
-        {
-            return View(new RunLogViewModel(HttpContext, Enumerable.Empty<dynamic>(), dataCache));
-        }
+
+        public ActionResult Index() => View(new RunLogViewModel(HttpContext, Enumerable.Empty<dynamic>(), dataCache));
 
         public ActionResult AllEvents(string start, string end)
         {
@@ -45,7 +44,7 @@ namespace RunnersPal.Core.Controllers
             if (!HttpContext.HasValidUserAccount(dataCache))
                 return Json(new { Completed = false, Reason = "Please log in / create an account." });
 
-            Trace.TraceInformation("Loading run log id {0}", runLogId);
+            logger.LogInformation("Loading run log id {0}", runLogId);
             var runLogEvent = MassiveDB.Current.FindRunLogEvent(runLogId);
             if (runLogEvent == null)
                 return Json(new { Completed = false, Reason = "Cannot find this event - please refresh and try again." });
@@ -64,7 +63,7 @@ namespace RunnersPal.Core.Controllers
             if (!HttpContext.HasValidUserAccount(dataCache))
                 return Json(new { Completed = false, Reason = "Please log in / create an account." });
 
-            Trace.TraceInformation("Deleting run log id {0}", runLogId);
+            logger.LogInformation("Deleting run log id {0}", runLogId);
             var runLogEvent = MassiveDB.Current.FindRunLogEvent(runLogId);
             if (runLogEvent == null)
                 return Json(new { Completed = false, Reason = "Cannot find event - please refresh and try again." });
@@ -88,7 +87,7 @@ namespace RunnersPal.Core.Controllers
             if (!HttpContext.HasValidUserAccount())
                 return Json(new { Completed = false, Reason = "Please create an account." });
 
-            Trace.TraceInformation("Editing run event {0} for date {1}, route {2}, distance {3}, time {4}", newRunData.RunLogId, newRunData.Date, newRunData.Route, newRunData.Distance, newRunData.Time);
+            logger.LogInformation("Editing run event {0} for date {1}, route {2}, distance {3}, time {4}", newRunData.RunLogId, newRunData.Date, newRunData.Route, newRunData.Distance, newRunData.Time);
 
             var deleted = Delete(newRunData.RunLogId.Value) as JsonResult;
             var deletedJson = deleted.Value as dynamic;
@@ -112,7 +111,7 @@ namespace RunnersPal.Core.Controllers
             if (!HttpContext.HasValidUserAccount(dataCache))
                 return Tuple.Create(new JsonResult(new { Completed = false, Reason = "Please create an account." }), (object)null);
 
-            Trace.TraceInformation("Creating run event for date {0}, route {1}, distance {2}, time {3}", newRunData.Date, newRunData.Route, newRunData.Distance, newRunData.Time);
+            logger.LogInformation("Creating run event for date {0}, route {1}, distance {2}, time {3}", newRunData.Date, newRunData.Route, newRunData.Distance, newRunData.Time);
 
             var userUnits = HttpContext.UserDistanceUnits(dataCache);
             dynamic route = null;

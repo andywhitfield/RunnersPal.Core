@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.Extensions;
@@ -13,10 +13,12 @@ namespace RunnersPal.Core.Controllers
 {
     public class RoutePalController : Controller
     {
+        private readonly ILogger<RoutePalController> logger;
         private readonly IDataCache dataCache;
 
-        public RoutePalController(IDataCache dataCache)
+        public RoutePalController(ILogger<RoutePalController> logger, IDataCache dataCache)
         {
+            this.logger = logger;
             this.dataCache = dataCache;
         }
         
@@ -94,7 +96,7 @@ namespace RunnersPal.Core.Controllers
             var userUnits = HttpContext.UserDistanceUnits(dataCache);
             Distance distance = new Distance(routeData.Distance, userUnits);
 
-            Trace.TraceInformation("Saving route {0} name {1}, notes {2}, is public? {3}, points: {4}", routeData.Id, routeData.Name, routeData.Notes, routeData.Public, routeData.Points);
+            logger.LogInformation("Saving route {0} name {1}, notes {2}, is public? {3}, points: {4}", routeData.Id, routeData.Name, routeData.Notes, routeData.Public, routeData.Points);
 
             string lastRun;
             string lastRunBy;
@@ -210,7 +212,7 @@ namespace RunnersPal.Core.Controllers
             if (!ModelState.IsValid)
                 return Json(new { Completed = false, Reason = "Please provide a route name." });
 
-            Trace.TraceInformation("Saving route before login process - id {0}, name {1}, notes {2}, is public? {3}, points: {4}", routeData.Id, routeData.Name, routeData.Notes, routeData.Public, routeData.Points);
+            logger.LogInformation("Saving route before login process - id {0}, name {1}, notes {2}, is public? {3}, points: {4}", routeData.Id, routeData.Name, routeData.Notes, routeData.Public, routeData.Points);
             HttpContext.Session.Set("rp_RouteInfoPreLogin", routeData);
 
             return Json(new { Completed = true });

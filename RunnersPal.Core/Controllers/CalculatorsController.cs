@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RunnersPal.Core.Calculators;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Data.Caching;
@@ -17,10 +17,12 @@ namespace RunnersPal.Core.Controllers
         private DistanceCalculator distanceCalc = new DistanceCalculator();
         private WeightCalculator weightCalc = new WeightCalculator();
         private CaloriesCalculator caloriesCalc = new CaloriesCalculator();
+        private readonly ILogger<CalculatorsController> logger;
         private readonly IDataCache dataCache;
 
-        public CalculatorsController(IDataCache dataCache)
+        public CalculatorsController(ILogger<CalculatorsController> logger, IDataCache dataCache)
         {
+            this.logger = logger;
             this.dataCache = dataCache;
         }
         
@@ -35,7 +37,7 @@ namespace RunnersPal.Core.Controllers
             if (!ModelState.IsValid)
                 return Json(paceCalculation);
 
-            Trace.TraceInformation("Calculating pace (route/dist/time/pace/calc): {0}/{1}/{2}/{3}/{4}", paceCalculation.Route, paceCalculation.Distance, paceCalculation.Time, paceCalculation.Pace, paceCalculation.Calc);
+            logger.LogInformation("Calculating pace (route/dist/time/pace/calc): {0}/{1}/{2}/{3}/{4}", paceCalculation.Route, paceCalculation.Distance, paceCalculation.Time, paceCalculation.Pace, paceCalculation.Calc);
             if (paceCalculation.HasRoute)
             {
                 var userUnits = paceCalculation.Distance.BaseUnits;
@@ -45,7 +47,7 @@ namespace RunnersPal.Core.Controllers
             }
 
             paceCalc.Calculate(paceCalculation);
-            Trace.TraceInformation("Calculated pace (route/dist/time/pace/calc): {0}/{1}/{2}/{3}/{4}", paceCalculation.Route, paceCalculation.Distance, paceCalculation.Time, paceCalculation.Pace, paceCalculation.Calc);
+            logger.LogInformation("Calculated pace (route/dist/time/pace/calc): {0}/{1}/{2}/{3}/{4}", paceCalculation.Route, paceCalculation.Distance, paceCalculation.Time, paceCalculation.Pace, paceCalculation.Calc);
 
             return Json(paceCalculation);
         }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
@@ -7,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Extensions;
 using RunnersPal.Core.Models;
@@ -15,7 +15,12 @@ namespace RunnersPal.Core.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly ILogger<HomeController> logger;
+
+        public HomeController(ILogger<HomeController> logger) => this.logger = logger;
+
         public ActionResult Index() => View();
+
         public ActionResult Error() => View("Error");
 
         [HttpPost]
@@ -66,7 +71,7 @@ namespace RunnersPal.Core.Controllers
         [HttpPost]
         public ActionResult UpdateDistanceUnits(int distanceUnit)
         {
-            Trace.WriteLine("Updating units for user to " + distanceUnit);
+            logger.LogInformation("Updating units for user to " + distanceUnit);
             if (!Enum.IsDefined(typeof(DistanceUnits), distanceUnit))
                 return Json(new { Completed = false, Reason = "Invalid distance unit." });
 

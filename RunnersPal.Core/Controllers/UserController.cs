@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RunnersPal.Core.Calculators;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Data.Caching;
@@ -16,10 +16,12 @@ namespace RunnersPal.Core.Controllers
 {
     public class UserController : Controller
     {
+        private readonly ILogger<UserController> logger;
         private readonly IDataCache dataCache;
 
-        public UserController(IDataCache dataCache)
+        public UserController(ILogger<UserController> logger, IDataCache dataCache)
         {
+            this.logger = logger;
             this.dataCache = dataCache;
         }
         
@@ -86,10 +88,10 @@ namespace RunnersPal.Core.Controllers
         {
             return ShowStats(new MyStatsModel { Period = MyStatsModel.StatsPeriod.Week }, (u, m) =>
             {
-                Trace.TraceInformation("Getting run log events by week");
+                logger.LogInformation("Getting run log events by week");
                 IEnumerable<dynamic> runEvents = MassiveDB.Current.FindRunLogEvents(u, false);
                 runEvents = runEvents.ToList();
-                Trace.TraceInformation("Loaded {0} run log events", runEvents.Count());
+                logger.LogInformation("Loaded {0} run log events", runEvents.Count());
                 if (!runEvents.Any()) return;
 
                 var datesAndDistances = runEvents.Select(e => new { Date = ((object)e.Date).ToDateTime(), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
@@ -117,10 +119,10 @@ namespace RunnersPal.Core.Controllers
         {
             return ShowStats(new MyStatsModel { Period = MyStatsModel.StatsPeriod.Month }, (u, m) =>
             {
-                Trace.TraceInformation("Getting run log events by month");
+                logger.LogInformation("Getting run log events by month");
                 IEnumerable<dynamic> runEvents = MassiveDB.Current.FindRunLogEvents(u, false);
                 runEvents = runEvents.ToList();
-                Trace.TraceInformation("Loaded {0} run log events", runEvents.Count());
+                logger.LogInformation("Loaded {0} run log events", runEvents.Count());
                 if (!runEvents.Any()) return;
 
                 var datesAndDistances = runEvents.Select(e => new { Date = ((object)e.Date).ToDateTime(), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
@@ -148,10 +150,10 @@ namespace RunnersPal.Core.Controllers
         {
             return ShowStats(new MyStatsModel { Period = MyStatsModel.StatsPeriod.Year }, (u, m) =>
             {
-                Trace.TraceInformation("Getting run log events by year");
+                logger.LogInformation("Getting run log events by year");
                 IEnumerable<dynamic> runEvents = MassiveDB.Current.FindRunLogEvents(u, false);
                 runEvents = runEvents.ToList();
-                Trace.TraceInformation("Loaded {0} run log events", runEvents.Count());
+                logger.LogInformation("Loaded {0} run log events", runEvents.Count());
                 if (!runEvents.Any()) return;
 
                 var datesAndDistances = runEvents.Select(e => new { Date = ((object)e.Date).ToDateTime(), DistanceAndPace = (Tuple<Distance, PaceData, string>)DistanceAndPaceOfLogEvent(e) });
@@ -197,7 +199,7 @@ namespace RunnersPal.Core.Controllers
             if (!HttpContext.HasValidUserAccount(dataCache)) return View("NotLoggedIn");
             loadEventsCallback(HttpContext.UserAccount(dataCache), model);
 
-            Trace.TraceInformation("Completed stats, returning view");
+            logger.LogInformation("Completed stats, returning view");
 
             if (!model.DistanceStats.Any() || !model.PaceStats.Any()) return View("NoLoggedEvents");
             return View("Index", model);
