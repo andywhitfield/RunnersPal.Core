@@ -13,7 +13,7 @@ namespace RunnersPal.Core.Data
             try
             {
                 var secureSettings = MassiveDB.Current.FindSettings("Secure");
-                algorithm = new RijndaelManaged();
+                algorithm = Aes.Create();
 
                 if (secureSettings.Count() != 2)
                 {
