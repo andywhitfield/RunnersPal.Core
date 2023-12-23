@@ -11,7 +11,6 @@ function LoginAccountModel(logoutUrl) {
     this.loginError = false;
     this.returnPage = '';
     this.isLoggedIn = false;
-    this.loginCreateAccountDialog = null;
     this.logoutUrl = logoutUrl;
 };
 LoginAccountModel.prototype.initLoginDialog = function () {
@@ -25,7 +24,7 @@ LoginAccountModel.prototype.initLoginDialog = function () {
     $('#loginForm').submit(function () {
         if (self.returnPage == "") self.returnPage = window.location.pathname;
         var loginForm = $('#loginForm');
-        loginForm.find("input[name='return_page']").val(self.returnPage);
+        loginForm.find("input[name='returnurl']").val(self.returnPage);
     });
 
     if (this.isLoggedIn) this.loginSection.hide();
@@ -62,19 +61,9 @@ LoginAccountModel.prototype.logout = function() {
 };
 LoginAccountModel.prototype.showLoginDialog = function() {
     $(window).scrollTop(0);
-    var loginLogoutSection = $('.loginLogout');
-    loginLogoutSection.hide();
-
-    if (this.loginCreateAccountDialog == null) this.initElements();
-
-    this.loginCreateAccountDialog.show();
-    this.loginCreateAccountDialog.children().first().show();
 };
 LoginAccountModel.prototype.hideLoginDialog = function() {
-    if (this.loginCreateAccountDialog == null) this.initElements();
-    this.loginCreateAccountDialog.hide();
-    var loginLogoutSection = $('.loginLogout');
-    loginLogoutSection.show();
+    $(window).scrollTop(0);
 };
 LoginAccountModel.prototype.showLogoutDialog = function() {
     $(window).scrollTop(0);
@@ -88,27 +77,11 @@ LoginAccountModel.prototype.hideLogoutDialog = function() {
 LoginAccountModel.prototype.initElements = function () {
     if (this._initdElements) return;
     this.loggedInSection = $('.loggedIn');
-    this.loginCreateAccountDialog = $('#loginCreateAccount');
 
     var self = this;
-    this.loginCreateAccountDialog.find("input.loginOpenId").click(function () {
-        self.login();
-    });
-
     $('.loginCancel').click(function () {
         self.hideLoginDialog();
         self.hideLogoutDialog();
-    });
-
-    var loginHelpDlg = $("#loginHelpDialog").dialog({
-        height: 350,
-        width: 320,
-        modal: true,
-        buttons: { OK: function () { $(this).dialog("close"); } },
-        autoOpen: false
-    });
-    $('.loginHelp').click(function () {
-        loginHelpDlg.dialog('open');
     });
 
     var loginErrorDialog = $('#loginErrorDialog').dialog({

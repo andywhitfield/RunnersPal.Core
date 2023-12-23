@@ -2,33 +2,32 @@
 using System.ComponentModel.DataAnnotations;
 using RunnersPal.Core.Calculators;
 
-namespace RunnersPal.Core.ViewModels
+namespace RunnersPal.Core.ViewModels;
+
+public class NewRunData
 {
-    public class NewRunData
+    public long? RunLogId { get; set; }
+
+    [Required]
+    public DateTime? Date { get; set; }
+
+    public long? Route { get; set; }
+    public double? Distance { get; set; }
+
+    [Required]
+    public required string Time { get; set; }
+
+    public string NormalizedTime
     {
-        public long? RunLogId { get; set; }
-
-        [Required]
-        public DateTime? Date { get; set; }
-
-        public long? Route { get; set; }
-        public double? Distance { get; set; }
-
-        [Required]
-        public string Time { get; set; }
-
-        public string NormalizedTime
+        get
         {
-            get
-            {
-                var calcData = new PaceData { Time = Time, Calc = "normalizetime" };
-                new PaceCalculator().Calculate(calcData);
-                return calcData.Time;
-            }
+            var calcData = new PaceData { Time = Time, Calc = "normalizetime" };
+            new PaceCalculator().Calculate(calcData);
+            return calcData.Time;
         }
-
-        public string Comment { get; set; }
-
-        public RouteData NewRoute { get; set; }
     }
+
+    public string? Comment { get; set; }
+
+    public RouteData? NewRoute { get; set; }
 }

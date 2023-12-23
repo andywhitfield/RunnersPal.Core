@@ -1,15 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using RunnersPal.Core.Controllers;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Data.Caching;
 using RunnersPal.Core.ViewModels.Binders;
@@ -31,31 +29,22 @@ public class Startup(IConfiguration configuration)
                 o.LogoutPath = "/logout";
                 o.Cookie.HttpOnly = true;
                 o.Cookie.MaxAge = TimeSpan.FromDays(150);
+                o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                o.Cookie.IsEssential = true;
                 o.ExpireTimeSpan = TimeSpan.FromDays(150);
                 o.SlidingExpiration = true;
-            })
-            .AddOpenIdConnect(options =>
-            {
-                options.ClientId = "runnerspal";
-                options.ClientSecret = "4b301164-0c33-454c-969d-050907f11d55";
-
-                options.RequireHttpsMetadata = false;
-                options.GetClaimsFromUserInfoEndpoint = true;
-                options.SaveTokens = true;
-                options.ResponseType = OpenIdConnectResponseType.Code;
-                options.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
-                options.Authority = "https://smallauth.nosuchblogger.com/";
-                options.Scope.Add("roles");
-                options.TokenHandler = new JwtSecurityTokenHandler { InboundClaimTypeMap = new Dictionary<string, string>() };
-                options.UseSecurityTokenValidator = true;
-                options.TokenValidationParameters.NameClaimType = "name";
-                options.TokenValidationParameters.RoleClaimType = "role";
-                options.AccessDeniedPath = "/";
             });
 
         services.AddRazorPages();
         services.AddDistributedMemoryCache();
-        services.AddSession();
+        services
+            .AddSession()
+            .AddFido2(options =>
+            {
+                options.ServerName = "runners:pal";
+                options.ServerDomain = configuration.GetValue<string>("FidoDomain");
+                options.Origins = [configuration.GetValue<string>("FidoOrigins")];
+            });
         services
             .AddMvc(options =>
             {
@@ -68,9 +57,12 @@ public class Startup(IConfiguration configuration)
         {
             logging.AddConsole();
             logging.AddDebug();
+            logging.SetMinimumLevel(LogLevel.Trace);
         });
 
-        services.AddTransient<IDataCache, SimpleDataCache>();
+        services
+            .AddTransient<IDataCache, SimpleDataCache>()
+            .AddTransient<IAuthorisationHandler, AuthorisationHandler>();
 
         MassiveDB.Configure(configuration);
     }

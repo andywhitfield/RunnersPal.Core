@@ -65,24 +65,16 @@
           <h1><a href="@Url.Content("~/")">runners<span class="logo_colour">:pal</span></a></h1>
         </div>
         <form action="@Url.Action("login", "home")" method="post" id="loginForm">
-        <input type="hidden" name="return_page" value="" />
+        <input type="hidden" name="returnurl" value="" />
         <h2>
             <span class="loginLogout">
-                <a class="login" href="#">Login</a>
+                <a class="login" href="~/login">Login</a>
                 <span class="loggedIn">
                     <a class="loggedInUser" href="@Url.Action("profile", "user")" title="Edit your profile">@if (Context.HasValidUserAccount()) {<text>@Context.UserAccount().DisplayName</text>}</a>
                     <a class="logout" href="#">Logout</a>
                 </span>
             </span>
 
-            <span id="loginCreateAccount">
-                <span id="loginOptions">
-                Login using
-                <input type="button" class="loginLogoutSelection loginOpenId" name="loginWithSmallAuth" value="    SmallAuth" title="Login via SmallAuth" />
-                <input type="button" value="" title="Help" class="loginHelp" />
-                <input type="button" value="" title="Cancel" class="loginCancel cancel" />
-                </span>
-            </span>
             <span id="logoutAccount" class="loginLogoutSection">
                 <input type="button" class="loginLogoutSelection" id="confirmLogout" value="Yes, log me out" title="Click to confirm logout" />
                 <input type="button" value="" title="Cancel" class="loginCancel cancel" />
@@ -118,25 +110,10 @@
     </footer>
 
     @if (!Context.HasValidUserAccount()) {
-    <div id="loginHelpDialog" title="Login Help">
-        <p>
-        It only takes a few moments to login or create an account. If you've
-        <strong>previously created an account</strong> on runners:pal, simply click on
-        SmallAuth to re-enter your password.
-        </p>
-        <p>
-        For <strong>new users</strong>, use or create an account at the OpenID Connect
-        provider SmallAuth. Once you've logged in you there, you
-        will be returned to runners:pal and we will simply ask for your name.
-        That's it.
-        </p>
-    </div>
-
     <div id="loginErrorDialog" title="Login Error">
         <p><strong>Sorry!</strong></p>
         <p>
-        There was an error logging in using your chosen login site. This may be a temporary problem
-        so please try again.
+        There was an error logging in. This may be a temporary problem so please try again.
         </p>
         <p><strong>More Details</strong></p>
         <p>

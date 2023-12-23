@@ -32,10 +32,12 @@ namespace RunnersPal.Core.Data
             }
         }
 
-        public dynamic FindUser(string authId)
-        {
-            return new UserAccount().Query("select ua.* from UserAccount ua join UserAccountAuthentication uaa on ua.Id = uaa.UserAccountId where uaa.Identifier = @0", authId).SingleOrDefault();
-        }
+        public dynamic? FindUserByEmailAddress(string email)
+            => new UserAccount().Query("select * from UserAccount where EmailAddress = @0", email).SingleOrDefault();
+
+        public IEnumerable<dynamic> GetUserAccountAuthentications(long userAccountId)
+            => new UserAccountAuthentication().Query("select * from UserAccountAuthentication where UserAccountId = @0", userAccountId);
+
         public dynamic FindUser(long userId, IDataCache dataCache)
         {
             Func<dynamic> findUserFunc = () => new UserAccount().Single(userId);
@@ -47,12 +49,18 @@ namespace RunnersPal.Core.Data
             new UserAccount().Update(userAccount, userAccount.Id);
         }
 
-        public dynamic CreateUser(string authId, string originalHost, DistanceUnits currentDistanceUnits)
+        public dynamic CreateUser(string emailAddress, string? originalHost, DistanceUnits currentDistanceUnits, byte[] credentialId, byte[] publicKey, byte[] userHandle)
         {
-            var userAccount = new UserAccount().Insert(new { DisplayName = "", CreatedDate = DateTime.UtcNow, LastActivityDate = DateTime.UtcNow, OriginalHostAddress = originalHost, UserType = "N", DistanceUnits = currentDistanceUnits });
-            new UserAccountAuthentication().Insert(new { UserAccountId = userAccount.Id, Identifier = authId });
+            var userAccount = new UserAccount().Insert(new { DisplayName = "", CreatedDate = DateTime.UtcNow, LastActivityDate = DateTime.UtcNow, EmailAddress = emailAddress, OriginalHostAddress = originalHost, UserType = "N", DistanceUnits = currentDistanceUnits });
+            new UserAccountAuthentication().Insert(new { UserAccountId = userAccount.Id, CredentialId = credentialId, PublicKey = publicKey, UserHandle = userHandle, SignatureCount = 0 });
             return userAccount;
         }
+
+        public dynamic? FindUserAccountAuthenticationByUserHandle(byte[] userHandle)
+            => new UserAccountAuthentication().Query("select * from UserAccountAuthentication where UserHandle = @0", userHandle).SingleOrDefault();
+
+        public void UpdateUserAuthentication(dynamic userAccountAuthentication)
+            => new UserAccountAuthentication().Update(userAccountAuthentication, userAccountAuthentication.Id);
 
         public dynamic CreatePref(dynamic userAccount, double? weight, string weightUnits)
         {

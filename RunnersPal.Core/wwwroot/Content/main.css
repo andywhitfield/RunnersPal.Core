@@ -393,14 +393,6 @@ input.cancel
     background: url(themes/base/images/ui-icons_cd0a0a_256x240.png) no-repeat;
     background-position: -32px -192px;
 }
-input.loginHelp 
-{
-    width: 14px; height: 14px;
-    margin: 0; padding: 0; border: 0;
-    background: url(themes/base/images/ui-icons_cd0a0a_256x240.png) no-repeat;
-    background-position: -48px -144px;
-}
-input.loginOpenId { background-image: url(openid.ico.png); background-repeat: no-repeat; background-position: left; }
 
 .distanceMarker div { color: black !important; }
 span.toggleDistUnits { text-decoration: underline; cursor: pointer; }
@@ -804,14 +796,6 @@ input.cancel
     background: url(themes/base/images/ui-icons_cd0a0a_256x240.png) no-repeat;
     background-position: -32px -192px;
 }
-input.loginHelp 
-{
-    width: 14px; height: 14px;
-    margin: 0; padding: 0; border: 0;
-    background: url(themes/base/images/ui-icons_cd0a0a_256x240.png) no-repeat;
-    background-position: -48px -144px;
-}
-input.loginOpenId { background-image: url(openid.ico.png); background-repeat: no-repeat; background-position: left; }
 
 .distanceMarker div { color: black !important; }
 span.toggleDistUnits { text-decoration: underline; cursor: pointer; }

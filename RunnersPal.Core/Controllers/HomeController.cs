@@ -1,67 +1,73 @@
 ﻿using System;
-using System.Linq;
-using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RunnersPal.Core.Data;
 using RunnersPal.Core.Extensions;
 using RunnersPal.Core.Models;
+using RunnersPal.Core.ViewModels;
 
 namespace RunnersPal.Core.Controllers;
 
-public class HomeController(ILogger<HomeController> logger) : Controller
+public class HomeController(ILogger<HomeController> logger, IAuthorisationHandler authorisationHandler) : Controller
 {
     public ActionResult Index() => View();
 
     public ActionResult Error() => View("Error");
 
-    [HttpPost]
-    public IActionResult Login()
-    {
-        var returnPage = Request.Form["return_page"].FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(returnPage)) returnPage = Url.Content("~/");
-        Uri returnPageUri;
-        Uri.TryCreate(returnPage, UriKind.RelativeOrAbsolute, out returnPageUri);
-        if (returnPageUri == null || returnPageUri.IsAbsoluteUri)
-            returnPage = Url.Content("~/");
-        HttpContext.Session.SetString("login_returnPage", returnPage);
+    [HttpGet("~/login")]
+    public IActionResult Login([FromQuery] string? returnUrl) => View("Login", new LoginViewModel(returnUrl));
 
-        return Challenge(new AuthenticationProperties { RedirectUri = Url.Action(nameof(LoggingIn)) }, OpenIdConnectDefaults.AuthenticationScheme);
+    [HttpPost("~/login")]
+    [ValidateAntiForgeryToken]
+    public IActionResult Login([FromForm] string? returnUrl, [FromForm, Required] string email, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+            return View("Login", new LoginViewModel(returnUrl));
+
+        var (isReturningUser, verifyOptions) = authorisationHandler.HandleSigninRequest(email, cancellationToken);
+        return View("LoginVerify", new LoginVerifyViewModel(returnUrl, email, isReturningUser, verifyOptions));
     }
 
-    [HttpGet]
-    public IActionResult LoggingIn()
+    [HttpPost("~/login/verify")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LoginVerify(
+        [FromForm] string? returnUrl,
+        [FromForm, Required] string email,
+        [FromForm, Required] string verifyOptions,
+        [FromForm, Required] string verifyResponse,
+        CancellationToken cancellationToken)
     {
-        var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
-        var authId = User?.FindFirstValue("name");
-        if (!isAuthenticated || string.IsNullOrWhiteSpace(authId))
-            return Redirect("/");
+        if (!ModelState.IsValid)
+            return Redirect("~/login");
 
-        var userAccount = MassiveDB.Current.FindUser(authId);
-        if (userAccount == null)
-            userAccount = MassiveDB.Current.CreateUser(authId, HttpContext.Connection.RemoteIpAddress.ToString(), HttpContext.UserDistanceUnits());
+        var (isValid, userType) = await authorisationHandler.HandleSigninVerifyRequest(HttpContext, email, verifyOptions, verifyResponse, cancellationToken);
+        if (isValid)
+        {
+            if (userType == "N")
+                return RedirectToAction("FirstTime", "User");
 
-        HttpContext.Session.Set<long?>("rp_UserAccount", (long?)userAccount.Id);
-        HttpContext.Response.Cookies.Append("rp_UserAccount", Secure.EncryptValue(userAccount.Id.ToString()), new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+            var redirectUri = "~/";
+            if (!string.IsNullOrEmpty(returnUrl) && Uri.TryCreate(returnUrl, UriKind.Relative, out var uri))
+                redirectUri = uri.ToString();
 
-        if (userAccount.UserType == "N")
-            return RedirectToAction("FirstTime", "User");
-
-        var returnPage = HttpContext.Session.GetString("login_returnPage");
-        if (string.IsNullOrWhiteSpace(returnPage))
-            return RedirectToAction("Index", "Home");
-        return Redirect(returnPage);
+            return Redirect(redirectUri);
+        }
+        
+        return Redirect("~/login");
     }
 
     [HttpGet, HttpPost]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
         HttpContext.Session.Clear();
-        return SignOut(CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return Redirect("~/");
     }
 
     [HttpPost]
