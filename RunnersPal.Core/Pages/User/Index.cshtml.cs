@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RunnersPal.Core.Pages;
+namespace RunnersPal.Core.Pages.User;
 
 public class IndexModel : PageModel
 {

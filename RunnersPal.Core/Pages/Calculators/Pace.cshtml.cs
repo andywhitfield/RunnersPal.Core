@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RunnersPal.Core.Pages;
+namespace RunnersPal.Core.Pages.Calculators;
 
-public class IndexModel : PageModel
+public class PaceModel : PageModel
 {
     public Task OnGet() => Task.CompletedTask;
 }
