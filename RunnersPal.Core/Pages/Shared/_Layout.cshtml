@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" sizes="16x16" href="/images/runnerspal.png">
+    <link rel="apple-touch-icon" href="/images/runnerspal.png" sizes="32x32" />
+    <title>Runners:Pal</title>
+    <environment names="Development">
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    </environment>
+    <environment names="Staging,Production">
+    <link rel="stylesheet" href="/css/site.min.css" asp-append-version="true" />
+    </environment>
+</head>
+<body>
+    <header>
+        <nav class="navbar-header">
+            <a href="/">
+                <span>
+                    Runners:Pal
+                </span>
+            </a>
+        </nav>
+        <nav class="navbar-main">
+            <div class="navbar-nav">
+                <a href="/profile">Profile</a> |
+                <a href="/signout">Logout</a>
+            </div>
+            <div>
+                <img class="nav-show" src="/images/add.png" height="24" width="24" />
+                <img class="nav-close" src="/images/close.png" height="24" width="24" />
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        &#169; @DateTime.Today.Year Runners:Pal
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <environment names="Development">
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment names="Staging,Production">
+    <script src="~/js/site.min.js" asp-append-version="true"></script>
+    </environment>
+    <script type="text/javascript">
+        $(function() { rpInitialise() })
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

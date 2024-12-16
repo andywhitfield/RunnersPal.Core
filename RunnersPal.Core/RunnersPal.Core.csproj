@@ -1,17 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <NoWarn>CA2254</NoWarn>
-  </PropertyGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier" Version="*" />
     <PackageReference Include="Fido2.AspNet" Version="3.0.*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.*" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.*" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.*" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.*">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.*"/>
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.*" />
   </ItemGroup>
 </Project>
