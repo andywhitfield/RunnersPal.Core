@@ -9,4 +9,42 @@
     <p>
     Route mapping
     </p>
+    <div id="map"></div>
 </article>
+
+@section Head {
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+}
+@section Scripts {
+<script type="text/javascript">
+	const map = L.map('map').setView([51.505, -0.09], 10);
+	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+	L.marker([51.6, 0.09], {
+        alt: 'Start of route',
+        title: 'Start of route',
+        icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
+    }).addTo(map);
+
+    var endOfRouteMarker = null;
+    var lastPoint = [51.6, 0.09];
+	function onMapClick(e) {
+        L.polyline([lastPoint, e.latlng], {color: '#d866eb'}).addTo(map);
+        lastPoint = e.latlng;
+
+        if (endOfRouteMarker === null) {
+            endOfRouteMarker = L.marker(lastPoint, {
+                alt: 'End of route',
+                title: 'End of route',
+                icon: L.icon({ iconUrl: '/images/pin-end.png', iconAnchor: [11, 36] })
+            }).addTo(map);
+        } else {
+            endOfRouteMarker.setLatLng(lastPoint);
+        }
+	}
+	map.on('click', onMapClick);
+</script>
+}
