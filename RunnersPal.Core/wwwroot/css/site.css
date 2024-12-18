@@ -160,6 +160,25 @@ footer {
     color: black;
 }
 
+.leaflet-popup-close-button {
+    display: none;
+}
+
+.leaflet-label-overlay {
+    line-height: 0px;
+    margin-top: 9px;
+    position: absolute;
+}
+
+.rp-distance-marker {
+    font-size: 9pt;
+    color: black;
+    background-color: white;
+    border: 1px solid white;
+    border-radius: 12px;
+    padding: 2px;
+}
+
 @media (max-width: 800px) {
     header {
         -webkit-flex-direction: column;
