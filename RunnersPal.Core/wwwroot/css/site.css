@@ -205,6 +205,30 @@ footer {
     white-space: wrap;
 }
 
+form[name="rp-runlog"] label {
+    width: 105px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+form[name="rp-runlog"] input[type="text"] {
+    width: 110px;
+    margin-bottom: 4px;
+}
+
+form[name="rp-runlog"] textarea {
+    width: 300px;
+    height: 60px;
+}
+
+#rp-distance {
+    display: inline-block;
+}
+
+.the-datepicker__rp-runlog-datepicker-title {
+    color: black;
+}
+
 @media (max-width: 800px) {
     header {
         -webkit-flex-direction: column;
@@ -248,5 +272,5 @@ footer {
         --fc-event-text-color: black;
         --fc-event-bg-color: white;
         --fc-event-border-color: black;
-    }    
+    }
 }

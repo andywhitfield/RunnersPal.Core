@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace RunnersPal.Core.Pages;
+namespace RunnersPal.Core.Pages.RunLog;
 
-public class RunLogModel : PageModel
+public class IndexModel : PageModel
 {
     public Task OnGet() => Task.CompletedTask;
 }

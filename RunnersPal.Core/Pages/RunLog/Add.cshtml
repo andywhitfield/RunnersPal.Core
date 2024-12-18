@@ -1,0 +1,95 @@
+﻿@page
+@model RunLog.AddModel
+
+<aside>
+    <vc:user-nav />
+</aside>
+
+<article>
+    <form name="rp-runlog" method="post" action="/runlog/add">
+    @Html.AntiForgeryToken()
+    <fieldset>
+    <legend>Log a new run</legend>
+    <div>
+        <label for="rp-runlog-date">Date:</label>
+        <input type="text" id="rp-runlog-date" name="date" class="rp-runlog-date" value="@Model.Date" />
+    </div>
+    <div>
+        <label>Distance:</label>
+        <div id="rp-distance">
+            <ul>
+                <li><a href="#tab-1">Common routes</a></li>
+                <li><a href="#tab-2">My routes</a></li>
+                <li><a href="#tab-3">Find a route</a></li>
+                <li><a href="#tab-4">Map a new route</a></li>
+                <li><a href="#tab-5">Enter a distance</a></li>
+            </ul>
+
+            <div id="tab-1">
+                <ul>
+                    <li>5K</li>
+                    <li>10K</li>
+                    <li>HM</li>
+                    <li>Marathon</li>
+                </ul>
+            </div>
+            <div id="tab-2">
+                <ul>
+                    <li>My route 1</li>
+                    <li>My route 2</li>
+                </ul>
+            </div>
+            <div id="tab-3">
+                Find box:
+            </div>
+            <div id="tab-4">
+                Map control
+            </div>
+            <div id="tab-5">
+                Distance box:
+            </div>
+        </div>
+    </div>
+    <div>
+        <label for="rp-runlog-timetaken">Time taken:</label>
+        <input type="text" id="rp-runlog-timetaken" name="timetaken" class="rp-runlog-timetaken" />
+        <small>(hh:)mm:ss</small>
+    </div>
+    <div>
+        <label for="rp-runlog-comment">Comment:<br/><small>(optional)</small></label>
+        <textarea id="rp-runlog-comment" name="comment" class="rp-runlog-comment" wrap="off"></textarea>
+    </div>
+    <div>
+        <label></label>
+        <button type="submit" data-depends="input.rp-runlog-title">Add</button>
+        <button type="submit" name="cancel" value="cancel">Cancel</button>
+    </div>
+    </fieldset>
+    </form>
+</article>
+@section Head {
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/thedatepicker@2.4.0/dist/the-datepicker.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/responsive-tabs@1.6.3/css/responsive-tabs.min.css">
+<environment names="Development">
+<link rel="stylesheet" href="/css/responsive-tabs.css" asp-append-version="true" />
+</environment>
+<environment names="Staging,Production">
+<link rel="stylesheet" href="/css/responsive-tabs.min.css" asp-append-version="true" />
+</environment>
+}
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/responsive-tabs@1.6.3/js/jquery.responsiveTabs.min.js" integrity="sha256-cTeYby7c1UOyfhJPAcRhH6n8U0N5FoOB4g4atuw5+/Q=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/thedatepicker@2.4.0/dist/the-datepicker.min.js" integrity="sha256-c5E6Y8HrRw6sNkkT4EWZ+lbI7G7XVNS+kVcG2VAAgqA=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+$('#rp-distance').responsiveTabs({
+    startCollapsed: 'accordion'
+});
+
+const runlogDatepicker = new TheDatepicker.Datepicker(document.getElementById('rp-runlog-date'));
+runlogDatepicker.options.setTitle('Run date');
+runlogDatepicker.options.classNames.setClassName(TheDatepicker.ClassNameType.HeaderTitleContent, "rp-runlog-datepicker-title");
+runlogDatepicker.options.setInputFormat('Y-m-d');
+runlogDatepicker.options.setAllowEmpty(false);
+runlogDatepicker.render();
+</script>
+}

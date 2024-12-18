@@ -1,5 +1,5 @@
 ﻿@page
-@model RunLogModel
+@model RunLog.IndexModel
 
 <aside>
     <vc:user-nav />
@@ -28,7 +28,7 @@ $(function() {
         initialView: 'dayGridMonth',
         headerToolbar: false,
         dateClick: function(info) {
-            alert('Clicked on: ' + info.dateStr);
+            window.location = '/runlog/add?date=' + info.dateStr;
         },
         eventClick: function(info) {
             alert('Clicked on: ' + info.event.id);

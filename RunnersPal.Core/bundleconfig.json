@@ -6,6 +6,12 @@
         ]
     },
     {
+        "outputFileName": "wwwroot/css/responsive-tabs.min.css",
+        "inputFiles": [
+            "wwwroot/css/responsive-tabs.css"
+        ]
+    },
+    {
         "outputFileName": "wwwroot/js/site.min.js",
         "inputFiles": [
             "wwwroot/js/site.js"
