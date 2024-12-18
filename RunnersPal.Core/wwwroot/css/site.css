@@ -195,6 +195,16 @@ footer {
     min-height: 300px;
 }
 
+:root {
+    --fc-event-text-color: white;
+    --fc-event-bg-color: black;
+    --fc-event-border-color: white;
+}
+
+.rp-event-title {
+    white-space: wrap;
+}
+
 @media (max-width: 800px) {
     header {
         -webkit-flex-direction: column;
@@ -233,4 +243,10 @@ footer {
     footer {
         color: white;
     }
+
+    :root {
+        --fc-event-text-color: black;
+        --fc-event-bg-color: white;
+        --fc-event-border-color: black;
+    }    
 }

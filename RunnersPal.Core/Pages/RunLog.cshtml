@@ -29,6 +29,12 @@ $(function() {
         headerToolbar: false,
         dateClick: function(info) {
             alert('Clicked on: ' + info.dateStr);
+        },
+        eventClick: function(info) {
+            alert('Clicked on: ' + info.event.id);
+        },
+        eventContent: function(event) {
+            return { html: '<span class="rp-event-title">' + event.event.title + '</span>' };
         }
     });
     calendar.render();
@@ -42,6 +48,8 @@ $(function() {
     $('#cal-prev-month').click(function() { calendar.prev(); onDateChange(); });
     $('#cal-next-year').click(function() { calendar.nextYear(); onDateChange(); });
     $('#cal-next-month').click(function() { calendar.next(); onDateChange(); });
+
+    calendar.addEvent({ id: 1, title: '3.11 miles in 00:28:37<br/>9:12 min/mile', start: '2024-12-18', allDay: true });
 });
 </script>
 }
