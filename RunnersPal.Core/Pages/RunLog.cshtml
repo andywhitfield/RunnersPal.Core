@@ -9,4 +9,39 @@
     <p>
     Run Log
     </p>
+    <div class="cal-date-controls">
+    <button id="cal-prev-year" title="Previous year">&nbsp;&laquo;&nbsp;</button>
+    <button id="cal-prev-month" title="Previous month">&nbsp;&nbsp;&lsaquo;&nbsp;&nbsp;</button>
+    <button id="cal-today" title="Go to the current month">Today</button>
+    <button id="cal-next-month" title="Next month">&nbsp;&nbsp;&rsaquo;&nbsp;&nbsp;</button>
+    <button id="cal-next-year" title="Next year">&nbsp;&raquo;&nbsp;</button>
+    </div>
+    <div id="cal-date"></div>
+    <div id="calendar"></div>
 </article>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js" integrity="sha256-ZztCtsADLKbUFK/X6nOYnJr0eelmV2X3dhLDB/JK6fM=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+$(function() {
+    var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+        initialView: 'dayGridMonth',
+        headerToolbar: false,
+        dateClick: function(info) {
+            alert('Clicked on: ' + info.dateStr);
+        }
+    });
+    calendar.render();
+    function onDateChange() {
+        $('#cal-date').text(calendar.getDate().toLocaleDateString(undefined, { year: 'numeric', month: 'long' }));
+    }
+
+    onDateChange();    
+    $('#cal-today').click(function() { calendar.today(); onDateChange(); });
+    $('#cal-prev-year').click(function() { calendar.prevYear(); onDateChange(); });
+    $('#cal-prev-month').click(function() { calendar.prev(); onDateChange(); });
+    $('#cal-next-year').click(function() { calendar.nextYear(); onDateChange(); });
+    $('#cal-next-month').click(function() { calendar.next(); onDateChange(); });
+});
+</script>
+}

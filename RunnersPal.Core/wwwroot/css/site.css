@@ -1,5 +1,6 @@
 body {
     background-color: white;
+    min-width: 300px;
 }
 
 body,
@@ -177,6 +178,21 @@ footer {
     border: 1px solid white;
     border-radius: 12px;
     padding: 2px;
+}
+
+#cal-date {
+    font-size: larger;
+    float: left;
+}
+
+.cal-date-controls {
+    float: right;
+}
+
+#calendar {
+    width: 100%;
+    height: calc(100vh - 220px);
+    min-height: 300px;
 }
 
 @media (max-width: 800px) {
