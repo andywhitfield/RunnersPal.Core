@@ -16,6 +16,9 @@ namespace RunnersPal.Core.Migrations
             We're moving to ef core migrations from an existing db, so we create an initial migration,
             comment this Up method out, then ef will create the migration table and populate it.
             From that point on, migrations will apply as normal.
+            But for testing, we do still need the migration so do it when in debug mode.
+            */
+#if DEBUG
             migrationBuilder.CreateTable(
                 name: "SiteSettings",
                 columns: table => new
@@ -198,7 +201,7 @@ namespace RunnersPal.Core.Migrations
                 name: "IX_UserPref_UserAccountId",
                 table: "UserPref",
                 column: "UserAccountId");
-            */
+#endif
         }
 
         /// <inheritdoc />

@@ -77,3 +77,5 @@ using (var scope = app.Services.GetRequiredService<IServiceScopeFactory>().Creat
     scope.ServiceProvider.GetRequiredService<ISqliteDataContext>().Migrate();
 
 app.Run();
+
+public partial class Program { }
