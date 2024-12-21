@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject IUserService userService
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -26,8 +27,14 @@
         </nav>
         <nav class="navbar-main">
             <div class="navbar-nav">
+                @if (userService.IsLoggedIn) {
+                <text>
                 <a href="/user/profile">Profile</a> |
                 <a href="/signout">Logout</a>
+                </text>
+                } else {
+                <a href="/signin">Login</a>
+                }
             </div>
             <div>
                 <img class="nav-show" src="/images/add.png" height="24" width="24" />

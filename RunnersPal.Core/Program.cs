@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using RunnersPal.Core.Repository;
+using RunnersPal.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
@@ -19,17 +20,19 @@ builder.Services.AddDbContext<SqliteDataContext>((serviceProvider, options) =>
 #endif
 });
 builder.Services
-    .AddScoped(sp => (ISqliteDataContext)sp.GetRequiredService<SqliteDataContext>());
+    .AddScoped(sp => (ISqliteDataContext)sp.GetRequiredService<SqliteDataContext>())
+    .AddScoped<IUserService, UserService>()
+    .AddScoped<IUserAccountRepository, UserAccountRepository>();
 
 builder.Services
     .AddHttpContextAccessor()
-    .ConfigureApplicationCookie(c => c.Cookie.Name = "runners:pal")
+    .ConfigureApplicationCookie(c => c.Cookie.Name = "runnerspal")
     .AddAuthentication(o => o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(o =>
     {
         o.LoginPath = "/signin";
         o.LogoutPath = "/signout";
-        o.Cookie.Name = "runners:pal";
+        o.Cookie.Name = "runnerspal";
         o.Cookie.HttpOnly = true;
         o.Cookie.MaxAge = TimeSpan.FromDays(7);
         o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
