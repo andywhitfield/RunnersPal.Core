@@ -5,6 +5,9 @@ namespace RunnersPal.Core.Repository;
 public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataContext context)
     : IRouteRepository
 {
+    public ValueTask<Models.Route?> GetRouteAsync(int routeId)
+        => context.Route.FindAsync(routeId);
+
     public async Task<Models.Route> CreateNewRouteAsync(UserAccount user, string name, string points, string? notes)
     {
         logger.LogDebug("Creating new route [{Name}] for [{User}]", name, user.Id);

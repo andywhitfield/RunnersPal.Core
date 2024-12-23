@@ -10,14 +10,14 @@
     <p>
         <form name="map" method="post">
         @Html.AntiForgeryToken()
-        <input type="hidden" name="points" />
+        <input type="hidden" name="points" value="@Model.Points" />
         <div>
-        <input type="submit">Save</input>
+        <input type="submit" value="Save" />
         <button>Undo</button>
         <button>Clear</button>
         </div>
         <div>
-        Name: <input type="text" name="routename" />
+        Name: <input type="text" name="routename" value="@Model.RouteName" />
         Notes: <textarea name="notes"></textarea>
         </div>
         </form>
@@ -69,57 +69,33 @@
         }
     });
 
-	const map = L.map('map').setView([51.505, -0.09], 10);
+    const map = L.map('map');
+    
+    let mapPointsEl = $('form[name="map"] input[name="points"]');
+    let mapPoints = mapPointsEl.val() === '' ? [] : JSON.parse(mapPointsEl.val());
+    if ((typeof mapPoints !== 'object') || (typeof mapPoints.length !== 'number') || mapPoints.length === 0) {
+        if (!navigator.geolocation) {
+            map.setView([54.505, -0.09], 6);
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    map.setView([position.coords.latitude, position.coords.longitude], 12);
+                },
+                function() {
+                    map.setView([54.505, -0.09], 6);
+                });
+        }
+    } else {
+	    map.fitBounds(L.latLngBounds(mapPoints));
+    }
 	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		maxZoom: 19,
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
-    const route = new MapRoute(map, $('form[name="map"] input[name="points"]'));
-
-    function MapRoute(map, pointsFormElement) {
-        var self = this;
-        self._points = [];
-        self._endMarker = null;
-        self._map = map;
-        self._map.on('click', function(e) {
-            self.addPoint(e.latlng);
-        });
-        self._pointsFormElement = pointsFormElement;
-    }
-    MapRoute.prototype.addPoint = function (latlng) {
-        var self = this;
-        if (self._points.length === 0) {
-            // add start point...
-            L.marker(latlng, {
-                alt: 'Start of route',
-                title: 'Start of route',
-                icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
-            }).addTo(map);
-            self._points.push(latlng);
-            self.updatePointsFormElement();
-            return;
-        }
-
-        const lastPoint = self._points[self._points.length - 1];
-        L.polyline([lastPoint, latlng], {color: '#d866eb'}).addTo(map);
-
-        if (self._endMarker === null) {
-            self._endMarker = L.marker(latlng, {
-                alt: 'End of route',
-                title: 'End of route',
-                icon: L.icon({ iconUrl: '/images/pin-end.png', iconAnchor: [11, 36] })
-            }).addTo(map);
-        } else {
-            self._endMarker.setLatLng(latlng);
-        }
-
-        self._points.push(latlng);
-        self.updatePointsFormElement();
-    }
-    MapRoute.prototype.updatePointsFormElement = function() {
-        var self = this;
-        self._pointsFormElement.val(JSON.stringify(self._points));
+    const route = new MapRoute(map, mapPointsEl);
+    for (const mapPoint of mapPoints) {
+        route.addPoint(mapPoint);
     }
 
     /*

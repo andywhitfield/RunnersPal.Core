@@ -109,3 +109,48 @@ coerceToBase64Url = function (thing) {
 
     return thing;
 };
+
+function MapRoute(map, pointsFormElement) {
+    var self = this;
+    self._points = [];
+    self._endMarker = null;
+    self._map = map;
+    self._map.on('click', function(e) {
+        self.addPoint(e.latlng);
+    });
+    self._pointsFormElement = pointsFormElement;
+}
+MapRoute.prototype.addPoint = function (latlng) {
+    var self = this;
+    if (self._points.length === 0) {
+        // add start point...
+        L.marker(latlng, {
+            alt: 'Start of route',
+            title: 'Start of route',
+            icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
+        }).addTo(map);
+        self._points.push(latlng);
+        self.updatePointsFormElement();
+        return;
+    }
+
+    const lastPoint = self._points[self._points.length - 1];
+    L.polyline([lastPoint, latlng], {color: '#d866eb'}).addTo(map);
+
+    if (self._endMarker === null) {
+        self._endMarker = L.marker(latlng, {
+            alt: 'End of route',
+            title: 'End of route',
+            icon: L.icon({ iconUrl: '/images/pin-end.png', iconAnchor: [11, 36] })
+        }).addTo(map);
+    } else {
+        self._endMarker.setLatLng(latlng);
+    }
+
+    self._points.push(latlng);
+    self.updatePointsFormElement();
+}
+MapRoute.prototype.updatePointsFormElement = function() {
+    var self = this;
+    self._pointsFormElement.val(JSON.stringify(self._points));
+}
