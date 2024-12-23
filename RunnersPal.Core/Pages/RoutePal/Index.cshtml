@@ -1,0 +1,24 @@
+﻿@page
+@model RoutePal.IndexModel
+
+<aside>
+    <vc:user-nav />
+</aside>
+
+<article>
+<h1>Route mapping</h1>
+@if (Model.IsLoggedIn) {
+<p>
+    <ul>
+        <li><a href="/routepal/map">Plot a new route</a><div>Map a new running route</div></li>
+        <li><a href="/routepal/list">Saved routes</a><div>View and edit your saved routes</div></li>
+        <li><a href="/routepal/find">Find</a><div>Find one of your saved routes</div></li>
+    </ul>
+</p>
+} else {
+<p>
+<a href="/routepal/map">Plot a new route</a>
+<div>Map a new running route. If you want to save the route, first <a href="/signin?returnurl=/routepal/map">login</a>.</div>
+</p>
+}
+</article>

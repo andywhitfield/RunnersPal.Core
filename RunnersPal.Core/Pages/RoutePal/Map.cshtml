@@ -1,13 +1,26 @@
 ﻿@page
-@model RoutePalModel
+@model RoutePal.MapModel
 
 <aside>
     <vc:user-nav />
 </aside>
 
 <article>
+    <h1>Route mapping</h1>
     <p>
-    Route mapping
+        <form name="map" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="points" />
+        <div>
+        <input type="submit">Save</input>
+        <button>Undo</button>
+        <button>Clear</button>
+        </div>
+        <div>
+        Name: <input type="text" name="routename" />
+        Notes: <textarea name="notes"></textarea>
+        </div>
+        </form>
     </p>
     <div id="map"></div>
 </article>
@@ -61,6 +74,60 @@
 		maxZoom: 19,
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
+
+    const route = new MapRoute(map, $('form[name="map"] input[name="points"]'));
+
+    function MapRoute(map, pointsFormElement) {
+        var self = this;
+        self._points = [];
+        self._endMarker = null;
+        self._map = map;
+        self._map.on('click', function(e) {
+            self.addPoint(e.latlng);
+        });
+        self._pointsFormElement = pointsFormElement;
+    }
+    MapRoute.prototype.addPoint = function (latlng) {
+        var self = this;
+        if (self._points.length === 0) {
+            // add start point...
+            L.marker(latlng, {
+                alt: 'Start of route',
+                title: 'Start of route',
+                icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
+            }).addTo(map);
+            self._points.push(latlng);
+            self.updatePointsFormElement();
+            return;
+        }
+
+        const lastPoint = self._points[self._points.length - 1];
+        L.polyline([lastPoint, latlng], {color: '#d866eb'}).addTo(map);
+
+        if (self._endMarker === null) {
+            self._endMarker = L.marker(latlng, {
+                alt: 'End of route',
+                title: 'End of route',
+                icon: L.icon({ iconUrl: '/images/pin-end.png', iconAnchor: [11, 36] })
+            }).addTo(map);
+        } else {
+            self._endMarker.setLatLng(latlng);
+        }
+
+        self._points.push(latlng);
+        self.updatePointsFormElement();
+    }
+    MapRoute.prototype.updatePointsFormElement = function() {
+        var self = this;
+        self._pointsFormElement.val(JSON.stringify(self._points));
+    }
+
+    /*
+	const map = L.map('map').setView([51.505, -0.09], 10);
+	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
 	L.marker([51.6, 0.09], {
         alt: 'Start of route',
         title: 'Start of route',
@@ -87,5 +154,6 @@
         }
 	}
 	map.on('click', onMapClick);
+    */
 </script>
 }

@@ -202,6 +202,8 @@ namespace RunnersPal.Core.Migrations
                 table: "UserPref",
                 column: "UserAccountId");
 #endif
+            // update the map points from the bing maps points to openstreetmap points
+            migrationBuilder.Sql("update Route set MapPoints = replace(replace(MapPoints, 'latitude', 'lat'), 'longitude', 'lng') where MapPoints is not null");
         }
 
         /// <inheritdoc />
