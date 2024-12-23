@@ -25,50 +25,8 @@
     <div id="map"></div>
 </article>
 
-@section Head {
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
-}
 @section Scripts {
 <script type="text/javascript">
-    L.LabelOverlay = L.Layer.extend({
-        initialize: function(/*LatLng*/ latLng, /*String*/ label, options) {
-            this._latlng = latLng;
-            this._label = label;
-            L.Util.setOptions(this, options);
-        },
-        options: {
-            offset: new L.Point(0, 2)
-        },
-        onAdd: function(map) {
-            this._map = map;
-            if (!this._container) {
-                this._initLayout();
-            }
-            map.getPanes().popupPane.appendChild(this._container);
-            this._container.innerHTML = this._label;
-            map.on('movestart', this._update_start, this);
-            map.on('moveend', this._update_end, this);
-            this._update_end();
-        },
-        onRemove: function(map) {
-            map.getPanes().popupPane.removeChild(this._container);
-            map.off('movestart', this._update_start, this);
-            map.off('moveend', this._update_end, this);
-        },
-        _update_start: function(){
-            L.DomUtil.setPosition(this._container, 0);
-        },
-        _update_end: function() {
-            var pos = this._map.latLngToLayerPoint(this._latlng);
-            var op = new L.Point(pos.x + this.options.offset.x, pos.y - this.options.offset.y);
-            L.DomUtil.setPosition(this._container, op);
-        },
-        _initLayout: function() {
-            this._container = L.DomUtil.create('div', 'leaflet-label-overlay');
-        }
-    });
-
     const map = L.map('map');
     
     let mapPointsEl = $('form[name="map"] input[name="points"]');

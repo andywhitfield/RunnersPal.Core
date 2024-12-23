@@ -110,6 +110,44 @@ coerceToBase64Url = function (thing) {
     return thing;
 };
 
+L.LabelOverlay = L.Layer.extend({
+    initialize: function(/*LatLng*/ latLng, /*String*/ label, options) {
+        this._latlng = latLng;
+        this._label = label;
+        L.Util.setOptions(this, options);
+    },
+    options: {
+        offset: new L.Point(0, 2)
+    },
+    onAdd: function(map) {
+        this._map = map;
+        if (!this._container) {
+            this._initLayout();
+        }
+        map.getPanes().popupPane.appendChild(this._container);
+        this._container.innerHTML = this._label;
+        map.on('movestart', this._update_start, this);
+        map.on('moveend', this._update_end, this);
+        this._update_end();
+    },
+    onRemove: function(map) {
+        map.getPanes().popupPane.removeChild(this._container);
+        map.off('movestart', this._update_start, this);
+        map.off('moveend', this._update_end, this);
+    },
+    _update_start: function(){
+        L.DomUtil.setPosition(this._container, 0);
+    },
+    _update_end: function() {
+        var pos = this._map.latLngToLayerPoint(this._latlng);
+        var op = new L.Point(pos.x + this.options.offset.x, pos.y - this.options.offset.y);
+        L.DomUtil.setPosition(this._container, op);
+    },
+    _initLayout: function() {
+        this._container = L.DomUtil.create('div', 'leaflet-label-overlay');
+    }
+});
+
 function MapRoute(map, pointsFormElement) {
     var self = this;
     self._points = [];
@@ -119,8 +157,11 @@ function MapRoute(map, pointsFormElement) {
         self.addPoint(e.latlng);
     });
     self._pointsFormElement = pointsFormElement;
+    self._distance = 0;
+    self._nextDistanceMarker = 1;
 }
 MapRoute.prototype.addPoint = function (latlng) {
+    console.log('adding point @ ' + latlng);
     var self = this;
     if (self._points.length === 0) {
         // add start point...
@@ -128,14 +169,30 @@ MapRoute.prototype.addPoint = function (latlng) {
             alt: 'Start of route',
             title: 'Start of route',
             icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
-        }).addTo(map);
+        }).addTo(self._map);
         self._points.push(latlng);
         self.updatePointsFormElement();
         return;
     }
 
     const lastPoint = self._points[self._points.length - 1];
-    L.polyline([lastPoint, latlng], {color: '#d866eb'}).addTo(map);
+    L.polyline([lastPoint, latlng], {color: '#d866eb'}).addTo(self._map);
+
+    let curDistance = self._distance;
+    let curPoint = {latitude: lastPoint.lat, longitude: lastPoint.lng};
+    const nextPoint = {latitude: latlng.lat, longitude: latlng.lng};
+    const bearing = geolib.getRhumbLineBearing(curPoint, nextPoint);
+    self._distance += geolib.getDistance(curPoint, nextPoint);
+    console.log('route distance: ' + self._distance + 'm');
+    while (self._distance >= (self._nextDistanceMarker * 1000)) {
+        const distanceToNextMarker = (self._nextDistanceMarker * 1000) - curDistance;
+        curDistance += distanceToNextMarker;
+        const distanceMarkerPoint = geolib.computeDestinationPoint(curPoint, distanceToNextMarker, bearing);
+        console.log('new distance marker @ (' + distanceMarkerPoint.latitude + ',' + distanceMarkerPoint.longitude + ')');
+        self._map.addLayer(new L.LabelOverlay([distanceMarkerPoint.latitude, distanceMarkerPoint.longitude], '<span class="rp-distance-marker">'+self._nextDistanceMarker+'</span>'));
+        self._nextDistanceMarker++;
+        curPoint = distanceMarkerPoint;
+    }
 
     if (self._endMarker === null) {
         self._endMarker = L.marker(latlng, {
