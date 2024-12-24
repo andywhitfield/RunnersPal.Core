@@ -148,66 +148,68 @@ L.LabelOverlay = L.Layer.extend({
     }
 });
 
-function MapRoute(map, pointsFormElement) {
-    var self = this;
-    self._points = [];
-    self._endMarker = null;
-    self._map = map;
-    self._map.on('click', function(e) {
-        self.addPoint(e.latlng);
-    });
-    self._pointsFormElement = pointsFormElement;
-    self._distance = 0;
-    self._nextDistanceMarker = 1;
-}
-MapRoute.prototype.addPoint = function (latlng) {
-    console.log('adding point @ ' + latlng);
-    var self = this;
-    if (self._points.length === 0) {
-        // add start point...
-        L.marker(latlng, {
-            alt: 'Start of route',
-            title: 'Start of route',
-            icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
-        }).addTo(self._map);
+class MapRoute {
+    constructor(map, pointsFormElement) {
+        var self = this;
+        self._points = [];
+        self._endMarker = null;
+        self._map = map;
+        self._map.on('click', function (e) {
+            self.addPoint(e.latlng);
+        });
+        self._pointsFormElement = pointsFormElement;
+        self._distance = 0;
+        self._nextDistanceMarker = 1;
+    }
+    addPoint(latlng) {
+        console.log('adding point @ ' + latlng);
+        var self = this;
+        if (self._points.length === 0) {
+            // add start point...
+            L.marker(latlng, {
+                alt: 'Start of route',
+                title: 'Start of route',
+                icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
+            }).addTo(self._map);
+            self._points.push(latlng);
+            self.updatePointsFormElement();
+            return;
+        }
+
+        const lastPoint = self._points[self._points.length - 1];
+        L.polyline([lastPoint, latlng], { color: '#d866eb' }).addTo(self._map);
+
+        let curDistance = self._distance;
+        let curPoint = { latitude: lastPoint.lat, longitude: lastPoint.lng };
+        const nextPoint = { latitude: latlng.lat, longitude: latlng.lng };
+        const bearing = geolib.getRhumbLineBearing(curPoint, nextPoint);
+        self._distance += geolib.getDistance(curPoint, nextPoint);
+        console.log('route distance: ' + self._distance + 'm');
+        while (self._distance >= (self._nextDistanceMarker * 1000)) {
+            const distanceToNextMarker = (self._nextDistanceMarker * 1000) - curDistance;
+            curDistance += distanceToNextMarker;
+            const distanceMarkerPoint = geolib.computeDestinationPoint(curPoint, distanceToNextMarker, bearing);
+            console.log('new distance marker @ (' + distanceMarkerPoint.latitude + ',' + distanceMarkerPoint.longitude + ')');
+            self._map.addLayer(new L.LabelOverlay([distanceMarkerPoint.latitude, distanceMarkerPoint.longitude], '<span class="rp-distance-marker">' + self._nextDistanceMarker + '</span>'));
+            self._nextDistanceMarker++;
+            curPoint = distanceMarkerPoint;
+        }
+
+        if (self._endMarker === null) {
+            self._endMarker = L.marker(latlng, {
+                alt: 'End of route',
+                title: 'End of route',
+                icon: L.icon({ iconUrl: '/images/pin-end.png', iconAnchor: [11, 36] })
+            }).addTo(map);
+        } else {
+            self._endMarker.setLatLng(latlng);
+        }
+
         self._points.push(latlng);
         self.updatePointsFormElement();
-        return;
     }
-
-    const lastPoint = self._points[self._points.length - 1];
-    L.polyline([lastPoint, latlng], {color: '#d866eb'}).addTo(self._map);
-
-    let curDistance = self._distance;
-    let curPoint = {latitude: lastPoint.lat, longitude: lastPoint.lng};
-    const nextPoint = {latitude: latlng.lat, longitude: latlng.lng};
-    const bearing = geolib.getRhumbLineBearing(curPoint, nextPoint);
-    self._distance += geolib.getDistance(curPoint, nextPoint);
-    console.log('route distance: ' + self._distance + 'm');
-    while (self._distance >= (self._nextDistanceMarker * 1000)) {
-        const distanceToNextMarker = (self._nextDistanceMarker * 1000) - curDistance;
-        curDistance += distanceToNextMarker;
-        const distanceMarkerPoint = geolib.computeDestinationPoint(curPoint, distanceToNextMarker, bearing);
-        console.log('new distance marker @ (' + distanceMarkerPoint.latitude + ',' + distanceMarkerPoint.longitude + ')');
-        self._map.addLayer(new L.LabelOverlay([distanceMarkerPoint.latitude, distanceMarkerPoint.longitude], '<span class="rp-distance-marker">'+self._nextDistanceMarker+'</span>'));
-        self._nextDistanceMarker++;
-        curPoint = distanceMarkerPoint;
+    updatePointsFormElement() {
+        var self = this;
+        self._pointsFormElement.val(JSON.stringify(self._points));
     }
-
-    if (self._endMarker === null) {
-        self._endMarker = L.marker(latlng, {
-            alt: 'End of route',
-            title: 'End of route',
-            icon: L.icon({ iconUrl: '/images/pin-end.png', iconAnchor: [11, 36] })
-        }).addTo(map);
-    } else {
-        self._endMarker.setLatLng(latlng);
-    }
-
-    self._points.push(latlng);
-    self.updatePointsFormElement();
-}
-MapRoute.prototype.updatePointsFormElement = function() {
-    var self = this;
-    self._pointsFormElement.val(JSON.stringify(self._points));
 }
