@@ -169,7 +169,7 @@ footer {
 #map {
     width: 100%;
     min-height: 300px;
-    height: calc(100vh - 220px);
+    height: calc(100vh - 240px);
 }
 
 .leaflet-container span,
@@ -245,6 +245,27 @@ form[name="rp-runlog"] textarea {
 
 .the-datepicker__rp-runlog-datepicker-title {
     color: black;
+}
+
+.rp-map-head {
+    float: left;
+    padding-right: 8px;
+}
+
+form[name="rp-map"] textarea {
+    width: 300px;
+    height: 40px;
+}
+
+form[name="rp-map"] label {
+    width: 105px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+form[name="rp-map"] input[type="text"] {
+    width: 110px;
+    margin-bottom: 4px;
 }
 
 @media (max-width: 800px) {

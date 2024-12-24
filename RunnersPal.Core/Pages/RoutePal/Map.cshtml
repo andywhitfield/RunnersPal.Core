@@ -6,22 +6,27 @@
 </aside>
 
 <article>
-    <h1>Route mapping</h1>
-    <p>
-        <form name="map" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="points" value="@Model.Points" />
-        <div>
-        <input type="submit" value="Save" />
-        <button name="TODO">Undo</button>
-        <button name="TODO">Clear</button>
-        </div>
-        <div>
-        Name: <input type="text" name="routename" value="@Model.RouteName" />
-        Notes: <textarea name="notes"><!-- TODO --></textarea>
-        </div>
-        </form>
-    </p>
+    <form name="rp-map" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="points" value="@Model.Points" />
+    <h1 class="rp-map-head">Route mapping</h1>
+    <div>
+    <input type="submit" value="Save" />
+    <button name="TODO">Undo</button>
+    <button name="TODO">Clear</button>
+    <button name="TODO">Delete</button>
+    </div>
+
+    <div>
+        <label for="rp-map-name">Name:</label>
+        <input type="text" id="rp-map-name" name="routename" class="rp-map-name" value="@Model.RouteName" />
+        Distance: 6.2 km
+    </div>
+    <div>
+        <label for="rp-map-notes">Notes:<br/><small>(optional)</small></label>
+        <textarea id="rp-map-notes" name="notes" class="rp-map-notes" wrap="off">@Model.RouteNotes</textarea>
+    </div>
+    </form>
     <div id="map"></div>
 </article>
 

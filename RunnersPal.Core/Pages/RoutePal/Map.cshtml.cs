@@ -11,6 +11,7 @@ public class MapModel(IUserAccountRepository userAccountRepository,
 {
     [BindProperty(SupportsGet = true)] public int? RouteId { get; set; }
     [BindProperty] public string? RouteName { get; set; }
+    [BindProperty] public string? RouteNotes { get; set; }
     [BindProperty] public string? Points { get; set; }
 
     public async Task<IActionResult> OnGet([FromQuery] int? routeId)
@@ -27,6 +28,7 @@ public class MapModel(IUserAccountRepository userAccountRepository,
             
             RouteName = route.Name;
             Points = route.MapPoints ?? "";
+            RouteNotes = route.Notes ?? "";
         }
         
         return Page();
@@ -40,7 +42,7 @@ public class MapModel(IUserAccountRepository userAccountRepository,
             return BadRequest();
 
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
-        var newRoute = await routeRepository.CreateNewRouteAsync(userAccount, RouteName, Points, null);
+        var newRoute = await routeRepository.CreateNewRouteAsync(userAccount, RouteName, Points, RouteNotes);
 
         return Redirect($"/routepal/map?routeid={newRoute.Id}");
     }
