@@ -7,4 +7,35 @@
 
 <article>
 <h1>My routes</h1>
+@if (Model.Routes.Any()) {
+@if (Model.Pagination.PageCount > 1) {
+<p>
+<div class="pagination">
+    @if (Model.Pagination.PageNumber > 1) {
+    <a title="Go to previous page of routes" href="/routepal/list?pageNumber=@(Model.Pagination.PageNumber - 1)">&laquo;</a>
+    }
+    @foreach (var pg in Model.Pagination.Pages) {
+    @if (pg.IsSelected) {
+    <a class="pagination-active">@pg.PageNumber</a>
+    } else {
+    <a title="Go to page @pg.PageNumber" href="/routepal/list?pageNumber=@pg.PageNumber">@pg.PageNumber</a>
+    }
+    @if (pg.IsNextPageSkipped) {
+    <a class="skip">&bull;&bull;</a>
+    }
+    }
+    @if (Model.Pagination.PageNumber < Model.Pagination.PageCount) {
+    <a title="Go to the next page of routes" href="/routepal/list?pageNumber=@(Model.Pagination.PageNumber + 1)">&raquo;</a>
+    }
+</div>
+</p>
+}
+<ul>
+    @foreach (var route in Model.Routes) {
+    <li><a href="/routepal/map?routeid=@route.Id">@route.Name</a> x miles. Last run on y.</li>
+    }
+</ul>
+} else {
+<p>You have no saved routes. Start by <a href="/routepal/map">plotting a new route here.</a></p>
+}
 </article>

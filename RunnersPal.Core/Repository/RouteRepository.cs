@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using RunnersPal.Core.Models;
 
 namespace RunnersPal.Core.Repository;
@@ -22,4 +23,8 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
         await context.SaveChangesAsync();
         return newRoute.Entity;
     }
+
+    // TODO order by last run, then by id
+    public async Task<IEnumerable<Models.Route>> GetRoutesByUserAsync(UserAccount userAccount)
+        => await context.Route.Where(r => r.Creator == userAccount.Id && r.RouteType == Models.Route.PrivateRoute).OrderByDescending(r => r.Id).ToListAsync();
 }

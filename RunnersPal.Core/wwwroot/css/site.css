@@ -148,6 +148,24 @@ footer {
     font-size: 10pt;
 }
 
+.pagination {
+    display: inline-block;
+}
+
+.pagination * {
+    float: left;
+    padding: 5px 10px;
+    text-decoration: none;
+}
+
+.pagination a.pagination-active {
+    background-color: #d866eb;
+}
+
+.pagination a:hover:not(.pagination-active) {
+    background-color: #87eb66;
+}
+
 #map {
     width: 100%;
     min-height: 300px;
