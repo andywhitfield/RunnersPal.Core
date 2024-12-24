@@ -13,12 +13,12 @@
         <input type="hidden" name="points" value="@Model.Points" />
         <div>
         <input type="submit" value="Save" />
-        <button>Undo</button>
-        <button>Clear</button>
+        <button name="TODO">Undo</button>
+        <button name="TODO">Clear</button>
         </div>
         <div>
         Name: <input type="text" name="routename" value="@Model.RouteName" />
-        Notes: <textarea name="notes"></textarea>
+        Notes: <textarea name="notes"><!-- TODO --></textarea>
         </div>
         </form>
     </p>
@@ -55,39 +55,5 @@
     for (const mapPoint of mapPoints) {
         route.addPoint(mapPoint);
     }
-
-    /*
-	const map = L.map('map').setView([51.505, -0.09], 10);
-	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		maxZoom: 19,
-		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-	}).addTo(map);
-	L.marker([51.6, 0.09], {
-        alt: 'Start of route',
-        title: 'Start of route',
-        icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
-    }).addTo(map);
-
-    var endOfRouteMarker = null;
-    var lastPoint = [51.6, 0.09];
-	function onMapClick(e) {
-        L.polyline([lastPoint, e.latlng], {color: '#d866eb'}).addTo(map);
-        lastPoint = e.latlng;
-
-        // an example of how we might do the mile / km markers
-        map.addLayer(new L.LabelOverlay(lastPoint, '<span class="rp-distance-marker">1</span>'));
-
-        if (endOfRouteMarker === null) {
-            endOfRouteMarker = L.marker(lastPoint, {
-                alt: 'End of route',
-                title: 'End of route',
-                icon: L.icon({ iconUrl: '/images/pin-end.png', iconAnchor: [11, 36] })
-            }).addTo(map);
-        } else {
-            endOfRouteMarker.setLatLng(lastPoint);
-        }
-	}
-	map.on('click', onMapClick);
-    */
 </script>
 }
