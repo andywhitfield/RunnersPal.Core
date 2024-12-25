@@ -32,7 +32,7 @@
 }
 <ul>
     @foreach (var route in Model.Routes) {
-    <li><a href="/routepal/map?routeid=@route.Id">@route.Name</a> x miles. Last run on y.</li>
+    <li><a href="/routepal/map?routeid=@route.Id">@route.Name</a> @((route.Distance / 1000).ToString("0.0")) km <!-- TODO: units -->. Last run on TODO.</li>
     }
 </ul>
 } else {

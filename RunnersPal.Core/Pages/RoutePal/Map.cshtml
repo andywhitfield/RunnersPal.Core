@@ -9,6 +9,7 @@
     <form name="rp-map" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="points" value="@Model.Points" />
+    <input type="hidden" name="distance" value="@Model.Distance" />
     <input type="hidden" name="routeid" value="@Model.RouteId" />
     <h1 class="rp-map-head">Route mapping</h1>
     <div>
@@ -21,7 +22,7 @@
     <div>
         <label for="rp-map-name">Name:</label>
         <input type="text" id="rp-map-name" name="routename" class="rp-map-name" value="@Model.RouteName" />
-        Distance: 6.2 km
+        Distance: <span class="rp-map-distance">0</span>
     </div>
     <div>
         <label for="rp-map-notes">Notes:<br/><small>(optional)</small></label>
@@ -57,7 +58,7 @@
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
-    const route = new MapRoute(map, mapPointsEl);
+    const route = new MapRoute(map, mapPointsEl, $('form[name="rp-map"] input[name="distance"]'), $('span.rp-map-distance'));
     for (const mapPoint of mapPoints) {
         route.addPoint(mapPoint);
     }

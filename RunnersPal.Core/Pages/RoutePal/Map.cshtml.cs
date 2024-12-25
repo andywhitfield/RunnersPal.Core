@@ -13,6 +13,7 @@ public class MapModel(ILogger<MapModel> logger,
     [BindProperty] public string? RouteName { get; set; }
     [BindProperty] public string? RouteNotes { get; set; }
     [BindProperty] public string? Points { get; set; }
+    [BindProperty] public decimal Distance { get; set; }
 
     public async Task<IActionResult> OnGet([FromQuery] int? routeId)
     {
@@ -34,6 +35,7 @@ public class MapModel(ILogger<MapModel> logger,
 
             RouteName = route.Name;
             Points = route.MapPoints ?? "";
+            Distance = route.Distance;
             RouteNotes = route.Notes ?? "";
         }
 
@@ -70,12 +72,12 @@ public class MapModel(ILogger<MapModel> logger,
                 return BadRequest();
             }
             
-            var updatedRoute = await routeRepository.UpdateRouteAsync(route, userAccount, RouteName, Points, RouteNotes);
+            var updatedRoute = await routeRepository.UpdateRouteAsync(route, userAccount, RouteName, Points, Distance, RouteNotes);
             RouteId = updatedRoute.Id;
         }
         else
         {
-            var newRoute = await routeRepository.CreateNewRouteAsync(userAccount, RouteName, Points, RouteNotes);
+            var newRoute = await routeRepository.CreateNewRouteAsync(userAccount, RouteName, Points, Distance, RouteNotes);
             RouteId = newRoute.Id;
         }
 

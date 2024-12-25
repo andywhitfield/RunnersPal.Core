@@ -149,7 +149,7 @@ L.LabelOverlay = L.Layer.extend({
 });
 
 class MapRoute {
-    constructor(map, pointsFormElement) {
+    constructor(map, pointsFormElement, distanceFormElement, distanceDisplayElement) {
         var self = this;
         self._points = [];
         self._endMarker = null;
@@ -159,7 +159,10 @@ class MapRoute {
         });
         self._pointsFormElement = pointsFormElement;
         self._distance = 0;
+        self._distanceFormElement = distanceFormElement;
+        self._distanceDisplayElement = distanceDisplayElement;
         self._nextDistanceMarker = 1;
+        self.updatePointsFormElement();
     }
     addPoint(latlng) {
         console.log('adding point @ ' + latlng);
@@ -211,5 +214,7 @@ class MapRoute {
     updatePointsFormElement() {
         var self = this;
         self._pointsFormElement.val(JSON.stringify(self._points));
+        self._distanceFormElement.val(self._distance);
+        self._distanceDisplayElement.text((self._distance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' km');
     }
 }
