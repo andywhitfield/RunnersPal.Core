@@ -2,7 +2,7 @@ namespace RunnersPal.Core.Services;
 
 public class Pagination
 {
-    public const int DefaultPageSize = 30;
+    public const int DefaultPageSize = 1;
     public const int MaxPageSize = 500;
 
     public static readonly Pagination Empty = new(0, 0);

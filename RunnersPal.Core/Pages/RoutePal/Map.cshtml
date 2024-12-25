@@ -9,6 +9,7 @@
     <form name="rp-map" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="points" value="@Model.Points" />
+    <input type="hidden" name="routeid" value="@Model.RouteId" />
     <h1 class="rp-map-head">Route mapping</h1>
     <div>
     <input type="submit" value="Save" />
@@ -24,7 +25,7 @@
     </div>
     <div>
         <label for="rp-map-notes">Notes:<br/><small>(optional)</small></label>
-        <textarea id="rp-map-notes" name="notes" class="rp-map-notes" wrap="off">@Model.RouteNotes</textarea>
+        <textarea id="rp-map-notes" name="routenotes" class="rp-map-notes" wrap="off">@Model.RouteNotes</textarea>
     </div>
     </form>
     <div id="map"></div>
@@ -34,7 +35,7 @@
 <script type="text/javascript">
     const map = L.map('map');
     
-    let mapPointsEl = $('form[name="map"] input[name="points"]');
+    let mapPointsEl = $('form[name="rp-map"] input[name="points"]');
     let mapPoints = mapPointsEl.val() === '' ? [] : JSON.parse(mapPointsEl.val());
     if ((typeof mapPoints !== 'object') || (typeof mapPoints.length !== 'number') || mapPoints.length === 0) {
         if (!navigator.geolocation) {

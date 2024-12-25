@@ -24,6 +24,23 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
         return newRoute.Entity;
     }
 
+    public async Task<Models.Route> UpdateRouteAsync(Models.Route route, UserAccount user, string name, string points, string? notes)
+    {
+        logger.LogDebug("Updating route [{RouteId}] with new route [{Name}] for [{User}]", route.Id, name, user.Id);
+        var newRoute = context.Route.Add(new()
+        {
+            CreatorAccount = user,
+            Name = name,
+            MapPoints = points,
+            Notes = notes,
+            RouteType = Models.Route.PrivateRoute,
+            ReplacesRoute = route
+        });
+        route.RouteType = Models.Route.DeletedRoute;
+        await context.SaveChangesAsync();
+        return newRoute.Entity;
+    }
+
     // TODO order by last run, then by id
     public async Task<IEnumerable<Models.Route>> GetRoutesByUserAsync(UserAccount userAccount)
         => await context.Route.Where(r => r.Creator == userAccount.Id && r.RouteType == Models.Route.PrivateRoute).OrderByDescending(r => r.Id).ToListAsync();
