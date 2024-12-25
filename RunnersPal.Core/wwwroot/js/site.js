@@ -152,6 +152,8 @@ class MapRoute {
     constructor(map, pointsFormElement, distanceFormElement, distanceDisplayElement) {
         var self = this;
         self._points = [];
+        self._mapPoints = []; // the map layer/line elements
+        self._startMarker = null;
         self._endMarker = null;
         self._map = map;
         self._map.on('click', function (e) {
@@ -167,9 +169,8 @@ class MapRoute {
     addPoint(latlng) {
         console.log('adding point @ ' + latlng);
         var self = this;
-        if (self._points.length === 0) {
-            // add start point...
-            L.marker(latlng, {
+        if (self._startMarker === null) {
+            self._startMarker = L.marker(latlng, {
                 alt: 'Start of route',
                 title: 'Start of route',
                 icon: L.icon({ iconUrl: '/images/pin-start.png', iconAnchor: [11, 36] })
@@ -180,7 +181,8 @@ class MapRoute {
         }
 
         const lastPoint = self._points[self._points.length - 1];
-        L.polyline([lastPoint, latlng], { color: '#d866eb' }).addTo(self._map);
+        const newLine = L.polyline([lastPoint, latlng], { color: '#d866eb' }).addTo(self._map);
+        let distanceMarkers = [];
 
         let curDistance = self._distance;
         let curPoint = { latitude: lastPoint.lat, longitude: lastPoint.lng };
@@ -193,7 +195,9 @@ class MapRoute {
             curDistance += distanceToNextMarker;
             const distanceMarkerPoint = geolib.computeDestinationPoint(curPoint, distanceToNextMarker, bearing);
             console.log('new distance marker @ (' + distanceMarkerPoint.latitude + ',' + distanceMarkerPoint.longitude + ')');
-            self._map.addLayer(new L.LabelOverlay([distanceMarkerPoint.latitude, distanceMarkerPoint.longitude], '<span class="rp-distance-marker">' + self._nextDistanceMarker + '</span>'));
+            const distanceMarkerLayer = new L.LabelOverlay([distanceMarkerPoint.latitude, distanceMarkerPoint.longitude], '<span class="rp-distance-marker">' + self._nextDistanceMarker + '</span>');
+            self._map.addLayer(distanceMarkerLayer)
+            distanceMarkers.push(distanceMarkerLayer);
             self._nextDistanceMarker++;
             curPoint = distanceMarkerPoint;
         }
@@ -209,6 +213,29 @@ class MapRoute {
         }
 
         self._points.push(latlng);
+        self._mapPoints.push({ line: newLine, markers: distanceMarkers });
+        self.updatePointsFormElement();
+    }
+    clearRoute() {
+        var self = this;
+        if (self._endMarker !== null) {
+            self._endMarker.remove();
+            self._endMarker = null;
+        }
+        if (self._startMarker !== null) {
+            self._startMarker.remove();
+            self._startMarker = null;
+        }
+        for (const mapPoint of self._mapPoints) {
+            mapPoint.line.remove();
+            for (const distanceMarker of mapPoint.markers) {
+                distanceMarker.remove();
+            }
+        }
+        self._points.length = 0;
+        self._mapPoints.length = 0;
+        self._distance = 0;
+        self._nextDistanceMarker = 1;
         self.updatePointsFormElement();
     }
     updatePointsFormElement() {

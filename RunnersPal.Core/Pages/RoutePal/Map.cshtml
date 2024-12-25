@@ -14,9 +14,9 @@
     <h1 class="rp-map-head">Route mapping</h1>
     <div>
     <input type="submit" value="Save" />
-    <button name="TODO">Undo</button>
-    <button name="TODO">Clear</button>
-    <button name="TODO">Delete</button>
+    <button type="button" name="undo">Undo</button>
+    <button type="button" name="clear">Clear</button>
+    <button type="submit" name="delete" value="delete" data-confirm="Are you sure you want to delete this route?">Delete</button>
     </div>
 
     <div>
@@ -62,5 +62,7 @@
     for (const mapPoint of mapPoints) {
         route.addPoint(mapPoint);
     }
+
+    $('form[name="rp-map"] button[name="clear"]').click(function() { route.clearRoute(); });
 </script>
 }
