@@ -14,6 +14,7 @@ public class MapModel(ILogger<MapModel> logger,
     [BindProperty] public string? RouteNotes { get; set; }
     [BindProperty] public string? Points { get; set; }
     [BindProperty] public decimal Distance { get; set; }
+    [BindProperty] public string? Delete { get; set; }
 
     public async Task<IActionResult> OnGet([FromQuery] int? routeId)
     {
@@ -71,14 +72,25 @@ public class MapModel(ILogger<MapModel> logger,
                 logger.LogWarning("Route {RouteId} is not an active, private route, cannot save", RouteId);
                 return BadRequest();
             }
-            
+
+            if (!string.IsNullOrEmpty(Delete))
+            {
+                await routeRepository.DeleteRouteAsync(route);
+                return Redirect("/routepal");
+            }
+
             var updatedRoute = await routeRepository.UpdateRouteAsync(route, userAccount, RouteName, Points, Distance, RouteNotes);
             RouteId = updatedRoute.Id;
         }
-        else
+        else if (string.IsNullOrEmpty(Delete))
         {
             var newRoute = await routeRepository.CreateNewRouteAsync(userAccount, RouteName, Points, Distance, RouteNotes);
             RouteId = newRoute.Id;
+        }
+        else
+        {
+            logger.LogInformation("No route id, but delete has been set - cannot delete an unknown route");
+            return BadRequest();
         }
 
         return Redirect($"/routepal/map?routeid={RouteId}");

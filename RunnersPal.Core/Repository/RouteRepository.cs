@@ -18,7 +18,7 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
             Name = name,
             MapPoints = points,
             Distance = distance,
-            DistanceUnits = (int)DistanceUnits.Kilometers,
+            DistanceUnits = (int)DistanceUnits.Meters,
             Notes = notes,
             RouteType = Models.Route.PrivateRoute
         });
@@ -43,6 +43,13 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
         route.RouteType = Models.Route.DeletedRoute;
         await context.SaveChangesAsync();
         return newRoute.Entity;
+    }
+
+    public Task DeleteRouteAsync(Models.Route route)
+    {
+        logger.LogDebug("Deleting route [{RouteId}]", route.Id);
+        route.RouteType = Models.Route.DeletedRoute;
+        return context.SaveChangesAsync();
     }
 
     // TODO order by last run, then by id

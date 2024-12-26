@@ -2,5 +2,5 @@
 
 public enum DistanceUnits
 {
-    Miles, Kilometers
+    Miles, Kilometers, Meters
 }
