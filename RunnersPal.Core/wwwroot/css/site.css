@@ -189,6 +189,10 @@ footer {
     position: absolute;
 }
 
+.leaflet-container.crosshair-cursor-enabled {
+    cursor: pointer;
+}
+
 .rp-distance-marker {
     font-size: 9pt;
     color: black;

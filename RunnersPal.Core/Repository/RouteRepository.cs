@@ -54,5 +54,5 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
 
     // TODO order by last run, then by id
     public async Task<IEnumerable<Models.Route>> GetRoutesByUserAsync(UserAccount userAccount)
-        => await context.Route.Where(r => r.Creator == userAccount.Id && r.RouteType == Models.Route.PrivateRoute).OrderByDescending(r => r.Id).ToListAsync();
+        => await context.Route.Where(r => r.Creator == userAccount.Id && r.RouteType == Models.Route.PrivateRoute && r.MapPoints != null && r.MapPoints.Length > 0).OrderByDescending(r => r.Id).ToListAsync();
 }

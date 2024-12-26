@@ -23,7 +23,8 @@ builder.Services
     .AddScoped(sp => (ISqliteDataContext)sp.GetRequiredService<SqliteDataContext>())
     .AddScoped<IUserService, UserService>()
     .AddScoped<IUserAccountRepository, UserAccountRepository>()
-    .AddScoped<IRouteRepository, RouteRepository>();
+    .AddScoped<IRouteRepository, RouteRepository>()
+    .AddScoped<IRunLogRepository, RunLogRepository>();
 
 builder.Services
     .AddHttpContextAccessor()

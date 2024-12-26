@@ -6,49 +6,21 @@
 </aside>
 
 <article>
-    <form name="rp-runlog" method="post" action="/runlog/add">
+    <h1>Log a new run</h1>
+    <form name="rp-runlog" method="post">
     @Html.AntiForgeryToken()
-    <fieldset>
-    <legend>Log a new run</legend>
+    <input type="hidden" name="distancetype" value="">
+    <input type="hidden" name="distancemanual" value="">
+    <div id="rp-runlog-main">
     <div>
         <label for="rp-runlog-date">Date:</label>
         <input type="text" id="rp-runlog-date" name="date" class="rp-runlog-date" value="@Model.Date" />
     </div>
     <div>
         <label>Distance:</label>
-        <div id="rp-distance">
-            <ul>
-                <li><a href="#tab-1">Common routes</a></li>
-                <li><a href="#tab-2">My routes</a></li>
-                <li><a href="#tab-3">Find a route</a></li>
-                <li><a href="#tab-4">Map a new route</a></li>
-                <li><a href="#tab-5">Enter a distance</a></li>
-            </ul>
-
-            <div id="tab-1">
-                <ul>
-                    <li>5K</li>
-                    <li>10K</li>
-                    <li>HM</li>
-                    <li>Marathon</li>
-                </ul>
-            </div>
-            <div id="tab-2">
-                <ul>
-                    <li>My route 1</li>
-                    <li>My route 2</li>
-                </ul>
-            </div>
-            <div id="tab-3">
-                Find box:
-            </div>
-            <div id="tab-4">
-                Map control
-            </div>
-            <div id="tab-5">
-                Distance box:
-            </div>
-        </div>
+        <button type="button" name="rp-distance-select">Pick a route...</button>
+        <input type="text" name="rp-distance-selected" readonly />
+        <button type="button" name="rp-distance-selected-edit">Edit...</button>
     </div>
     <div>
         <label for="rp-runlog-timetaken">Time taken:</label>
@@ -61,10 +33,63 @@
     </div>
     <div>
         <label></label>
-        <button type="submit" data-depends="input.rp-runlog-title">Add</button>
+        <input type="submit" name="add" value="Add" />
         <button type="submit" name="cancel" value="cancel">Cancel</button>
     </div>
-    </fieldset>
+    </div>
+
+    <div id="rp-runlog-distance">
+    <div id="rp-distance">
+        <ul>
+            <li><a href="#tab-1">Common routes</a></li>
+            <li><a href="#tab-2">My routes</a></li>
+            <li><a href="#tab-3">Find a route</a></li>
+            <li><a href="#tab-4">Map a new route</a></li>
+            <li><a href="#tab-5">Enter a distance</a></li>
+        </ul>
+
+        <div id="tab-1">
+            <ul>
+                <li>5K</li>
+                <li>10K</li>
+                <li>HM</li>
+                <li>Marathon</li>
+            </ul>
+            <div>
+            <button name="rp-distance-select-cancel" type="button">Cancel</button>
+            </div>
+        </div>
+        <div id="tab-2">
+            <ul>
+                <li>My route 1</li>
+                <li>My route 2</li>
+            </ul>
+            <div>
+            <button name="rp-distance-select-cancel" type="button">Cancel</button>
+            </div>
+        </div>
+        <div id="tab-3">
+            Find box:
+        </div>
+        <div id="tab-4">
+            Map control
+            <div>
+            <button name="rp-distance-select-map-ok" type="button">OK</button>
+            <button name="rp-distance-select-cancel" type="button">Cancel</button>
+            </div>
+        </div>
+        <div id="tab-5">
+            <label>Manual distance:</label>
+            <input type="text" name="rp-distance-select-manual-value" />
+            km
+            <div>
+            <label></label>
+            <button name="rp-distance-select-manual-ok" type="button">OK</button>
+            <button name="rp-distance-select-cancel" type="button">Cancel</button>
+            </div>
+        </div>
+    </div>
+    </div>
     </form>
 </article>
 @section Head {
@@ -91,5 +116,39 @@ runlogDatepicker.options.classNames.setClassName(TheDatepicker.ClassNameType.Hea
 runlogDatepicker.options.setInputFormat('Y-m-d');
 runlogDatepicker.options.setAllowEmpty(false);
 runlogDatepicker.render();
+
+const runLogMainForm = $('#rp-runlog-main');
+const runLogDistanceSelector = $('#rp-runlog-distance');
+const runLogDistanceType = $('form[name="rp-runlog"] input[name="distancetype"]');
+runLogDistanceSelector.hide();
+const runLogDistanceSelection = $('form[name="rp-runlog"] button[name="rp-distance-select"]');
+const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
+const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
+runLogDistanceSelected.hide();
+runLogDistanceSelectedEdit.hide();
+runLogDistanceSelection.click(function() {
+    runLogDistanceSelector.show();
+    runLogMainForm.hide();
+});
+runLogDistanceSelectedEdit.click(function() {
+    runLogDistanceSelector.show();
+    runLogMainForm.hide();
+});
+$('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(function() {
+    runLogMainForm.show();
+    runLogDistanceSelector.hide();
+
+    $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val($('form[name="rp-runlog"] input[name="distancemanual"]').val());
+});
+$('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(function() {
+    runLogDistanceType.val('2');
+    $('form[name="rp-runlog"] input[name="distancemanual"]').val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val());
+    runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val() + ' km');
+    runLogDistanceSelected.show();
+    runLogDistanceSelectedEdit.show();
+    runLogDistanceSelection.hide();
+    runLogMainForm.show();
+    runLogDistanceSelector.hide();
+});
 </script>
 }
