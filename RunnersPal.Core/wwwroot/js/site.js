@@ -216,6 +216,47 @@ class MapRoute {
         self._mapPoints.push({ line: newLine, markers: distanceMarkers });
         self.updatePointsFormElement();
     }
+    undoLastPoint() {
+        var self = this;
+        if (self._mapPoints.length > 0) {
+            console.log('removing last point');
+            self._points.pop();
+            const lastMapPoint = self._mapPoints.length > 0 ? self._mapPoints.pop() : null;
+
+            if (lastMapPoint !== null) {
+                const lastMapPointFrom = { latitude: lastMapPoint.line.getLatLngs()[0].lat, longitude: lastMapPoint.line.getLatLngs()[0].lng };
+                const lastMapPointTo = { latitude: lastMapPoint.line.getLatLngs()[1].lat, longitude: lastMapPoint.line.getLatLngs()[1].lng };
+                self._distance -= geolib.getDistance(lastMapPointFrom, lastMapPointTo);
+                self._nextDistanceMarker -= lastMapPoint.markers.length;
+
+                console.log('removed ' + lastMapPoint.markers.length + ' distance markers and reduced distance to ' + self._distance);
+
+                lastMapPoint.line.remove();
+                for (const distanceMarker of lastMapPoint.markers) {
+                    distanceMarker.remove();
+                }
+            }
+
+            if (self._endMarker !== null) {
+                if (self._mapPoints.length === 0) {
+                    console.log('removing end marker');
+                    self._endMarker.remove();
+                    self._endMarker = null;
+                } else {
+                    console.log('moving end marker to ' + self._points[self._points.length - 1]);
+                    self._endMarker.setLatLng(self._points[self._points.length - 1]);
+                }
+            }
+        } else {
+            self._points.pop();
+            if (self._startMarker !== null) {
+                console.log('removing start marker');
+                self._startMarker.remove();
+                self._startMarker = null;
+            }
+        }
+        self.updatePointsFormElement();
+    }
     clearRoute() {
         var self = this;
         if (self._endMarker !== null) {

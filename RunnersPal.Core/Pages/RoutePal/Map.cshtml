@@ -63,6 +63,10 @@
         route.addPoint(mapPoint);
     }
 
-    $('form[name="rp-map"] button[name="clear"]').click(function() { route.clearRoute(); });
+    $('form[name="rp-map"] button[name="undo"]').click(function() { route.undoLastPoint(); });
+    $('form[name="rp-map"] button[name="clear"]').click(function() {
+        if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
+            route.clearRoute();
+    });
 </script>
 }
