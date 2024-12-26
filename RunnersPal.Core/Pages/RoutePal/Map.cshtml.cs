@@ -50,9 +50,9 @@ public class MapModel(ILogger<MapModel> logger,
             logger.LogWarning("No User authenticated, cannot save any route");
             return BadRequest();
         }
-        if (string.IsNullOrEmpty(RouteName) || string.IsNullOrEmpty(Points))
+        if (string.IsNullOrWhiteSpace(RouteName) || string.IsNullOrWhiteSpace(Points))
         {
-            logger.LogInformation("Route is missing a name of points, cannot save");
+            logger.LogInformation("Route is missing a name or points, cannot save");
             return BadRequest();
         }
 

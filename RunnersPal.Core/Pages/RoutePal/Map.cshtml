@@ -13,10 +13,12 @@
     <input type="hidden" name="routeid" value="@Model.RouteId" />
     <h1 class="rp-map-head">Route mapping</h1>
     <div>
-    <input type="submit" value="Save" />
+    <input type="submit" name="save" value="Save" />
     <button type="button" name="undo">Undo</button>
     <button type="button" name="clear">Clear</button>
+    @if (Model.RouteId.HasValue) {
     <button type="submit" name="delete" value="delete" data-confirm="Are you sure you want to delete this route?">Delete</button>
+    }
     </div>
 
     <div>
@@ -36,6 +38,7 @@
 <script type="text/javascript">
     const map = L.map('map');
     
+    const routeNameEl = $('form[name="rp-map"] input[name="routename"]');
     let mapPointsEl = $('form[name="rp-map"] input[name="points"]');
     let mapPoints = mapPointsEl.val() === '' ? [] : JSON.parse(mapPointsEl.val());
     if ((typeof mapPoints !== 'object') || (typeof mapPoints.length !== 'number') || mapPoints.length === 0) {
@@ -58,15 +61,27 @@
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 	}).addTo(map);
 
-    const route = new MapRoute(map, mapPointsEl, $('form[name="rp-map"] input[name="distance"]'), $('span.rp-map-distance'));
+    const distanceFormEl = $('form[name="rp-map"] input[name="distance"]');
+    const route = new MapRoute(map, mapPointsEl, distanceFormEl, $('span.rp-map-distance'));
     for (const mapPoint of mapPoints) {
         route.addPoint(mapPoint);
     }
+
+    const saveBtnEl = $('form[name="rp-map"] input[name="save"]');
+    saveBtnEl.prop('disabled', true);
+    route.onChange(rpUpdateSaveButton);
+    routeNameEl.on('change input paste keyup', rpUpdateSaveButton);
 
     $('form[name="rp-map"] button[name="undo"]').click(function() { route.undoLastPoint(); });
     $('form[name="rp-map"] button[name="clear"]').click(function() {
         if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
             route.clearRoute();
     });
+
+    function rpUpdateSaveButton() {
+        saveBtnEl.prop('disabled',
+            !routeNameEl.val() || /^\s*$/.test(routeNameEl.val()) || // no route name
+            distanceFormEl.val() === '' || distanceFormEl.val() === '0'); // no points
+    }
 </script>
 }

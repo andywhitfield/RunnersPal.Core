@@ -164,7 +164,12 @@ class MapRoute {
         self._distanceFormElement = distanceFormElement;
         self._distanceDisplayElement = distanceDisplayElement;
         self._nextDistanceMarker = 1;
+        self._changeCallbacks = [];
         self.updatePointsFormElement();
+    }
+    onChange(callback) {
+        var self = this;
+        self._changeCallbacks.push(callback);
     }
     addPoint(latlng) {
         console.log('adding point @ ' + latlng);
@@ -284,5 +289,9 @@ class MapRoute {
         self._pointsFormElement.val(JSON.stringify(self._points));
         self._distanceFormElement.val(self._distance);
         self._distanceDisplayElement.text((self._distance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' km');
+
+        for (const changeCallback of self._changeCallbacks) {
+            changeCallback();
+        }
     }
 }
