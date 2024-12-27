@@ -201,9 +201,35 @@ namespace RunnersPal.Core.Migrations
                 name: "IX_UserPref_UserAccountId",
                 table: "UserPref",
                 column: "UserAccountId");
+            
+            // create system user & system routes
+            migrationBuilder.Sql(@"
+insert into UserAccount(DisplayName, CreatedDate, LastActivityDate, EmailAddress, OriginalHostAddress, UserType, DistanceUnits)
+select 'Admin', datetime('now'), datetime('now'), 'admin@runnerspal.com', '', 'A', 0
+where not exists(select 1 from UserAccount where DisplayName = 'Admin' and UserType = 'A');");
+            migrationBuilder.Sql(@"
+insert into Route(Name, Distance, DistanceUnits, Creator, CreatedDate, RouteType)
+select name, distance, 2, u.Id, datetime('now'), 'Z'
+from (
+select '1 Kilometer' as name, 1000 as distance
+union select '1 Mile', 1609.344
+union select '3 Miles', 3218.688
+union select '5 Kilometers', 5000
+union select '5 Miles', 8046.72
+union select '10 Kilometers', 10000
+union select '10 Miles', 16093.44
+union select 'Half-marathon', 21097.5
+union select 'Marathon', 42195
+) distances
+, UserAccount u
+where u.UserType = 'A'
+order by distance");
 #endif
             // update the map points from the bing maps points to openstreetmap points
             migrationBuilder.Sql("update Route set MapPoints = replace(replace(MapPoints, 'latitude', 'lat'), 'longitude', 'lng') where MapPoints is not null");
+            // update all route distances to be in meters
+            migrationBuilder.Sql("update Route set Distance = Distance * 1000, DistanceUnits = 2 where DistanceUnits = 1");
+            migrationBuilder.Sql("update Route set Distance = Distance * 1.609344 * 1000, DistanceUnits = 2 where DistanceUnits = 0");
         }
 
         /// <inheritdoc />

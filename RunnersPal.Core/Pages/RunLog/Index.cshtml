@@ -21,6 +21,7 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js" integrity="sha256-ZztCtsADLKbUFK/X6nOYnJr0eelmV2X3dhLDB/JK6fM=" crossorigin="anonymous"></script>
 <script type="text/javascript">
 $(function() {
+    const datesLoaded = new Set();
     var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         initialView: 'dayGridMonth',
         headerToolbar: false,
@@ -37,6 +38,27 @@ $(function() {
     calendar.render();
     function onDateChange() {
         $('#cal-date').text(calendar.getDate().toLocaleDateString(undefined, { year: 'numeric', month: 'long' }));
+        const calendarMonth = new Date(Date.UTC(calendar.getDate().getFullYear(), calendar.getDate().getMonth(), 1));
+        if (datesLoaded.has(calendarMonth.getTime())) {
+            console.log('run events already loaded for date ' + calendarMonth + ', no need to load events');
+        } else {
+            console.log('run events not loaded for date ' + calendarMonth + ', loading...');
+            $.getJSON('/api/runlog/activities?date='+encodeURIComponent(calendarMonth.toISOString()))
+                .done(function(data) {
+                    console.log('run entries retrieved...adding to calendar');
+                    data.forEach(function(runLogEntry) {
+                        if (!calendar.getEventById(runLogEntry.id))
+                            calendar.addEvent({ id: runLogEntry.id, title: '' + runLogEntry.title + '<br/><small>' + runLogEntry.pace + '</small>', start: runLogEntry.date, allDay: true, extendedProps: { record: runLogEntry } });
+                        else
+                            console.log('event ' + runLogEntry.id + ' already in calendar, not adding again');
+                    });
+                    datesLoaded.add(calendarMonth.getTime());
+                })
+                .fail(function() {
+                    // TODO: should do something here!
+                    console.log('failed getting run activities');
+                });
+        }
     }
 
     onDateChange();    
@@ -45,8 +67,6 @@ $(function() {
     $('#cal-prev-month').click(function() { calendar.prev(); onDateChange(); });
     $('#cal-next-year').click(function() { calendar.nextYear(); onDateChange(); });
     $('#cal-next-month').click(function() { calendar.next(); onDateChange(); });
-
-    calendar.addEvent({ id: 1, title: '3.11 miles in 00:28:37<br/>9:12 min/mile', start: '2024-12-18', allDay: true });
 });
 </script>
 }

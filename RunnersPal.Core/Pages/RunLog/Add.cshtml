@@ -11,6 +11,7 @@
     @Html.AntiForgeryToken()
     <input type="hidden" name="distancetype" value="">
     <input type="hidden" name="distancemanual" value="">
+    <input type="hidden" name="routeid" value="">
     <div id="rp-runlog-main">
     <div>
         <label for="rp-runlog-date">Date:</label>
@@ -50,10 +51,9 @@
 
         <div id="tab-1">
             <ul>
-                <li>5K</li>
-                <li>10K</li>
-                <li>HM</li>
-                <li>Marathon</li>
+                @foreach (var systemRoute in Model.SystemRoutes) {
+                <li><a href="#" data-routetype="1" data-routeid="@systemRoute.Id">@systemRoute.Name</a></li>
+                }
             </ul>
             <div>
             <button name="rp-distance-select-cancel" type="button">Cancel</button>
@@ -144,6 +144,16 @@ $('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(fu
     runLogDistanceType.val('2');
     $('form[name="rp-runlog"] input[name="distancemanual"]').val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val());
     runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val() + ' km');
+    runLogDistanceSelected.show();
+    runLogDistanceSelectedEdit.show();
+    runLogDistanceSelection.hide();
+    runLogMainForm.show();
+    runLogDistanceSelector.hide();
+});
+$('form[name="rp-runlog"] a[data-routeid][data-routetype]').click(function() {
+    runLogDistanceType.val($(this).attr('data-routetype'));
+    $('form[name="rp-runlog"] input[name="routeid"]').val($(this).attr('data-routeid'));
+    runLogDistanceSelected.val($(this).text());
     runLogDistanceSelected.show();
     runLogDistanceSelectedEdit.show();
     runLogDistanceSelection.hide();

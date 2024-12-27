@@ -9,4 +9,5 @@ public interface IRouteRepository
     Task<Models.Route> UpdateRouteAsync(Models.Route route, UserAccount user, string name, string points, decimal disable, string? notes);
     Task DeleteRouteAsync(Models.Route route);
     Task<IEnumerable<Models.Route>> GetRoutesByUserAsync(UserAccount userAccount);
+    IAsyncEnumerable<Models.Route> GetSystemRoutesAsync();
 }
