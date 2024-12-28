@@ -10,7 +10,8 @@ namespace RunnersPal.Core.Pages.RunLog;
 public class AddModel(ILogger<AddModel> logger,
     IUserAccountRepository userAccountRepository,
     IRouteRepository routeRepository,
-    IRunLogRepository runLogRepository)
+    IRunLogRepository runLogRepository,
+    IPaceService paceService)
     : PageModel
 {
     [BindProperty(SupportsGet = true)] public string? Date { get; set; }
@@ -35,7 +36,7 @@ public class AddModel(ILogger<AddModel> logger,
         switch (DistanceType)
         {
             case 1:
-                if (RouteId == null || RouteId == 0 || Date == null || TimeTaken == null)
+                if (RouteId == null || RouteId == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
                     return BadRequest();
 
                 logger.LogDebug("Getting system route {RouteId}", RouteId);
@@ -44,18 +45,18 @@ public class AddModel(ILogger<AddModel> logger,
                     return BadRequest();
 
                 logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), systemRoute, TimeTaken, Comment);
+                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), systemRoute, TimeTaken!, Comment);
 
                 break;
             case 2:
-                if (DistanceManual == null || DistanceManual == 0 || Date == null || TimeTaken == null)
+                if (DistanceManual == null || DistanceManual == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
                     return BadRequest();
 
                 logger.LogDebug("Creating a new manual distance route for {DistanceManual}km", DistanceManual);
                 var manualRoute = await routeRepository.CreateNewRouteAsync(userAccount, $"{DistanceManual} km", "", DistanceManual.Value * 1000m, "");
 
                 logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), manualRoute, TimeTaken, Comment);
+                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment);
 
                 break;
             default:

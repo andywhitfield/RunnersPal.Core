@@ -24,7 +24,8 @@ builder.Services
     .AddScoped<IUserService, UserService>()
     .AddScoped<IUserAccountRepository, UserAccountRepository>()
     .AddScoped<IRouteRepository, RouteRepository>()
-    .AddScoped<IRunLogRepository, RunLogRepository>();
+    .AddScoped<IRunLogRepository, RunLogRepository>()
+    .AddScoped<IPaceService, PaceService>();
 
 builder.Services
     .AddHttpContextAccessor()
