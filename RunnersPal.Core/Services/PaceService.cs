@@ -38,13 +38,15 @@ public class PaceService(ILogger<PaceService> logger)
     }
 
     public string CalculatePace(RunLog runLog)
-    {
-        var timeTaken = TimeTaken(runLog.TimeTaken);
-        if (timeTaken == null || runLog.Route.Distance == 0)
-            return "unknown pace";
+        => CalculatePace(TimeTaken(runLog.TimeTaken), runLog.Route.Distance, null) ?? "unknown pace";
 
-        var pace = Convert.ToDecimal(timeTaken.Value.TotalSeconds) / (runLog.Route.Distance / 1000 /* convert to miles if that's the user's units */);
-        logger.LogDebug("TimeTaken: {TimeTaken} ({TimeTakenSeconds}s); Distance: {Distance}; Pace: {Pace}", timeTaken, timeTaken.Value.TotalSeconds, runLog.Route.Distance, pace);
+    public string? CalculatePace(TimeSpan? timeTaken, decimal routeDistanceInMeters, string? defaultIfInvalid)
+    {
+        if (timeTaken == null || routeDistanceInMeters == 0)
+            return defaultIfInvalid;
+
+        var pace = Convert.ToDecimal(timeTaken.Value.TotalSeconds) / (routeDistanceInMeters / 1000 /* convert to miles if that's the user's units */);
+        logger.LogDebug("TimeTaken: {TimeTaken} ({TimeTakenSeconds}s); Distance: {Distance}; Pace: {Pace}", timeTaken, timeTaken.Value.TotalSeconds, routeDistanceInMeters, pace);
         return string.Format("{0}:{1} min/km", Convert.ToInt32(Math.Floor(pace / 60)).ToString("0"), Math.Floor(pace % 60).ToString("00"));
     }
 }

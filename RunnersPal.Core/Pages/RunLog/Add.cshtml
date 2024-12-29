@@ -28,6 +28,10 @@
         <input type="text" id="rp-runlog-timetaken" name="timetaken" class="rp-runlog-timetaken" />
         <small>(hh:)mm:ss</small>
     </div>
+    <div class="rp-pace">
+        <label></label>
+        <span></span>
+    </div>
     <div>
         <label for="rp-runlog-comment">Comment:<br/><small>(optional)</small></label>
         <textarea id="rp-runlog-comment" name="comment" class="rp-runlog-comment" wrap="off"></textarea>
@@ -121,6 +125,8 @@ const runLogMainForm = $('#rp-runlog-main');
 const runLogDistanceSelector = $('#rp-runlog-distance');
 const runLogDistanceType = $('form[name="rp-runlog"] input[name="distancetype"]');
 runLogDistanceSelector.hide();
+const runLogDistanceManual = $('form[name="rp-runlog"] input[name="distancemanual"]');
+const runLogRouteId = $('form[name="rp-runlog"] input[name="routeid"]');
 const runLogDistanceSelection = $('form[name="rp-runlog"] button[name="rp-distance-select"]');
 const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
 const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
@@ -138,27 +144,51 @@ $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(funct
     runLogMainForm.show();
     runLogDistanceSelector.hide();
 
-    $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val($('form[name="rp-runlog"] input[name="distancemanual"]').val());
+    $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val(runLogDistanceManual.val());
 });
 $('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(function() {
     runLogDistanceType.val('2');
-    $('form[name="rp-runlog"] input[name="distancemanual"]').val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val());
+    runLogDistanceManual.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val());
     runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val() + ' km');
     runLogDistanceSelected.show();
     runLogDistanceSelectedEdit.show();
     runLogDistanceSelection.hide();
     runLogMainForm.show();
     runLogDistanceSelector.hide();
+    updateRunPace();
 });
 $('form[name="rp-runlog"] a[data-routeid][data-routetype]').click(function() {
     runLogDistanceType.val($(this).attr('data-routetype'));
-    $('form[name="rp-runlog"] input[name="routeid"]').val($(this).attr('data-routeid'));
+    runLogRouteId.val($(this).attr('data-routeid'));
     runLogDistanceSelected.val($(this).text());
     runLogDistanceSelected.show();
     runLogDistanceSelectedEdit.show();
     runLogDistanceSelection.hide();
     runLogMainForm.show();
     runLogDistanceSelector.hide();
+    updateRunPace();
 });
+const runLogPace = $('.rp-pace');
+const runLogTimeTaken = $('form[name="rp-runlog"] input[name="timetaken"]');
+runLogPace.hide();
+runLogTimeTaken.on('input', updateRunPace);
+function updateRunPace() {
+    console.log('Calculating pace for time ' + runLogTimeTaken.val() + ', distance type ' + runLogDistanceType.val() + ', distance ' + runLogDistanceManual.val() + ', routeid ' + runLogRouteId.val());
+    $.getJSON('/api/calculator/pace', {
+        timeTaken: runLogTimeTaken.val(),
+        distanceType: runLogDistanceType.val(),
+        distanceManual: runLogDistanceManual.val(),
+        routeId: runLogRouteId.val()
+    })
+        .done(function(data) {
+            console.log('pace returned: ' + data.pace);
+            $('span', runLogPace).text(data.pace);
+            runLogPace.show();
+        })
+        .fail(function() {
+            console.log('failed calculating pace, hiding pace');
+            runLogPace.hide();
+        });
+}
 </script>
 }
