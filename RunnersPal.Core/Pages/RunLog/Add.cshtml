@@ -12,6 +12,10 @@
     <input type="hidden" name="distancetype" value="">
     <input type="hidden" name="distancemanual" value="">
     <input type="hidden" name="routeid" value="">
+    <input type="hidden" name="mapname" value="">
+    <input type="hidden" name="mapnotes" value="">
+    <input type="hidden" name="mappoints" value="">
+    <input type="hidden" name="mapdistance" value="">
     <div id="rp-runlog-main">
     <div>
         <label for="rp-runlog-date">Date:</label>
@@ -74,10 +78,25 @@
             </div>
         </div>
         <div id="tab-map-new-route">
-            Map control
+            <input type="hidden" name="rp-map-points" value="">
+            <input type="hidden" name="rp-map-distance" value="">
+            <div>
+                <label for="rp-map-name">Name:</label>
+                <input type="text" id="rp-map-name" name="rp-map-name" class="rp-map-name" />
+                Distance: <span class="rp-map-distance">0</span>
+            </div>
+            <div>
+                <label for="rp-map-notes">Notes:<br/><small>(optional)</small></label>
+                <textarea id="rp-map-notes" name="rp-map-notes" class="rp-map-notes" wrap="off"></textarea>
+            </div>
+
+            <div id="map"></div>
             <div>
             <button name="rp-distance-select-map-ok" type="button">OK</button>
             <button name="rp-distance-select-cancel" type="button">Cancel</button>
+            |
+            <button type="button" name="undo">Undo</button>
+            <button type="button" name="clear">Clear</button>
             </div>
         </div>
         <div id="tab-manual-distance">
@@ -144,6 +163,7 @@ $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(funct
     runLogDistanceSelector.hide();
 
     $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val(runLogDistanceManual.val());
+    // TODO: reset map as well, or possibly should be done in the tab activate callback
 });
 $('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(function() {
     runLogDistanceType.val('2');
@@ -162,12 +182,16 @@ const runLogTimeTaken = $('form[name="rp-runlog"] input[name="timetaken"]');
 runLogPace.hide();
 runLogTimeTaken.on('input', updateRunPace);
 function updateRunPace() {
-    console.log('Calculating pace for time ' + runLogTimeTaken.val() + ', distance type ' + runLogDistanceType.val() + ', distance ' + runLogDistanceManual.val() + ', routeid ' + runLogRouteId.val());
+    console.log('Calculating pace for time '+runLogTimeTaken.val()
+        +', distance type '+runLogDistanceType.val()
+        +', distance '+runLogDistanceManual.val()
+        +', routeid '+runLogRouteId.val());
     $.getJSON('/api/calculator/pace', {
         timeTaken: runLogTimeTaken.val(),
         distanceType: runLogDistanceType.val(),
         distanceManual: runLogDistanceManual.val(),
-        routeId: runLogRouteId.val()
+        routeId: runLogRouteId.val(),
+        mapDistance: runLogMapDistance.val()
     })
     .done(function(data) {
         console.log('pace returned: ' + data.pace);
@@ -198,6 +222,10 @@ function onTabActivated(event, tab) {
         console.log('initialising saved routes tab');
         runLogUserRoutes.attr('data-initialised', 'true');
         loadRunLogUserRoutes(1);
+    } else if (tab.selector === '#tab-map-new-route' && $('#map').attr('data-initialised') !== 'true') {
+        console.log('initialising route mapping tab');
+        $('#map').attr('data-initialised', 'true');
+        initialiseMap();
     }
 }
 function loadRunLogUserRoutes(pageNumber) {
@@ -240,5 +268,58 @@ function onRunLogUserRoutesLoaded(data) {
         $('span', runLogUserRoutes).show();
     }
 }
+const map = L.map('map');
+const runLogMapDistance = $('form[name="rp-runlog"] input[name="rp-map-distance"]');
+function initialiseMap() {
+    if (!navigator.geolocation) {
+        map.setView([54.505, -0.09], 6);
+    } else {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                map.setView([position.coords.latitude, position.coords.longitude], 12);
+            },
+            function() {
+                map.setView([54.505, -0.09], 6);
+            });
+    }
+    L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
+	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+
+    const mapPointsEl = $('form[name="rp-runlog"] input[name="rp-map-points"]');
+    const route = new MapRoute(map, mapPointsEl, runLogMapDistance, $('span.rp-map-distance'));
+
+    $('#tab-map-new-route button[name="undo"]').click(function() { route.undoLastPoint(); });
+    $('#tab-map-new-route button[name="clear"]').click(function() {
+        if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
+            route.clearRoute();
+    });
+
+    $('#tab-map-new-route button[name="rp-distance-select-map-ok"]').click(function() {
+        // TODO: check there are points & name
+        // update 'real' input fields with the new values
+        $('form[name="rp-runlog"] input[name="mapname"]').val($('form[name="rp-runlog"] input[name="rp-map-name"]').val());
+        $('form[name="rp-runlog"] input[name="mapnotes"]').val($('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val());
+        $('form[name="rp-runlog"] input[name="mappoints"]').val($('form[name="rp-runlog"] input[name="rp-map-points"]').val());
+        $('form[name="rp-runlog"] input[name="mapdistance"]').val($('form[name="rp-runlog"] input[name="rp-map-distance"]').val());
+        console.log('set new mapped fields: '+
+            'name=['+$('form[name="rp-runlog"] input[name="mapname"]').val()+'], '+
+            'notes=['+$('form[name="rp-runlog"] input[name="mapnotes"]').val()+'], '+
+            'points=['+$('form[name="rp-runlog"] input[name="mappoints"]').val()+'], '+
+            'distance=['+$('form[name="rp-runlog"] input[name="mapdistance"]').val()+']');
+
+        runLogDistanceType.val(4);
+        runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="mapname"]').val());
+        runLogDistanceSelected.show();
+        runLogDistanceSelectedEdit.show();
+        runLogDistanceSelection.hide();
+        runLogMainForm.show();
+        runLogDistanceSelector.hide();
+        updateRunPace();
+    });
+}
+
 </script>
 }

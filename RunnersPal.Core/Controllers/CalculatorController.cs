@@ -19,7 +19,8 @@ public class CalculatorController(
     : ControllerBase
 {
     [HttpGet("pace")]
-    public async Task<IActionResult> Pace([FromQuery] string? timeTaken, [FromQuery] int? distanceType, decimal? distanceManual, int? routeId)
+    public async Task<IActionResult> Pace([FromQuery] string? timeTaken, [FromQuery] int? distanceType,
+        decimal? distanceManual, int? routeId, decimal? mapDistance)
     {
         decimal? routeDistanceInMeters = null;
 
@@ -66,6 +67,15 @@ public class CalculatorController(
                 }
 
                 routeDistanceInMeters = userRoute.Distance;
+                break;
+            case 4:
+                if ((mapDistance ?? 0) <= 0)
+                {
+                    logger.LogWarning("Getting pace for a newly mapped route, but no map distance was passed");
+                    return BadRequest();
+                }
+                
+                routeDistanceInMeters = mapDistance;
                 break;
         }
 

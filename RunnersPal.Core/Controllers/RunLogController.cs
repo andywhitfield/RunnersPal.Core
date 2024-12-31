@@ -2,6 +2,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Controllers.ApiModels;
+using RunnersPal.Core.Models;
 using RunnersPal.Core.Repository;
 using RunnersPal.Core.Services;
 
@@ -23,6 +24,12 @@ public class RunLogController(ILogger<RunLogController> logger,
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
         logger.LogDebug("Getting run log activities for user account id = {UserAccountId}", userAccount.Id);
         await foreach (var runLog in runLogRepository.GetByDateAsync(userAccount, date))
-            yield return new(runLog.Id, DateOnly.FromDateTime(runLog.Date), $"{(runLog.Route.Distance / 1000 /* TODO user unit conversion */).ToString("0.#")} km in {runLog.TimeTaken}", paceService.CalculatePace(runLog));
+            yield return new(runLog.Id, DateOnly.FromDateTime(runLog.Date), $"{(runLog.Route.Distance / 1000 /* TODO user unit conversion */).ToString("0.#")} km in {TimeTaken(runLog)}", paceService.CalculatePace(runLog));
+    }
+
+    private string TimeTaken(RunLog runLog)
+    {
+        var timeTaken = paceService.TimeTaken(runLog.TimeTaken);
+        return timeTaken == null ? runLog.TimeTaken : timeTaken.Value.ToString(timeTaken.Value.TotalHours > 1 ? "hh\\:mm\\:ss" : "mm\\:ss");
     }
 }

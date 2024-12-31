@@ -245,6 +245,7 @@ form[name="rp-runlog"] textarea {
 
 #rp-distance {
     display: inline-block;
+    width: 100%;
 }
 
 .the-datepicker__rp-runlog-datepicker-title {

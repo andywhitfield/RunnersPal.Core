@@ -18,6 +18,10 @@ public class AddModel(ILogger<AddModel> logger,
     [BindProperty] public int DistanceType { get; set; }
     [BindProperty] public decimal? DistanceManual { get; set; }
     [BindProperty] public int? RouteId { get; set; }
+    [BindProperty] public string? MapPoints { get; set; }
+    [BindProperty] public string? MapName { get; set; }
+    [BindProperty] public string? MapNotes { get; set; }
+    [BindProperty] public decimal? MapDistance { get; set; }
     [BindProperty] public string? TimeTaken { get; set; }
     [BindProperty] public string? Comment { get; set; }
     [BindProperty] public string? Cancel { get; set; }
@@ -70,6 +74,17 @@ public class AddModel(ILogger<AddModel> logger,
 
                 logger.LogDebug("Creating a new run log entry");
                 await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), userRoute, TimeTaken!, Comment);
+
+                break;
+            case 4:
+                if (MapDistance == null || MapDistance == 0 || string.IsNullOrEmpty(MapName) || string.IsNullOrEmpty(MapPoints) || Date == null || paceService.TimeTaken(TimeTaken) == null)
+                    return BadRequest();
+
+                logger.LogDebug("Creating a new mapped route for {MapName} ({MapNotes}): {MapPoints}", MapName, MapNotes, MapPoints);
+                var newUserRoute = await routeRepository.CreateNewRouteAsync(userAccount, MapName, MapPoints, MapDistance.Value, MapNotes);
+
+                logger.LogDebug("Creating a new run log entry");
+                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), newUserRoute, TimeTaken!, Comment);
 
                 break;
             default:
