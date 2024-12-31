@@ -23,6 +23,6 @@ public class RunLogController(ILogger<RunLogController> logger,
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
         logger.LogDebug("Getting run log activities for user account id = {UserAccountId}", userAccount.Id);
         await foreach (var runLog in runLogRepository.GetByDateAsync(userAccount, date))
-            yield return new(runLog.Id, DateOnly.FromDateTime(runLog.Date), $"{runLog.Route.Distance / 1000 /* TODO user unit conversion */} km in {runLog.TimeTaken}", paceService.CalculatePace(runLog));
+            yield return new(runLog.Id, DateOnly.FromDateTime(runLog.Date), $"{(runLog.Route.Distance / 1000 /* TODO user unit conversion */).ToString("0.#")} km in {runLog.TimeTaken}", paceService.CalculatePace(runLog));
     }
 }

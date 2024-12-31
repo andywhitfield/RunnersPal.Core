@@ -13,6 +13,7 @@ namespace RunnersPal.Core.Controllers;
 [Produces(MediaTypeNames.Application.Json)]
 public class CalculatorController(
     ILogger<CalculatorController> logger,
+    IUserAccountRepository userAccountRepository,
     IRouteRepository routeRepository,
     IPaceService paceService)
     : ControllerBase
@@ -48,6 +49,23 @@ public class CalculatorController(
                 }
 
                 routeDistanceInMeters = distanceManual;
+                break;
+            case 3:
+                if (routeId == null)
+                {
+                    logger.LogWarning("Getting pace for a user route, but no route id passed");
+                    return BadRequest();
+                }
+
+                var userAccount = await userAccountRepository.GetUserAccountAsync(User);
+                var userRoute = await routeRepository.GetRouteAsync(routeId.Value);
+                if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != userAccount.Id)
+                {
+                    logger.LogWarning("Getting pace for a user route, but route id passed is not a user route: {RouteId}", routeId);
+                    return BadRequest();
+                }
+
+                routeDistanceInMeters = userRoute.Distance;
                 break;
         }
 

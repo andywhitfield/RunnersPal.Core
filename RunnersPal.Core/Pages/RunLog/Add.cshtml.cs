@@ -59,6 +59,19 @@ public class AddModel(ILogger<AddModel> logger,
                 await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment);
 
                 break;
+            case 3:
+                if (RouteId == null || RouteId == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
+                    return BadRequest();
+
+                logger.LogDebug("Getting user route {RouteId}", RouteId);
+                var userRoute = await routeRepository.GetRouteAsync(RouteId.Value);
+                if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != userAccount.Id)
+                    return BadRequest();
+
+                logger.LogDebug("Creating a new run log entry");
+                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), userRoute, TimeTaken!, Comment);
+
+                break;
             default:
                 return BadRequest();
         }
