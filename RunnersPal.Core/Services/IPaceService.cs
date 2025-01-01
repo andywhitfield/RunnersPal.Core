@@ -5,6 +5,6 @@ namespace RunnersPal.Core.Services;
 public interface IPaceService
 {
     TimeSpan? TimeTaken(string? timeTaken);
-    string CalculatePace(RunLog runLog);
-    string? CalculatePace(TimeSpan? timeTaken, decimal routeDistanceInMeters, string? defaultIfInvalid);
+    string CalculatePace(UserAccount userAccount, RunLog runLog);
+    string? CalculatePace(UserAccount userAccount, TimeSpan? timeTaken, decimal routeDistanceInMeters, string? defaultIfInvalid);
 }

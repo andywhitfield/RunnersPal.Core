@@ -11,6 +11,7 @@ public class AddModel(ILogger<AddModel> logger,
     IUserAccountRepository userAccountRepository,
     IRouteRepository routeRepository,
     IRunLogRepository runLogRepository,
+    IUserService userService,
     IPaceService paceService)
     : PageModel
 {
@@ -57,7 +58,7 @@ public class AddModel(ILogger<AddModel> logger,
                     return BadRequest();
 
                 logger.LogDebug("Creating a new manual distance route for {DistanceManual}km", DistanceManual);
-                var manualRoute = await routeRepository.CreateNewRouteAsync(userAccount, $"{DistanceManual} km", "", DistanceManual.Value * 1000m, "");
+                var manualRoute = await routeRepository.CreateNewRouteAsync(userAccount, userService.ToUserDistance(DistanceManual ?? 0, userAccount), "", userService.ToDistanceInMeters(DistanceManual ?? 0, userAccount), "");
 
                 logger.LogDebug("Creating a new run log entry");
                 await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment);
@@ -92,4 +93,10 @@ public class AddModel(ILogger<AddModel> logger,
         }
         return Redirect("/runlog");
     }
+
+    public async Task<string> UserUnitsAsync()
+        => (Models.DistanceUnits)(await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits switch { Models.DistanceUnits.Miles => "miles", Models.DistanceUnits.Kilometers => "km", _ => "" };
+
+    public async Task<decimal> UserUnitsMultiplierAsync()
+        => (Models.DistanceUnits)(await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits switch { Models.DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, Models.DistanceUnits.Kilometers => 1000, _ => 1 };
 }

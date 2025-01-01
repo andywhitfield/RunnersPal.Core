@@ -13,4 +13,5 @@ public interface IUserAccountRepository
     IAsyncEnumerable<UserAccountAuthentication> GetUserAccountAuthenticationsAsync(UserAccount user);
     Task<UserAccountAuthentication?> GetUserAccountAuthenticationByUserHandleAsync(byte[] userHandle);
     Task SetSignatureCountAsync(UserAccountAuthentication userAccountAuthentication, uint signatureCount);
+    Task UpdateAsync(UserAccount userAccount);
 }

@@ -227,7 +227,7 @@ footer {
     white-space: wrap;
 }
 
-form[name="rp-runlog"] label {
+form[name="rp-runlog"] label, form[name="rp-profile"] label {
     width: 105px;
     display: inline-block;
     vertical-align: top;

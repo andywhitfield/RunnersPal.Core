@@ -2,7 +2,7 @@ using RunnersPal.Core.Models;
 
 namespace RunnersPal.Core.Services;
 
-public class PaceService(ILogger<PaceService> logger)
+public class PaceService(ILogger<PaceService> logger, IUserService userService)
     : IPaceService
 {
     public TimeSpan? TimeTaken(string? timeTaken)
@@ -37,16 +37,16 @@ public class PaceService(ILogger<PaceService> logger)
         return time.Ticks == 0 ? null : time;
     }
 
-    public string CalculatePace(RunLog runLog)
-        => CalculatePace(TimeTaken(runLog.TimeTaken), runLog.Route.Distance, null) ?? "unknown pace";
+    public string CalculatePace(UserAccount userAccount, RunLog runLog)
+        => CalculatePace(userAccount, TimeTaken(runLog.TimeTaken), runLog.Route.Distance, null) ?? "unknown pace";
 
-    public string? CalculatePace(TimeSpan? timeTaken, decimal routeDistanceInMeters, string? defaultIfInvalid)
+    public string? CalculatePace(UserAccount userAccount, TimeSpan? timeTaken, decimal routeDistanceInMeters, string? defaultIfInvalid)
     {
         if (timeTaken == null || routeDistanceInMeters == 0)
             return defaultIfInvalid;
 
-        var pace = Convert.ToDecimal(timeTaken.Value.TotalSeconds) / (routeDistanceInMeters / 1000 /* convert to miles if that's the user's units */);
+        var pace = Convert.ToDecimal(timeTaken.Value.TotalSeconds) / userService.ToUserDistanceUnits(routeDistanceInMeters, userAccount);
         logger.LogDebug("TimeTaken: {TimeTaken} ({TimeTakenSeconds}s); Distance: {Distance}; Pace: {Pace}", timeTaken, timeTaken.Value.TotalSeconds, routeDistanceInMeters, pace);
-        return string.Format("{0}:{1} min/km", Convert.ToInt32(Math.Floor(pace / 60)).ToString("0"), Math.Floor(pace % 60).ToString("00"));
+        return string.Format("{0}:{1} min/{2}", Convert.ToInt32(Math.Floor(pace / 60)).ToString("0"), Math.Floor(pace % 60).ToString("00"), (DistanceUnits)userAccount.DistanceUnits switch { DistanceUnits.Miles => "mile", DistanceUnits.Kilometers => "km", _ => "" });
     }
 }

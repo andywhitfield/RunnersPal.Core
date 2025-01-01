@@ -15,6 +15,7 @@ namespace RunnersPal.Core.Controllers;
 public class RunLogController(ILogger<RunLogController> logger,
     IUserAccountRepository userAccountRepository,
     IRunLogRepository runLogRepository,
+    IUserService userService,
     IPaceService paceService)
     : ControllerBase
 {
@@ -24,7 +25,7 @@ public class RunLogController(ILogger<RunLogController> logger,
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
         logger.LogDebug("Getting run log activities for user account id = {UserAccountId}", userAccount.Id);
         await foreach (var runLog in runLogRepository.GetByDateAsync(userAccount, date))
-            yield return new(runLog.Id, DateOnly.FromDateTime(runLog.Date), $"{(runLog.Route.Distance / 1000 /* TODO user unit conversion */).ToString("0.#")} km in {TimeTaken(runLog)}", paceService.CalculatePace(runLog));
+            yield return new(runLog.Id, DateOnly.FromDateTime(runLog.Date), $"{userService.ToUserDistance(runLog.Route.Distance, userAccount)} in {TimeTaken(runLog)}", paceService.CalculatePace(userAccount, runLog));
     }
 
     private string TimeTaken(RunLog runLog)

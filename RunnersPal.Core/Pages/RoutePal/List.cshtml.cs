@@ -8,7 +8,8 @@ namespace RunnersPal.Core.Pages.RoutePal;
 
 [Authorize]
 public class ListModel(IUserAccountRepository userAccountRepository,
-    IRouteRepository routeRepository)
+    IRouteRepository routeRepository,
+    IUserService userService)
     : PageModel
 {
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
@@ -22,4 +23,7 @@ public class ListModel(IUserAccountRepository userAccountRepository,
         Routes = routes.Items;
         Pagination = new(routes.Page, routes.PageCount);
     }
+
+    public async Task<string> RouteDistanceAsync(Models.Route route)
+        => userService.ToUserDistance(route.Distance, await userAccountRepository.GetUserAccountAsync(User));
 }

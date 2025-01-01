@@ -63,7 +63,7 @@
 	}).addTo(map);
 
     const distanceFormEl = $('form[name="rp-map"] input[name="distance"]');
-    const route = new MapRoute(map, mapPointsEl, distanceFormEl, $('span.rp-map-distance'));
+    const route = new MapRoute(map, mapPointsEl, distanceFormEl, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
     for (const mapPoint of mapPoints) {
         route.addPoint(mapPoint);
     }

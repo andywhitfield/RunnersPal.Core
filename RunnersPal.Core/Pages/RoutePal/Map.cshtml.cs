@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RunnersPal.Core.Repository;
+using RunnersPal.Core.Services;
 
 namespace RunnersPal.Core.Pages.RoutePal;
 
@@ -95,4 +96,10 @@ public class MapModel(ILogger<MapModel> logger,
 
         return Redirect($"/routepal/map?routeid={RouteId}");
     }
+    
+    public async Task<string> UserUnitsAsync()
+        => (Models.DistanceUnits?)(await userAccountRepository.GetUserAccountOrNullAsync(User))?.DistanceUnits switch { Models.DistanceUnits.Miles => "miles", Models.DistanceUnits.Kilometers => "km", _ => "km" };
+
+    public async Task<decimal> UserUnitsMultiplierAsync()
+        => (Models.DistanceUnits?)(await userAccountRepository.GetUserAccountOrNullAsync(User))?.DistanceUnits switch { Models.DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, Models.DistanceUnits.Kilometers => 1000, _ => 1000 };
 }

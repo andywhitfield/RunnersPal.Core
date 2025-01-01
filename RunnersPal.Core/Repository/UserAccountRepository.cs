@@ -56,4 +56,10 @@ public class UserAccountRepository(ILogger<UserAccountRepository> logger, Sqlite
         userAccountAuthentication.SignatureCount = signatureCount;
         return context.SaveChangesAsync();
     }
+
+    public Task UpdateAsync(UserAccount userAccount)
+    {
+        userAccount.LastActivityDate = DateTime.UtcNow;
+        return context.SaveChangesAsync();
+    }
 }

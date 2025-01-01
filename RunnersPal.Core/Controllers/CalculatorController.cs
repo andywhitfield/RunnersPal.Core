@@ -15,6 +15,7 @@ public class CalculatorController(
     ILogger<CalculatorController> logger,
     IUserAccountRepository userAccountRepository,
     IRouteRepository routeRepository,
+    IUserService userService,
     IPaceService paceService)
     : ControllerBase
 {
@@ -22,6 +23,7 @@ public class CalculatorController(
     public async Task<IActionResult> Pace([FromQuery] string? timeTaken, [FromQuery] int? distanceType,
         decimal? distanceManual, int? routeId, decimal? mapDistance)
     {
+        var userAccount = await userAccountRepository.GetUserAccountAsync(User);
         decimal? routeDistanceInMeters = null;
         string? distance = null;
 
@@ -50,7 +52,7 @@ public class CalculatorController(
                     return BadRequest();
                 }
 
-                routeDistanceInMeters = distanceManual * 1000; // TODO: user units
+                routeDistanceInMeters = userService.ToDistanceInMeters(distanceManual ?? 0, userAccount);
                 break;
             case 3:
                 if (routeId == null)
@@ -59,7 +61,6 @@ public class CalculatorController(
                     return BadRequest();
                 }
 
-                var userAccount = await userAccountRepository.GetUserAccountAsync(User);
                 var userRoute = await routeRepository.GetRouteAsync(routeId.Value);
                 if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != userAccount.Id)
                 {
@@ -68,7 +69,7 @@ public class CalculatorController(
                 }
 
                 routeDistanceInMeters = userRoute.Distance;
-                distance = $"{((routeDistanceInMeters ?? 0)/1000m).ToString("0.#")}km @ "; //TODO: user routes
+                distance = $"{userService.ToUserDistance(routeDistanceInMeters ?? 0, userAccount)} @ ";
                 break;
             case 4:
                 if ((mapDistance ?? 0) <= 0)
@@ -78,14 +79,14 @@ public class CalculatorController(
                 }
                 
                 routeDistanceInMeters = mapDistance;
-                distance = $"{((routeDistanceInMeters ?? 0)/1000m).ToString("0.#")}km @ "; //TODO: user routes
+                distance = $"{userService.ToUserDistance(routeDistanceInMeters ?? 0, userAccount)} @ ";
                 break;
         }
 
         if (routeDistanceInMeters == null)
             return BadRequest();
 
-        var pace = paceService.CalculatePace(paceService.TimeTaken(timeTaken), routeDistanceInMeters.Value, null);
+        var pace = paceService.CalculatePace(userAccount, paceService.TimeTaken(timeTaken), routeDistanceInMeters.Value, null);
         if (pace == null)
             return BadRequest();
 

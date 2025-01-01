@@ -149,8 +149,10 @@ L.LabelOverlay = L.Layer.extend({
 });
 
 class MapRoute {
-    constructor(map, pointsFormElement, distanceFormElement, distanceDisplayElement) {
+    constructor(map, pointsFormElement, distanceFormElement, distanceDisplayElement, userUnits, metersToUserUnitMultiplier) {
         var self = this;
+        self._userUnits = userUnits;
+        self._metersToUserUnitMultiplier = metersToUserUnitMultiplier;
         self._points = [];
         self._mapPoints = []; // the map layer/line elements
         self._startMarker = null;
@@ -195,8 +197,8 @@ class MapRoute {
         const bearing = geolib.getRhumbLineBearing(curPoint, nextPoint);
         self._distance += geolib.getDistance(curPoint, nextPoint);
         console.log('route distance: ' + self._distance + 'm');
-        while (self._distance >= (self._nextDistanceMarker * 1000)) {
-            const distanceToNextMarker = (self._nextDistanceMarker * 1000) - curDistance;
+        while (self._distance >= (self._nextDistanceMarker * self._metersToUserUnitMultiplier)) {
+            const distanceToNextMarker = (self._nextDistanceMarker * self._metersToUserUnitMultiplier) - curDistance;
             curDistance += distanceToNextMarker;
             const distanceMarkerPoint = geolib.computeDestinationPoint(curPoint, distanceToNextMarker, bearing);
             console.log('new distance marker @ (' + distanceMarkerPoint.latitude + ',' + distanceMarkerPoint.longitude + ')');
@@ -288,7 +290,7 @@ class MapRoute {
         var self = this;
         self._pointsFormElement.val(JSON.stringify(self._points));
         self._distanceFormElement.val(self._distance);
-        self._distanceDisplayElement.text((self._distance / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' km');
+        self._distanceDisplayElement.text((self._distance / self._metersToUserUnitMultiplier).toLocaleString(undefined, { maximumFractionDigits: 1 }) + self._userUnits);
 
         for (const changeCallback of self._changeCallbacks) {
             changeCallback();

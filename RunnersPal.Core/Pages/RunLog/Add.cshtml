@@ -289,7 +289,7 @@ function initialiseMap() {
 	}).addTo(map);
 
     const mapPointsEl = $('form[name="rp-runlog"] input[name="rp-map-points"]');
-    const route = new MapRoute(map, mapPointsEl, runLogMapDistance, $('span.rp-map-distance'));
+    const route = new MapRoute(map, mapPointsEl, runLogMapDistance, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
 
     $('#tab-map-new-route button[name="undo"]').click(function() { route.undoLastPoint(); });
     $('#tab-map-new-route button[name="clear"]').click(function() {

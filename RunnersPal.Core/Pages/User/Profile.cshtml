@@ -6,7 +6,22 @@
 </aside>
 
 <article>
+    <h1>Profile</h1>
     <p>
-    User profile
+    <form method="post" name="rp-profile">
+    <fieldset>
+    <legend>Units</legend>
+    <div>
+        <label for="rp-profile-units-km">Kilometers</label>
+        <input type="radio" id="rp-profile-units-km" name="units" value="@RunnersPal.Core.Models.DistanceUnits.Kilometers"@(Model.Units == RunnersPal.Core.Models.DistanceUnits.Kilometers ? " checked" : "") />
+    </div>    
+    <div>
+        <label for="rp-profile-units-miles">Miles</label>
+        <input type="radio" id="rp-profile-units-miles" name="units" value="@RunnersPal.Core.Models.DistanceUnits.Miles"@(Model.Units == RunnersPal.Core.Models.DistanceUnits.Miles ? " checked" : "") />
+    </div>  
+    </legend>
+    </fieldset>
+    <input type="submit" value="Save" />
+    </form>
     </p>
 </article>
