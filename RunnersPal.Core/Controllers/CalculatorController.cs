@@ -23,6 +23,7 @@ public class CalculatorController(
         decimal? distanceManual, int? routeId, decimal? mapDistance)
     {
         decimal? routeDistanceInMeters = null;
+        string? distance = null;
 
         switch (distanceType)
         {
@@ -49,7 +50,7 @@ public class CalculatorController(
                     return BadRequest();
                 }
 
-                routeDistanceInMeters = distanceManual;
+                routeDistanceInMeters = distanceManual * 1000; // TODO: user units
                 break;
             case 3:
                 if (routeId == null)
@@ -67,6 +68,7 @@ public class CalculatorController(
                 }
 
                 routeDistanceInMeters = userRoute.Distance;
+                distance = $"{((routeDistanceInMeters ?? 0)/1000m).ToString("0.#")}km @ "; //TODO: user routes
                 break;
             case 4:
                 if ((mapDistance ?? 0) <= 0)
@@ -76,6 +78,7 @@ public class CalculatorController(
                 }
                 
                 routeDistanceInMeters = mapDistance;
+                distance = $"{((routeDistanceInMeters ?? 0)/1000m).ToString("0.#")}km @ "; //TODO: user routes
                 break;
         }
 
@@ -86,6 +89,6 @@ public class CalculatorController(
         if (pace == null)
             return BadRequest();
 
-        return Ok(new PaceApiModel(pace));
+        return Ok(new PaceApiModel((distance ?? "") + pace));
     }
 }
