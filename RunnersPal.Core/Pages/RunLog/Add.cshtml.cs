@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using RunnersPal.Core.Models;
 using RunnersPal.Core.Repository;
 using RunnersPal.Core.Services;
 
@@ -27,6 +28,8 @@ public class AddModel(ILogger<AddModel> logger,
     [BindProperty] public string? Comment { get; set; }
     [BindProperty] public string? Cancel { get; set; }
 
+    private UserAccount? _userAccount;
+
     public IEnumerable<Models.Route> SystemRoutes { get; private set; } = [];
 
     public async Task OnGet()
@@ -37,7 +40,7 @@ public class AddModel(ILogger<AddModel> logger,
         if (!string.IsNullOrEmpty(Cancel))
             return Redirect("/runlog");
 
-        var userAccount = await userAccountRepository.GetUserAccountAsync(User);
+        _userAccount = await userAccountRepository.GetUserAccountAsync(User);
         switch (DistanceType)
         {
             case 1:
@@ -50,7 +53,7 @@ public class AddModel(ILogger<AddModel> logger,
                     return BadRequest();
 
                 logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), systemRoute, TimeTaken!, Comment);
+                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), systemRoute, TimeTaken!, Comment);
 
                 break;
             case 2:
@@ -58,10 +61,15 @@ public class AddModel(ILogger<AddModel> logger,
                     return BadRequest();
 
                 logger.LogDebug("Creating a new manual distance route for {DistanceManual}km", DistanceManual);
-                var manualRoute = await routeRepository.CreateNewRouteAsync(userAccount, userService.ToUserDistance(DistanceManual ?? 0, userAccount), "", userService.ToDistanceInMeters(DistanceManual ?? 0, userAccount), "");
+                var manualRoute = await routeRepository.CreateNewRouteAsync(
+                    _userAccount,
+                    userService.ToUserDistance(DistanceManual ?? 0, _userAccount),
+                    "",
+                    userService.ToDistanceInMeters(DistanceManual ?? 0, _userAccount),
+                    "");
 
                 logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment);
+                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment);
 
                 break;
             case 3:
@@ -70,22 +78,28 @@ public class AddModel(ILogger<AddModel> logger,
 
                 logger.LogDebug("Getting user route {RouteId}", RouteId);
                 var userRoute = await routeRepository.GetRouteAsync(RouteId.Value);
-                if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != userAccount.Id)
+                if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != _userAccount.Id)
                     return BadRequest();
 
                 logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), userRoute, TimeTaken!, Comment);
+                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), userRoute, TimeTaken!, Comment);
 
                 break;
             case 4:
-                if (MapDistance == null || MapDistance == 0 || string.IsNullOrEmpty(MapName) || string.IsNullOrEmpty(MapPoints) || Date == null || paceService.TimeTaken(TimeTaken) == null)
+                if (MapDistance == null || MapDistance == 0 ||
+                    string.IsNullOrEmpty(MapName) ||
+                    string.IsNullOrEmpty(MapPoints) ||
+                    Date == null ||
+                    paceService.TimeTaken(TimeTaken) == null)
+                {
                     return BadRequest();
+                }
 
                 logger.LogDebug("Creating a new mapped route for {MapName} ({MapNotes}): {MapPoints}", MapName, MapNotes, MapPoints);
-                var newUserRoute = await routeRepository.CreateNewRouteAsync(userAccount, MapName, MapPoints, MapDistance.Value, MapNotes);
+                var newUserRoute = await routeRepository.CreateNewRouteAsync(_userAccount, MapName, MapPoints, MapDistance.Value, MapNotes);
 
                 logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), newUserRoute, TimeTaken!, Comment);
+                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), newUserRoute, TimeTaken!, Comment);
 
                 break;
             default:
@@ -95,8 +109,10 @@ public class AddModel(ILogger<AddModel> logger,
     }
 
     public async Task<string> UserUnitsAsync()
-        => (Models.DistanceUnits)(await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits switch { Models.DistanceUnits.Miles => "miles", Models.DistanceUnits.Kilometers => "km", _ => "" };
+        => (Models.DistanceUnits)(_userAccount ??= await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits
+            switch { Models.DistanceUnits.Miles => "miles", Models.DistanceUnits.Kilometers => "km", _ => "" };
 
     public async Task<decimal> UserUnitsMultiplierAsync()
-        => (Models.DistanceUnits)(await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits switch { Models.DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, Models.DistanceUnits.Kilometers => 1000, _ => 1 };
+        => (Models.DistanceUnits)(_userAccount ??= await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits
+            switch { Models.DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, Models.DistanceUnits.Kilometers => 1000, _ => 1 };
 }

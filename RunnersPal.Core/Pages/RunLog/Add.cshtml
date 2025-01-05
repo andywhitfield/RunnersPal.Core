@@ -245,7 +245,7 @@ function onRunLogUserRoutesLoaded(data) {
         for (const runLogUserRoute of data.routes) {
             const newRouteItem = $('ul', runLogUserRoutes).append('<li data-routeid='+runLogUserRoute.id+'><a data-routetype="3" data-routeid="'+runLogUserRoute.id+'" href="#" title="Select this route"></a> <span></span> <a href="/routepal/map?routeid='+runLogUserRoute.id+'" title="Open route in a new tab" target="_blank">&RightArrowBar;</a></li>');
             $('li[data-routeid="'+runLogUserRoute.id+'"] a:first', newRouteItem).text(runLogUserRoute.name);
-            $('li[data-routeid="'+runLogUserRoute.id+'"] span:first', newRouteItem).text(runLogUserRoute.distance);
+            $('li[data-routeid="'+runLogUserRoute.id+'"] span:first', newRouteItem).text(runLogUserRoute.distance + (runLogUserRoute.lastRunDate !== '' ? ' last run on '+runLogUserRoute.lastRunDate : ''));
             $('a[data-routeid][data-routetype]', newRouteItem).click(onSelectRunRoute);
         }
         if (data.pagination.pageCount > 1) {

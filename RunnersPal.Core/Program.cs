@@ -25,6 +25,7 @@ builder.Services
     .AddScoped<IUserAccountRepository, UserAccountRepository>()
     .AddScoped<IRouteRepository, RouteRepository>()
     .AddScoped<IRunLogRepository, RunLogRepository>()
+    .AddScoped<IUserRouteService, UserRouteService>()
     .AddScoped<IPaceService, PaceService>();
 
 builder.Services
