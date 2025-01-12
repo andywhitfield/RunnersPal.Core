@@ -29,7 +29,7 @@ $(function() {
             window.location = '/runlog/add?date=' + info.dateStr;
         },
         eventClick: function(info) {
-            alert('Clicked on: ' + info.event.id);
+            window.location = '/runlog/activity?activityid=' + info.event.id;
         },
         eventContent: function(event) {
             return { html: '<span class="rp-event-title">' + event.event.title + '</span>' };

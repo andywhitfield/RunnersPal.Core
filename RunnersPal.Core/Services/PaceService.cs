@@ -5,6 +5,12 @@ namespace RunnersPal.Core.Services;
 public class PaceService(ILogger<PaceService> logger, IUserService userService)
     : IPaceService
 {
+    public string TimeTakenDisplayFormat(string? timeTakenValue)
+    {
+        var timeTaken = TimeTaken(timeTakenValue);
+        return timeTaken == null ? (timeTakenValue ?? "") : timeTaken.Value.ToString(timeTaken.Value.TotalHours > 1 ? "hh\\:mm\\:ss" : "mm\\:ss");
+    }
+
     public TimeSpan? TimeTaken(string? timeTaken)
     {
         if (string.IsNullOrEmpty(timeTaken))
