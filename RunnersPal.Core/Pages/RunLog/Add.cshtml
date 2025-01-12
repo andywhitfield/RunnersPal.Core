@@ -102,7 +102,7 @@
         <div id="tab-manual-distance">
             <label>Manual distance:</label>
             <input type="text" name="rp-distance-select-manual-value" />
-            km
+            @(await Model.UserUnitsAsync())
             <div>
             <label></label>
             <button name="rp-distance-select-manual-ok" type="button">OK</button>
@@ -168,7 +168,7 @@ $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(funct
 $('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(function() {
     runLogDistanceType.val('2');
     runLogDistanceManual.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val());
-    runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val() + ' km');
+    runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val() + '@(await Model.UserUnitsAsync())');
     runLogDistanceSelected.show();
     runLogDistanceSelectedEdit.show();
     runLogDistanceSelection.hide();
