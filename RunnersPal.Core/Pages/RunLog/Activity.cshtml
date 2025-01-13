@@ -158,6 +158,7 @@ const runLogRouteId = $('form[name="rp-runlog"] input[name="routeid"]');
 const runLogDistanceSelection = $('form[name="rp-runlog"] button[name="rp-distance-select"]');
 const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
 const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
+const runLogManualDistanceInput = $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]');
 runLogDistanceSelected.hide();
 runLogDistanceSelectedEdit.hide();
 runLogDistanceSelection.click(function() {
@@ -174,24 +175,21 @@ runLogDistanceSelectedEdit.click(function() {
         0
     );
 });
+runLogManualDistanceInput.on('keydown', function (evt) {
+    if (evt.which === 13) {
+        evt.preventDefault();
+        onEnteredManualDistance();
+        return false;
+    }
+});
 $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(function() {
     runLogMainForm.show();
     runLogDistanceSelector.hide();
 
-    $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val(runLogDistanceManual.val());
+    runLogManualDistanceInput.val(runLogDistanceManual.val());
     // TODO: reset map as well, or possibly should be done in the tab activate callback
 });
-$('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(function() {
-    runLogDistanceType.val('2');
-    runLogDistanceManual.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val());
-    runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]').val() + '@(await Model.UserUnitsAsync())');
-    runLogDistanceSelected.show();
-    runLogDistanceSelectedEdit.show();
-    runLogDistanceSelection.hide();
-    runLogMainForm.show();
-    runLogDistanceSelector.hide();
-    updateRunPace();
-});
+$('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(onEnteredManualDistance);
 $('form[name="rp-runlog"] a[data-routeid][data-routetype]').click(onSelectRunRoute);
 const runLogPace = $('.rp-pace');
 const runLogTimeTaken = $('form[name="rp-runlog"] input[name="timetaken"]');
@@ -233,6 +231,17 @@ function onSelectRunRoute() {
     runLogDistanceSelector.hide();
     updateRunPace();
 }
+function onEnteredManualDistance() {
+    runLogDistanceType.val('2');
+    runLogDistanceManual.val(runLogManualDistanceInput.val());
+    runLogDistanceSelected.val(runLogManualDistanceInput.val() + '@(await Model.UserUnitsAsync())');
+    runLogDistanceSelected.show();
+    runLogDistanceSelectedEdit.show();
+    runLogDistanceSelection.hide();
+    runLogMainForm.show();
+    runLogDistanceSelector.hide();
+    updateRunPace();
+}
 function onTabActivated(event, tab) {
     if (tab.selector === '#tab-saved-routes' && runLogUserRoutes.attr('data-initialised') !== 'true') {
         console.log('initialising saved routes tab');
@@ -242,6 +251,8 @@ function onTabActivated(event, tab) {
         console.log('initialising route mapping tab');
         $('#map').attr('data-initialised', 'true');
         initialiseMap();
+    } else if (tab.selector === '#tab-manual-distance') {
+        runLogManualDistanceInput.trigger('focus');
     }
 }
 function loadRunLogUserRoutes(pageNumber) {
