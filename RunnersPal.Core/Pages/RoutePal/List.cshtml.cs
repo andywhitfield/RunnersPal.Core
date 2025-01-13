@@ -16,13 +16,15 @@ public class ListModel(IUserAccountRepository userAccountRepository,
     private Dictionary<int, Models.RunLog> _lastRunsForRoutes = [];
     private UserAccount? _userAccount;
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true)] public string? Find { get; set; }
     public IEnumerable<Models.Route> Routes { get; private set; } = [];
     public Pagination Pagination { get; private set; } = Pagination.Empty;
 
     public async Task OnGet()
     {
         _userAccount = await userAccountRepository.GetUserAccountAsync(User);
-        var (userRoutes, lastRunsForRoutes) = await userRouteService.GetUserRoutesAsync(_userAccount);
+        Find = string.IsNullOrEmpty(Find) ? null : Find.Trim();
+        var (userRoutes, lastRunsForRoutes) = await userRouteService.GetUserRoutesAsync(_userAccount, Find);
         _lastRunsForRoutes = lastRunsForRoutes;
         var routes = Pagination.Paginate(userRoutes, PageNumber);
         Routes = routes.Items;

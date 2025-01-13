@@ -7,25 +7,32 @@
 
 <article>
 <h1>My routes</h1>
-@if (Model.Routes.Any()) {
+@if (Model.Routes.Any() || !string.IsNullOrEmpty(Model.Find)) {
+<form method="get">
+<input type="hidden" name="pageNumber" value="1" />
+<input type="text" name="find" value="@Model.Find" autofocus /> <input type="submit" value="Find...">
+</form>
+@if (!Model.Routes.Any()) {
+<p>No routes found matching the filter entered.</p>
+}
 @if (Model.Pagination.PageCount > 1) {
 <p>
 <div class="pagination">
     @if (Model.Pagination.PageNumber > 1) {
-    <a title="Go to previous page of routes" href="/routepal/list?pageNumber=@(Model.Pagination.PageNumber - 1)">&laquo;</a>
+    <a title="Go to previous page of routes" href="/routepal/list?pageNumber=@(Model.Pagination.PageNumber - 1)&find=@Model.Find">&laquo;</a>
     }
     @foreach (var pg in Model.Pagination.Pages) {
     @if (pg.IsSelected) {
     <a class="pagination-active">@pg.PageNumber</a>
     } else {
-    <a title="Go to page @pg.PageNumber" href="/routepal/list?pageNumber=@pg.PageNumber">@pg.PageNumber</a>
+    <a title="Go to page @pg.PageNumber" href="/routepal/list?pageNumber=@pg.PageNumber&find=@Model.Find">@pg.PageNumber</a>
     }
     @if (pg.IsNextPageSkipped) {
     <a class="skip">&bull;&bull;</a>
     }
     }
     @if (Model.Pagination.PageNumber < Model.Pagination.PageCount) {
-    <a title="Go to the next page of routes" href="/routepal/list?pageNumber=@(Model.Pagination.PageNumber + 1)">&raquo;</a>
+    <a title="Go to the next page of routes" href="/routepal/list?pageNumber=@(Model.Pagination.PageNumber + 1)&find=@Model.Find">&raquo;</a>
     }
 </div>
 </p>

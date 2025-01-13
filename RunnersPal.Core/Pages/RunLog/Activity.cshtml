@@ -77,7 +77,7 @@
             </div>
         </div>
         <div id="tab-saved-routes">
-            Find: <input type="text" name="findroute" /> <!-- TODO -->
+            <input type="text" name="findroute" /> <button name="rp-route-find" type="button">Find...</button>
             <div class="rp-saved-routes">
             <span>You have no saved routes. Log a run by mapping a new route or enter a manual distance.</span>
             <div class="pagination"></div>
@@ -223,6 +223,15 @@ function updateRunPace() {
 const runLogUserRoutes = $('.rp-saved-routes');
 $('span', runLogUserRoutes).hide();
 $('div.pagination', runLogUserRoutes).hide();
+const runLogUserRoutesFind = $('form[name="rp-runlog"] input[name="findroute"]');
+$('form[name="rp-runlog"] button[name="rp-route-find"]').click(function() { loadRunLogUserRoutes(1); });
+runLogUserRoutesFind.on('keydown', function (evt) {
+    if (evt.which === 13) {
+        evt.preventDefault();
+        loadRunLogUserRoutes(1);
+        return false;
+    }
+});
 function onSelectRunRoute() {
     runLogDistanceType.val($(this).attr('data-routetype'));
     runLogRouteId.val($(this).attr('data-routeid'));
@@ -272,7 +281,11 @@ function onTabActivated(event, tab) {
     }
 }
 function loadRunLogUserRoutes(pageNumber) {
-    $.getJSON('/api/route/list?pageNumber='+pageNumber)
+    console.log('getting page '+pageNumber+' of user routes with find filter ['+runLogUserRoutesFind.val()+']');
+    $.getJSON('/api/route/list', {
+        pageNumber: pageNumber,
+        find: runLogUserRoutesFind.val()
+    })
     .done(onRunLogUserRoutesLoaded)
     .fail(function() {
         console.log('failed getting saved routes');

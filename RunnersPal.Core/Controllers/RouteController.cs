@@ -18,11 +18,12 @@ public class RouteController(ILogger<RouteController> logger,
     : ControllerBase
 {
     [HttpGet("list")]
-    public async Task<RouteListApiModel> List([FromQuery] int pageNumber)
+    public async Task<RouteListApiModel> List([FromQuery] int pageNumber, [FromQuery] string? find)
     {
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
-        logger.LogDebug("Getting routes for user account id = {UserAccountId}", userAccount.Id);
-        var (userRoutes, lastRunsForRoutes) = await userRouteService.GetUserRoutesAsync(userAccount);
+        logger.LogDebug("Getting routes for user account id = {UserAccountId} with find filter = {Find}", userAccount.Id, find);
+        find = string.IsNullOrEmpty(find) ? null : find.Trim();
+        var (userRoutes, lastRunsForRoutes) = await userRouteService.GetUserRoutesAsync(userAccount, find);
         var routes = Pagination.Paginate(userRoutes, pageNumber);
         return new(
             new Pagination(routes.Page, routes.PageCount),

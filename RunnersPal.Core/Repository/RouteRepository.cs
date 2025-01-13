@@ -52,8 +52,13 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
         return context.SaveChangesAsync();
     }
 
-    public async Task<List<Models.Route>> GetRoutesByUserAsync(UserAccount userAccount)
-        => await context.Route.Where(r => r.Creator == userAccount.Id && r.RouteType == Models.Route.PrivateRoute && r.MapPoints != null && r.MapPoints.Length > 0).ToListAsync();
+    public async Task<List<Models.Route>> GetRoutesByUserAsync(UserAccount userAccount, string? find)
+        => await context.Route.Where(r =>
+            r.Creator == userAccount.Id &&
+            r.RouteType == Models.Route.PrivateRoute &&
+            r.MapPoints != null &&
+            r.MapPoints.Length > 0 &&
+            (string.IsNullOrEmpty(find) || EF.Functions.Like(r.Name, $"%{find.Trim()}%") || (r.Notes != null && EF.Functions.Like(r.Notes, $"%{find.Trim()}%")))).ToListAsync();
     
     public IAsyncEnumerable<Models.Route> GetSystemRoutesAsync() => context.Route.Where(r => r.RouteType == Models.Route.SystemRoute).OrderBy(r => r.Id).AsAsyncEnumerable();
 }
