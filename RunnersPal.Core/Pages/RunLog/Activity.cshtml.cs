@@ -27,6 +27,9 @@ public class ActivityModel(ILogger<ActivityModel> logger,
     [BindProperty] public decimal? MapDistance { get; set; }
     [BindProperty] public string? TimeTaken { get; set; }
     [BindProperty] public string? Comment { get; set; }
+    [BindProperty] public string? Add { get; set; }
+    [BindProperty] public string? Save { get; set; }
+    [BindProperty] public string? Delete { get; set; }
     [BindProperty] public string? Cancel { get; set; }
 
     private UserAccount? _userAccount;
@@ -38,7 +41,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
         SystemRoutes = await routeRepository.GetSystemRoutesAsync().ToListAsync();
         if (ActivityId == null)
             return;
-        
+
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
         var existingActivity = await runLogRepository.GetRunLogAsync(ActivityId.Value);
         if (existingActivity == null || existingActivity.UserAccountId != userAccount.Id)
@@ -68,69 +71,87 @@ public class ActivityModel(ILogger<ActivityModel> logger,
             return Redirect("/runlog");
 
         _userAccount = await userAccountRepository.GetUserAccountAsync(User);
-        switch (DistanceType)
+
+        if (!string.IsNullOrEmpty(Add))
         {
-            case 1:
-                if (RouteId == null || RouteId == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
+            logger.LogInformation("Adding new run");
+            switch (DistanceType)
+            {
+                case 1:
+                    if (RouteId == null || RouteId == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
+                        return BadRequest();
+
+                    logger.LogDebug("Getting system route {RouteId}", RouteId);
+                    var systemRoute = await routeRepository.GetRouteAsync(RouteId.Value);
+                    if (systemRoute == null || systemRoute.RouteType != Models.Route.SystemRoute)
+                        return BadRequest();
+
+                    logger.LogDebug("Creating a new run log entry");
+                    await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), systemRoute, TimeTaken!, Comment);
+
+                    break;
+                case 2:
+                    if (DistanceManual == null || DistanceManual == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
+                        return BadRequest();
+
+                    logger.LogDebug("Creating a new manual distance route for {DistanceManual}km", DistanceManual);
+                    var manualRoute = await routeRepository.CreateNewRouteAsync(
+                        _userAccount,
+                        userService.ToUserDistance(DistanceManual ?? 0, _userAccount),
+                        "",
+                        userService.ToDistanceInMeters(DistanceManual ?? 0, _userAccount),
+                        "");
+
+                    logger.LogDebug("Creating a new run log entry");
+                    await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment);
+
+                    break;
+                case 3:
+                    if (RouteId == null || RouteId == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
+                        return BadRequest();
+
+                    logger.LogDebug("Getting user route {RouteId}", RouteId);
+                    var userRoute = await routeRepository.GetRouteAsync(RouteId.Value);
+                    if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != _userAccount.Id)
+                        return BadRequest();
+
+                    logger.LogDebug("Creating a new run log entry");
+                    await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), userRoute, TimeTaken!, Comment);
+
+                    break;
+                case 4:
+                    if (MapDistance == null || MapDistance == 0 ||
+                        string.IsNullOrEmpty(MapName) ||
+                        string.IsNullOrEmpty(MapPoints) ||
+                        Date == null ||
+                        paceService.TimeTaken(TimeTaken) == null)
+                    {
+                        return BadRequest();
+                    }
+
+                    logger.LogDebug("Creating a new mapped route for {MapName} ({MapNotes}): {MapPoints}", MapName, MapNotes, MapPoints);
+                    var newUserRoute = await routeRepository.CreateNewRouteAsync(_userAccount, MapName, MapPoints, MapDistance.Value, MapNotes);
+
+                    logger.LogDebug("Creating a new run log entry");
+                    await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), newUserRoute, TimeTaken!, Comment);
+
+                    break;
+                default:
                     return BadRequest();
-
-                logger.LogDebug("Getting system route {RouteId}", RouteId);
-                var systemRoute = await routeRepository.GetRouteAsync(RouteId.Value);
-                if (systemRoute == null || systemRoute.RouteType != Models.Route.SystemRoute)
-                    return BadRequest();
-
-                logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), systemRoute, TimeTaken!, Comment);
-
-                break;
-            case 2:
-                if (DistanceManual == null || DistanceManual == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
-                    return BadRequest();
-
-                logger.LogDebug("Creating a new manual distance route for {DistanceManual}km", DistanceManual);
-                var manualRoute = await routeRepository.CreateNewRouteAsync(
-                    _userAccount,
-                    userService.ToUserDistance(DistanceManual ?? 0, _userAccount),
-                    "",
-                    userService.ToDistanceInMeters(DistanceManual ?? 0, _userAccount),
-                    "");
-
-                logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment);
-
-                break;
-            case 3:
-                if (RouteId == null || RouteId == 0 || Date == null || paceService.TimeTaken(TimeTaken) == null)
-                    return BadRequest();
-
-                logger.LogDebug("Getting user route {RouteId}", RouteId);
-                var userRoute = await routeRepository.GetRouteAsync(RouteId.Value);
-                if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != _userAccount.Id)
-                    return BadRequest();
-
-                logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), userRoute, TimeTaken!, Comment);
-
-                break;
-            case 4:
-                if (MapDistance == null || MapDistance == 0 ||
-                    string.IsNullOrEmpty(MapName) ||
-                    string.IsNullOrEmpty(MapPoints) ||
-                    Date == null ||
-                    paceService.TimeTaken(TimeTaken) == null)
-                {
-                    return BadRequest();
-                }
-
-                logger.LogDebug("Creating a new mapped route for {MapName} ({MapNotes}): {MapPoints}", MapName, MapNotes, MapPoints);
-                var newUserRoute = await routeRepository.CreateNewRouteAsync(_userAccount, MapName, MapPoints, MapDistance.Value, MapNotes);
-
-                logger.LogDebug("Creating a new run log entry");
-                await runLogRepository.CreateNewAsync(_userAccount, Date.ParseDateTime(), newUserRoute, TimeTaken!, Comment);
-
-                break;
-            default:
-                return BadRequest();
+            }
+        }
+        else if (!string.IsNullOrEmpty(Delete) && ActivityId != null)
+        {
+            logger.LogInformation("Deleting run {Id}", ActivityId);
+            var existingActivity = await runLogRepository.GetRunLogAsync(ActivityId.Value);
+            if (existingActivity == null || existingActivity.UserAccountId != _userAccount.Id)
+            {
+                logger.LogWarning("RunLog {ActivityId} not found or doesn't belong to user {UserAccountId}", ActivityId, _userAccount.Id);
+            }
+            else
+            {
+                await runLogRepository.DeleteRunLogAsync(existingActivity);
+            }
         }
         return Redirect("/runlog");
     }

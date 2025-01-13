@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RunnersPal.Core.Models;
 
 public class RunLog
 {
+    public const char LogStateValid = 'V';
+    public const char LogStateDeleted = 'D';
+
     public int Id { get; set; }
     public DateTime Date { get; set; } = DateTime.Today;
     public int RouteId { get; set; }
@@ -17,7 +19,7 @@ public class RunLog
     public required UserAccount UserAccount { get; set; }
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     public string? Comment { get; set; }
-    public char LogState { get; set; }
+    public char LogState { get; set; } = LogStateValid;
     public int? ReplacesRunLogId { get; set; }
     public Route? ReplacesRunLog { get; set; }
 }
