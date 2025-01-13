@@ -8,10 +8,10 @@ public class RunLogRepository(ILogger<RunLogRepository> logger, SqliteDataContex
 {
     public Task<RunLog?> GetRunLogAsync(int id) => context.RunLog.Include(r => r.Route).SingleOrDefaultAsync(r => r.Id == id);
 
-    public Task CreateNewAsync(UserAccount userAccount, DateTime runDate, Models.Route route, string timeTaken, string? comment)
+    public async Task<RunLog> CreateNewAsync(UserAccount userAccount, DateTime runDate, Models.Route route, string timeTaken, string? comment, RunLog? replacedRunLog)
     {
         logger.LogDebug("Creating new run log for [{User}]", userAccount.Id);
-        context.RunLog.Add(new()
+        var newRunLog = context.RunLog.Add(new()
         {
             UserAccount = userAccount,
             Route = route,
@@ -19,9 +19,11 @@ public class RunLogRepository(ILogger<RunLogRepository> logger, SqliteDataContex
             TimeTaken = timeTaken,
             Comment = comment,
             CreatedDate = DateTime.UtcNow,
-            LogState = RunLog.LogStateValid
+            LogState = RunLog.LogStateValid,
+            ReplacesRunLogId = replacedRunLog?.Id
         });
-        return context.SaveChangesAsync();
+        await context.SaveChangesAsync();
+        return newRunLog.Entity;
     }
 
     public IAsyncEnumerable<RunLog> GetByDateAsync(UserAccount userAccount, DateTime forDate)
