@@ -286,6 +286,10 @@ class MapRoute {
         self._nextDistanceMarker = 1;
         self.updatePointsFormElement();
     }
+    fitBounds(points) {
+        var self = this;
+        self._map.fitBounds(L.latLngBounds(points));
+    }
     updatePointsFormElement() {
         var self = this;
         self._pointsFormElement.val(JSON.stringify(self._points));

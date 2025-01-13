@@ -159,6 +159,9 @@ const runLogDistanceSelection = $('form[name="rp-runlog"] button[name="rp-distan
 const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
 const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
 const runLogManualDistanceInput = $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]');
+const runLogMapTab = $('#tab-map-new-route');
+const runLogMapDistance = $('form[name="rp-runlog"] input[name="mapdistance"]');
+const runLogMapPoints = $('form[name="rp-runlog"] input[name="mappoints"]');
 runLogDistanceSelected.hide();
 runLogDistanceSelectedEdit.hide();
 runLogDistanceSelection.click(function() {
@@ -172,6 +175,7 @@ runLogDistanceSelectedEdit.click(function() {
         runLogDistanceType.val() === '1' ? 0 :
         runLogDistanceType.val() === '2' ? 3 :
         runLogDistanceType.val() === '3' ? 1 :
+        runLogDistanceType.val() === '4' ? 2 :
         0
     );
 });
@@ -187,7 +191,6 @@ $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(funct
     runLogDistanceSelector.hide();
 
     runLogManualDistanceInput.val(runLogDistanceManual.val());
-    // TODO: reset map as well, or possibly should be done in the tab activate callback
 });
 $('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(onEnteredManualDistance);
 $('form[name="rp-runlog"] a[data-routeid][data-routetype]').click(onSelectRunRoute);
@@ -247,10 +250,23 @@ function onTabActivated(event, tab) {
         console.log('initialising saved routes tab');
         runLogUserRoutes.attr('data-initialised', 'true');
         loadRunLogUserRoutes(1);
-    } else if (tab.selector === '#tab-map-new-route' && $('#map').attr('data-initialised') !== 'true') {
-        console.log('initialising route mapping tab');
-        $('#map').attr('data-initialised', 'true');
-        initialiseMap();
+    } else if (tab.selector === '#tab-map-new-route') {
+        if ($('#map').attr('data-initialised') === 'true') {
+            console.log('resetting route with original name, notes, and points');
+            $('form[name="rp-runlog"] input[name="rp-map-name"]').val($('form[name="rp-runlog"] input[name="mapname"]').val());
+            $('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val($('form[name="rp-runlog"] input[name="mapnotes"]').val());
+            const newMapRoute = runLogMapTab.data('route');
+            newMapRoute.clearRoute();
+            const newMapPoints = runLogMapPoints.val() === '' ? [] : JSON.parse(runLogMapPoints.val());
+            for (const newMapPoint of newMapPoints) {
+                newMapRoute.addPoint(newMapPoint);
+            }
+            newMapRoute.fitBounds(newMapPoints);
+        } else {
+            console.log('initialising route mapping tab');
+            $('#map').attr('data-initialised', 'true');
+            initialiseMap();
+        }
     } else if (tab.selector === '#tab-manual-distance') {
         runLogManualDistanceInput.trigger('focus');
     }
@@ -296,7 +312,7 @@ function onRunLogUserRoutesLoaded(data) {
     }
 }
 const map = L.map('map');
-const runLogMapDistance = $('form[name="rp-runlog"] input[name="rp-map-distance"]');
+const runLogMapDistanceCurrent = $('form[name="rp-runlog"] input[name="rp-map-distance"]');
 function initialiseMap() {
     if (!navigator.geolocation) {
         map.setView([54.505, -0.09], 6);
@@ -316,26 +332,27 @@ function initialiseMap() {
 	}).addTo(map);
 
     const mapPointsEl = $('form[name="rp-runlog"] input[name="rp-map-points"]');
-    const route = new MapRoute(map, mapPointsEl, runLogMapDistance, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
+    const route = new MapRoute(map, mapPointsEl, runLogMapDistanceCurrent, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
+    runLogMapTab.data('route', route);
 
-    $('#tab-map-new-route button[name="undo"]').click(function() { route.undoLastPoint(); });
-    $('#tab-map-new-route button[name="clear"]').click(function() {
+    $('button[name="undo"]', runLogMapTab).click(function() { route.undoLastPoint(); });
+    $('button[name="clear"]', runLogMapTab).click(function() {
         if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
             route.clearRoute();
     });
 
-    $('#tab-map-new-route button[name="rp-distance-select-map-ok"]').click(function() {
+    $('button[name="rp-distance-select-map-ok"]', runLogMapTab).click(function() {
         // TODO: check there are points & name
         // update 'real' input fields with the new values
         $('form[name="rp-runlog"] input[name="mapname"]').val($('form[name="rp-runlog"] input[name="rp-map-name"]').val());
         $('form[name="rp-runlog"] input[name="mapnotes"]').val($('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val());
-        $('form[name="rp-runlog"] input[name="mappoints"]').val($('form[name="rp-runlog"] input[name="rp-map-points"]').val());
-        $('form[name="rp-runlog"] input[name="mapdistance"]').val($('form[name="rp-runlog"] input[name="rp-map-distance"]').val());
+        runLogMapPoints.val($('form[name="rp-runlog"] input[name="rp-map-points"]').val());
+        runLogMapDistance.val($('form[name="rp-runlog"] input[name="rp-map-distance"]').val());
         console.log('set new mapped fields: '+
             'name=['+$('form[name="rp-runlog"] input[name="mapname"]').val()+'], '+
             'notes=['+$('form[name="rp-runlog"] input[name="mapnotes"]').val()+'], '+
-            'points=['+$('form[name="rp-runlog"] input[name="mappoints"]').val()+'], '+
-            'distance=['+$('form[name="rp-runlog"] input[name="mapdistance"]').val()+']');
+            'points=['+runLogMapPoints.val()+'], '+
+            'distance=['+runLogMapDistance.val()+']');
 
         runLogDistanceType.val(4);
         runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="mapname"]').val());
@@ -345,8 +362,7 @@ function initialiseMap() {
         runLogMainForm.show();
         runLogDistanceSelector.hide();
         updateRunPace();
-    });
-    
+    });    
 }
 
 if ($('form[name="rp-runlog"] input[name="activityid"]').val() !== '') {
