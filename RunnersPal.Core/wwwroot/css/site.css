@@ -227,7 +227,8 @@ footer {
     white-space: wrap;
 }
 
-form[name="rp-runlog"] label, form[name="rp-profile"] label {
+form[name="rp-runlog"] label,
+form[name="rp-profile"] label {
     width: 105px;
     display: inline-block;
     vertical-align: top;
@@ -277,6 +278,15 @@ form[name="rp-map"] input[type="text"] {
 .rp-pace span {
     font-size: small;
     padding-bottom: 4px;
+}
+
+div.rp-map-name {
+    float: left;
+    margin-right: 10px;
+}
+
+div.rp-map-name+div {
+    display: inline-block;
 }
 
 @media (max-width: 800px) {
