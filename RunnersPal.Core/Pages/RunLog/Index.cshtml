@@ -26,7 +26,7 @@ $(function() {
         initialView: 'dayGridMonth',
         headerToolbar: false,
         dateClick: function(info) {
-            window.location = '/runlog/add?date=' + info.dateStr;
+            window.location = '/runlog/activity?date=' + info.dateStr;
         },
         eventClick: function(info) {
             window.location = '/runlog/activity?activityid=' + info.event.id;

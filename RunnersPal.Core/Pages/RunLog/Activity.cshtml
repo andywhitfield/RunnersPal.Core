@@ -6,7 +6,11 @@
 </aside>
 
 <article>
+    @if (Model.ActivityId != null) {
+    <h1>View / Edit run</h1>
+    } else {
     <h1>Log a new run</h1>
+    }
     <form name="rp-runlog" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" name="activityid" value="@Model.ActivityId">
@@ -43,7 +47,12 @@
     </div>
     <div>
         <label></label>
+        @if (Model.ActivityId != null) {
+        <input type="submit" name="save" value="Save" />
+        <input type="submit" name="delete" value="Delete" data-confirm="Are you sure you want to delete this run log entry?" />
+        } else {
         <input type="submit" name="add" value="Add" />
+        }
         <button type="submit" name="cancel" value="cancel">Cancel</button>
     </div>
     </div>
@@ -101,8 +110,8 @@
             </div>
         </div>
         <div id="tab-manual-distance">
-            <label>Manual distance:</label>
-            <input type="text" name="rp-distance-select-manual-value" />
+            <label for="rp-distance-select-manual-value">Manual distance:</label>
+            <input type="text" id="rp-distance-select-manual-value" name="rp-distance-select-manual-value" />
             @(await Model.UserUnitsAsync())
             <div>
             <label></label>

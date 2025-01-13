@@ -59,7 +59,6 @@ public class ActivityModel(ILogger<ActivityModel> logger,
         RouteId = existingActivity.Route.Id;
         MapName = existingActivity.Route.Name;
         MapNotes = existingActivity.Route.Notes;
-        MapPoints = existingActivity.Route.MapPoints;
         MapDistance = existingActivity.Route.Distance;
     }
 
