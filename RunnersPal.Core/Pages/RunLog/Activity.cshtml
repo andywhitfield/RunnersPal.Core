@@ -111,7 +111,7 @@
         </div>
         <div id="tab-manual-distance">
             <label for="rp-distance-select-manual-value">Manual distance:</label>
-            <input type="text" id="rp-distance-select-manual-value" name="rp-distance-select-manual-value" />
+            <input type="text" id="rp-distance-select-manual-value" name="rp-distance-select-manual-value" value="@Model.DistanceManual" />
             @(await Model.UserUnitsAsync())
             <div>
             <label></label>
@@ -167,6 +167,12 @@ runLogDistanceSelection.click(function() {
 runLogDistanceSelectedEdit.click(function() {
     runLogDistanceSelector.show();
     runLogMainForm.hide();
+    $('#rp-distance').responsiveTabs('activate',
+        runLogDistanceType.val() === '1' ? 0 :
+        runLogDistanceType.val() === '2' ? 3 :
+        runLogDistanceType.val() === '3' ? 1 :
+        0
+    );
 });
 $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(function() {
     runLogMainForm.show();

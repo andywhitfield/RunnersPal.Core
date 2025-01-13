@@ -55,7 +55,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
             existingActivity.Route.RouteType == Models.Route.SystemRoute ? 1 :
             string.IsNullOrEmpty(existingActivity.Route.MapPoints) ? 2 :
             3;
-        DistanceManual = decimal.Round(userService.ToUserDistanceUnits(existingActivity.Route.Distance, userAccount), 4);
+        DistanceManual = DistanceType == 2 ? decimal.Round(userService.ToUserDistanceUnits(existingActivity.Route.Distance, userAccount), 4) : null;
         RouteId = existingActivity.Route.Id;
         MapName = existingActivity.Route.Name;
         MapNotes = existingActivity.Route.Notes;
