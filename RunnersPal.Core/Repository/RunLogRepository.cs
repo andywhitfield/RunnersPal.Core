@@ -6,7 +6,7 @@ namespace RunnersPal.Core.Repository;
 public class RunLogRepository(ILogger<RunLogRepository> logger, SqliteDataContext context)
     : IRunLogRepository
 {
-    public Task<RunLog?> GetRunLogAsync(int id) => context.RunLog.Include(r => r.Route).SingleOrDefaultAsync(r => r.Id == id);
+    public Task<RunLog?> GetRunLogAsync(int id) => context.RunLog.Include(r => r.Route).SingleOrDefaultAsync(r => r.Id == id && r.LogState == RunLog.LogStateValid);
 
     public async Task<RunLog> CreateNewAsync(UserAccount userAccount, DateTime runDate, Models.Route route, string timeTaken, string? comment, RunLog? replacedRunLog)
     {
