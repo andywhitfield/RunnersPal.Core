@@ -55,4 +55,7 @@ public class PaceService(ILogger<PaceService> logger, IUserService userService)
         logger.LogDebug("TimeTaken: {TimeTaken} ({TimeTakenSeconds}s); Distance: {Distance}; Pace: {Pace}", timeTaken, timeTaken.Value.TotalSeconds, routeDistanceInMeters, pace);
         return string.Format("{0}:{1} min/{2}", Convert.ToInt32(Math.Floor(pace / 60)).ToString("0"), Math.Floor(pace % 60).ToString("00"), (DistanceUnits)userAccount.DistanceUnits switch { DistanceUnits.Miles => "mile", DistanceUnits.Kilometers => "km", _ => "" });
     }
+
+    public decimal ConvertFromMilesToKm(decimal fromMiles) => fromMiles * UserService.KilometersToMiles;
+    public decimal ConvertFromKmToMiles(decimal fromKm) => fromKm / UserService.KilometersToMiles;
 }

@@ -6,7 +6,60 @@
 </aside>
 
 <article>
+    <h1>Distance converter</h1>
+    <form name="rp-calc" method="get">
     <p>
-    Distance calculator
+        <label for="miles">Miles:</label>
+        <input type="number" id="miles" name="miles" value="0" />
+    </p>    
+    <p>
+        <label for="km">Kilometers:</label>
+        <input type="number" id="km" name="km" value="0" />
     </p>
+    <p>
+        <label></label>
+        <span>
+        <button type="button" name="halfmarathon">Half-marathon</button>
+        <button type="button" name="marathon">Marathon</button>
+        </span>
+    </p>
+    </form>
 </article>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/jquery-throttle-debounce@1.0.0/jquery.ba-throttle-debounce.min.js"></script>
+<script type="text/javascript">
+    const milesEl = $('#miles');
+    const kmEl = $('#km');
+    function calculateDistances(src) {
+        console.log('Calculating distance for ' + src + ' km: ' + kmEl.val() + ' mile: ' + milesEl.val());
+        $.getJSON('/api/calculator/distance', {
+            km: kmEl.val(),
+            mile: milesEl.val(),
+            source: src
+        })
+        .done(function(data) {
+            console.log('distances returned: ' + data.km + 'km / ' + data.mile + 'mile');
+            if (src === 'mile') {
+                kmEl.val(data.km);
+            } else if (src === 'km') {
+                milesEl.val(data.mile);
+            } else {
+                kmEl.val(data.km);
+                milesEl.val(data.mile);
+            }
+        })
+        .fail(function() {
+            console.log('failed calculating distances, probably invalid input, not updating anything');
+            // TODO: display an error somewhere?
+        });
+    }
+    milesEl.on('click', function() { milesEl.select() });
+    milesEl.on('change input paste keyup', function() { calculateDistances('mile'); });
+    kmEl.on('click', function() { kmEl.select() });
+    kmEl.on('change input paste keyup', function() { calculateDistances('km'); });
+    $('button[name="halfmarathon"]').click(function() { calculateDistances('halfmarathon'); });
+    $('button[name="marathon"]').click(function() { calculateDistances('marathon'); });
+    milesEl.trigger('focus');
+</script>
+}

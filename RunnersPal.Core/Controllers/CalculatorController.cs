@@ -9,7 +9,6 @@ namespace RunnersPal.Core.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 [Produces(MediaTypeNames.Application.Json)]
 public class CalculatorController(
     ILogger<CalculatorController> logger,
@@ -19,8 +18,41 @@ public class CalculatorController(
     IPaceService paceService)
     : ControllerBase
 {
+    private const int _rounding = 4;
+
+    [HttpGet("distance")]
+    public async Task<ActionResult<DistanceApiModel>> Distance([FromQuery] string? km, [FromQuery] string? mile, [FromQuery] string? source)
+    {
+        switch (source ?? "")
+        {
+            case "mile":
+                if (!decimal.TryParse(mile, out var fromMiles))
+                {
+                    logger.LogInformation("From mile [{Mile}] cannot be parsed", mile);
+                    return BadRequest();
+                }
+                return new DistanceApiModel(fromMiles, decimal.Round(paceService.ConvertFromMilesToKm(fromMiles), _rounding));
+            case "km":
+                if (!decimal.TryParse(km, out var fromKm))
+                {
+                    logger.LogInformation("From km [{Km}] cannot be parsed", km);
+                    return BadRequest();
+                }
+                return new DistanceApiModel(decimal.Round(paceService.ConvertFromKmToMiles(fromKm), _rounding), fromKm);
+            case "halfmarathon":
+                var hmKm = (await routeRepository.GetSystemRoutesAsync().Where(r => r.Name == "Half-marathon").SingleAsync()).Distance / 1000;
+                return new DistanceApiModel(decimal.Round(paceService.ConvertFromKmToMiles(hmKm), _rounding), hmKm);
+            case "marathon":
+                var fullKm = (await routeRepository.GetSystemRoutesAsync().Where(r => r.Name == "Marathon").SingleAsync()).Distance / 1000;
+                return new DistanceApiModel(decimal.Round(paceService.ConvertFromKmToMiles(fullKm), _rounding), fullKm);
+            default:
+                return BadRequest();
+        }
+    }
+
+    [Authorize]
     [HttpGet("pace")]
-    public async Task<IActionResult> Pace([FromQuery] string? timeTaken, [FromQuery] int? distanceType,
+    public async Task<ActionResult<PaceApiModel>> Pace([FromQuery] string? timeTaken, [FromQuery] int? distanceType,
         decimal? distanceManual, int? routeId, decimal? mapDistance)
     {
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
