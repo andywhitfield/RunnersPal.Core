@@ -290,6 +290,10 @@ div.rp-map-name+div {
     display: inline-block;
 }
 
+span.rp-calc-input {
+    display: inline-block;
+}
+
 @media (max-width: 800px) {
     header {
         -webkit-flex-direction: column;

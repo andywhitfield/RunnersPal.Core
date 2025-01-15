@@ -6,10 +6,10 @@ public class PaceService(ILogger<PaceService> logger, IUserService userService)
     : IPaceService
 {
     public string TimeTakenDisplayFormat(string? timeTakenValue)
-    {
-        var timeTaken = TimeTaken(timeTakenValue);
-        return timeTaken == null ? (timeTakenValue ?? "") : timeTaken.Value.ToString(timeTaken.Value.TotalHours > 1 ? "hh\\:mm\\:ss" : "mm\\:ss");
-    }
+        => TimeTakenDisplayFormat(TimeTaken(timeTakenValue));
+
+    public string TimeTakenDisplayFormat(TimeSpan? timeTakenValue)
+        => timeTakenValue == null ? "" : timeTakenValue.Value.ToString(timeTakenValue.Value.TotalHours >= 1 ? "hh\\:mm\\:ss" : "mm\\:ss");
 
     public TimeSpan? TimeTaken(string? timeTaken)
     {
@@ -47,13 +47,19 @@ public class PaceService(ILogger<PaceService> logger, IUserService userService)
         => CalculatePace(userAccount, TimeTaken(runLog.TimeTaken), runLog.Route.Distance, null) ?? "unknown pace";
 
     public string? CalculatePace(UserAccount userAccount, TimeSpan? timeTaken, decimal routeDistanceInMeters, string? defaultIfInvalid)
+        => CalculatePace((DistanceUnits)userAccount.DistanceUnits, timeTaken, routeDistanceInMeters, defaultIfInvalid, true);
+
+    public string? CalculatePace(DistanceUnits distanceUnits, TimeSpan? timeTaken, decimal routeDistanceInMeters, string? defaultIfInvalid, bool includeUnits)
     {
         if (timeTaken == null || routeDistanceInMeters == 0)
             return defaultIfInvalid;
 
-        var pace = Convert.ToDecimal(timeTaken.Value.TotalSeconds) / userService.ToUserDistanceUnits(routeDistanceInMeters, userAccount);
+        var pace = Convert.ToDecimal(timeTaken.Value.TotalSeconds) / userService.ToDistanceUnits(routeDistanceInMeters, distanceUnits);
         logger.LogDebug("TimeTaken: {TimeTaken} ({TimeTakenSeconds}s); Distance: {Distance}; Pace: {Pace}", timeTaken, timeTaken.Value.TotalSeconds, routeDistanceInMeters, pace);
-        return string.Format("{0}:{1} min/{2}", Convert.ToInt32(Math.Floor(pace / 60)).ToString("0"), Math.Floor(pace % 60).ToString("00"), (DistanceUnits)userAccount.DistanceUnits switch { DistanceUnits.Miles => "mile", DistanceUnits.Kilometers => "km", _ => "" });
+        return string.Format("{0}:{1}{2}",
+            Convert.ToInt32(Math.Floor(pace / 60)).ToString("0"),
+            Math.Floor(pace % 60).ToString("00"),
+            includeUnits ? distanceUnits switch { DistanceUnits.Miles => " min/mile", DistanceUnits.Kilometers => " min/km", _ => "" } : "");
     }
 
     public decimal ConvertFromMilesToKm(decimal fromMiles) => fromMiles * UserService.KilometersToMiles;

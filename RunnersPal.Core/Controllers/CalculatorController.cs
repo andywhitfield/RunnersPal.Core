@@ -50,6 +50,38 @@ public class CalculatorController(
         }
     }
 
+    [HttpGet("pace/convert")]
+    public ActionResult<PaceAllApiModel> PaceConvert([FromQuery] string? km, [FromQuery] string? mile, [FromQuery] string? source)
+    {
+        var pace = (source ?? "") switch
+        {
+            "mile" => PaceConvertFromMile(mile),
+            "km" => PaceConvertFromKm(km),
+            _ => null,
+        };
+
+        if (pace == null)
+            return BadRequest();
+
+        return pace;
+    }
+
+    [HttpGet("pace/all")]
+    public ActionResult<PaceAllApiModel> PaceAll([FromQuery] string? distance, [FromQuery] string? timeTaken, [FromQuery] string? pace, [FromQuery] string? dest)
+    {
+        var paceAll = (dest ?? "") switch
+        {
+            "distance" => CalculateDistance(timeTaken, pace),
+            "timetaken" => CalculateTimeTaken(distance, pace),
+            "pace" => CalculatePace(distance, timeTaken),
+            _ => null,
+        };
+        if (paceAll == null)
+            return BadRequest();
+        
+        return paceAll;
+    }
+
     [Authorize]
     [HttpGet("pace")]
     public async Task<ActionResult<PaceApiModel>> Pace([FromQuery] string? timeTaken, [FromQuery] int? distanceType,
@@ -123,5 +155,112 @@ public class CalculatorController(
             return BadRequest();
 
         return Ok(new PaceApiModel((distance ?? "") + pace));
+    }
+
+    private PaceAllApiModel? CalculateDistance(string? timeTaken, string? pace)
+    {
+        var time = paceService.TimeTaken(timeTaken);
+        if (time == null)
+        {
+            logger.LogInformation("Cannot parse time taken, returning bad request");
+            return null;
+        }
+
+        var paceInKm = paceService.TimeTaken(pace);
+        if (paceInKm == null)
+        {
+            logger.LogInformation("Cannot parse pace, returning bad request");
+            return null;
+        }
+
+        var distance3 = Convert.ToDecimal(time.Value.TotalSeconds / paceInKm.Value.TotalSeconds);
+        return new PaceAllApiModel(
+            decimal.Round(distance3, _rounding),
+            decimal.Round(paceService.ConvertFromKmToMiles(distance3), _rounding),
+            "", "", "");    
+    }
+
+    private PaceAllApiModel? CalculateTimeTaken(string? distance, string? pace)
+    {
+        if (!decimal.TryParse(distance, out var distanceInKm))
+        {
+            logger.LogInformation("Cannot parse distance, returning bad request");
+            return null;
+        }
+
+        var paceInKm = paceService.TimeTaken(pace);
+        if (paceInKm == null)
+        {
+            logger.LogInformation("Cannot parse pace, returning bad request");
+            return null;
+        }
+
+        var time = TimeSpan.FromSeconds(paceInKm.Value.TotalSeconds * Convert.ToDouble(distanceInKm));
+        return new PaceAllApiModel(0, 0, paceService.TimeTakenDisplayFormat(time), "", "");
+    }
+
+    private PaceAllApiModel? CalculatePace(string? distance, [FromQuery] string? timeTaken)
+    {
+        if (!decimal.TryParse(distance, out var distanceInMeters))
+        {
+            logger.LogInformation("Cannot parse distance, returning bad request");
+            return null;
+        }
+
+        distanceInMeters *= 1000;
+
+        var time = paceService.TimeTaken(timeTaken);
+        if (time == null)
+        {
+            logger.LogInformation("Cannot parse time taken, returning bad request");
+            return null;
+        }
+
+        logger.LogDebug("Calculating pace given time {Time} and distance {DistanceInMeters}", time, distanceInMeters);
+
+        var paceInKm = paceService.CalculatePace(Models.DistanceUnits.Kilometers, time, distanceInMeters, null, false);
+        if (paceInKm == null)
+            return null;
+        var paceInMile = paceService.CalculatePace(Models.DistanceUnits.Miles, time, distanceInMeters, null, false);
+        if (paceInMile == null)
+            return null;
+
+        return new PaceAllApiModel(0, 0, "", paceInKm, paceInMile);        
+    }
+
+    private PaceAllApiModel? PaceConvertFromMile(string? mile)
+    {
+        var paceInMileTime = paceService.TimeTaken(mile);
+        if (paceInMileTime == null)
+        {
+            logger.LogInformation("From mile [{Mile}] cannot be parsed", mile);
+            return null;
+        }
+
+        var paceInKm = paceService.CalculatePace(Models.DistanceUnits.Kilometers, paceInMileTime, paceService.ConvertFromMilesToKm(1000), null, false);
+        if (paceInKm == null)
+            return null;
+
+        logger.LogDebug("Calculated km pace as {Pace}", paceInKm);
+
+        return new PaceAllApiModel(0, 0, "", paceInKm, "");
+    }
+
+    private PaceAllApiModel? PaceConvertFromKm(string? km)
+    {
+        var paceInKmTime = paceService.TimeTaken(km);
+        if (paceInKmTime == null)
+        {
+            logger.LogInformation("From km [{Km}] cannot be parsed", km);
+            return null;
+        }
+
+        var paceInMile = paceService.CalculatePace(Models.DistanceUnits.Miles, paceInKmTime, 1000, null, false);
+        if (paceInMile == null)
+            return null;
+        
+        logger.LogDebug("Calculated mile pace as {Pace}", paceInMile);
+
+        return new PaceAllApiModel(0, 0, "", "", paceInMile);
     }
 }

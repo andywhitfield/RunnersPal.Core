@@ -6,7 +6,133 @@
 </aside>
 
 <article>
+    <h1>Pace calculator</h1>
     <p>
-    Pace calculator
+    Enter any two from the distance, time taken, and pace values, then click the button to calculate the other.
+    For example, enter the distance you ran and the total time it took you to run and click the 'Pace' button to calculate your average pace for the run.
     </p>
+    <p>
+    You can enter the distance and pace in either miles or kilometers and the calculator will automatically apply the conversion.
+    </p>
+    <form name="rp-calc" method="get">
+    <p>
+        <label for="miles"><button type="button" name="calc-distance">Distance:</button></label>
+        <span class="rp-calc-input"><input type="number" id="miles" name="miles" value="0" /> miles</span>
+        or
+        <span class="rp-calc-input"><input type="number" id="km" name="km" value="0" /> km</span>
+    </p>
+    <p>
+        <label></label>
+        <span>
+        <button type="button" name="halfmarathon">Half-marathon</button>
+        <button type="button" name="marathon">Marathon</button>
+        </span>
+    </p>
+    <p>
+        <label for="timetaken"><button type="button" name="calc-timetaken">Time taken:</button><br/><small>(hh:)mm:ss</small></label>
+        <input type="text" id="timetaken" name="timetaken" value="00:00" />
+    </p>
+    <p>
+        <label for="pacemiles"><button type="button" name="calc-pace">Pace:</button><br/><small>mm:ss</small></label>
+        <span class="rp-calc-input">
+        <input type="text" id="pacemiles" name="pacemiles" value="0:00" />
+        <small>min/mile</small>
+        </span>
+        <span class="rp-calc-input">
+        <input type="text" id="pacekm" name="pacekm" value="0:00" />
+        <small>min/km</small>
+        </span>
+    </p>
+    </form>
 </article>
+
+@section Scripts {
+<script type="text/javascript">
+    const milesEl = $('#miles');
+    const kmEl = $('#km');
+    const timeTakenEl = $('#timetaken');
+    const paceMilesEl = $('#pacemiles');
+    const paceKmEl = $('#pacekm');
+    function calculateDistances(src) {
+        console.log('Calculating distance for ' + src + ' km: ' + kmEl.val() + ' mile: ' + milesEl.val());
+        $.getJSON('/api/calculator/distance', {
+            km: kmEl.val(),
+            mile: milesEl.val(),
+            source: src
+        })
+        .done(function(data) {
+            console.log('distances returned: ' + data.km + 'km / ' + data.mile + 'mile');
+            if (src === 'mile') {
+                kmEl.val(data.km);
+            } else if (src === 'km') {
+                milesEl.val(data.mile);
+            } else {
+                kmEl.val(data.km);
+                milesEl.val(data.mile);
+            }
+        })
+        .fail(function() {
+            console.log('failed calculating distances, probably invalid input, not updating anything');
+            // TODO: display an error somewhere?
+        });
+    }
+    function calculatePace(src) {
+        console.log('Calculating pace for ' + src + ' km: ' + paceKmEl.val() + ' mile: ' + paceMilesEl.val());
+        $.getJSON('/api/calculator/pace/convert', {
+            km: paceKmEl.val(),
+            mile: paceMilesEl.val(),
+            source: src
+        })
+        .done(function(data) {
+            console.log('pace returned: ' + data.paceKm + 'km / ' + data.paceMile + 'mile');
+            if (src === 'mile') {
+                paceKmEl.val(data.paceKm);
+            } else if (src === 'km') {
+                paceMilesEl.val(data.paceMile);
+            } else {
+                console.log('unkown src, not updating anything');
+            }
+        })
+        .fail(function() {
+            console.log('failed calculating pace, probably invalid input, not updating anything');
+            // TODO: display an error somewhere?
+        });
+    }
+    function calculateAll(dest) {
+        console.log('Calculating all for ' + dest);
+        $.getJSON('/api/calculator/pace/all', {
+            distance: kmEl.val(),
+            timeTaken: timeTakenEl.val(),
+            pace: paceKmEl.val(),
+            dest: dest
+        })
+        .done(function(data) {
+            console.log('pace returned: distance=' + data.distanceKm + '/' + data.distanceMile + '; time taken=' + data.timeTaken + '; pace=' + data.paceKm + '/' + data.paceMile);
+            if (dest === 'distance') {
+                kmEl.val(data.distanceKm);
+                milesEl.val(data.distanceMile);
+            } else if (dest === 'timetaken') {
+                timeTakenEl.val(data.timeTaken);
+            } else if (dest === 'pace') {
+                paceKmEl.val(data.paceKm);
+                paceMilesEl.val(data.paceMile);
+            } else {
+                console.log('unknown dest, not setting anything');
+            }
+        })
+        .fail(function() {
+            console.log('failed calculating distances, probably invalid input, not updating anything');
+            // TODO: display an error somewhere?
+        });
+    }
+    milesEl.on('change input paste keyup', function() { calculateDistances('mile'); });
+    kmEl.on('change input paste keyup', function() { calculateDistances('km'); });
+    $('button[name="halfmarathon"]').click(function() { calculateDistances('halfmarathon'); });
+    $('button[name="marathon"]').click(function() { calculateDistances('marathon'); });
+    paceMilesEl.on('change input paste keyup', function() { calculatePace('mile'); });
+    paceKmEl.on('change input paste keyup', function() { calculatePace('km'); });
+    $('button[name="calc-distance"]').click(function() { calculateAll('distance'); });
+    $('button[name="calc-timetaken"]').click(function() { calculateAll('timetaken'); });
+    $('button[name="calc-pace"]').click(function() { calculateAll('pace'); });
+</script>
+}
