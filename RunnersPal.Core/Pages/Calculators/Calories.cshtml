@@ -6,7 +6,144 @@
 </aside>
 
 <article>
+    <h1>Calories burned calculator</h1>
     <p>
-    Calories calculator
+        Get a rough idea how many calories you burnt during your last run.
+        The actual number of calories burnt will vary depending on the intensity of your run,
+        but this is a simple and interesting guide to see how many miles you need to run
+        to lose those pounds!
     </p>
+    <form name="rp-calc" method="get">
+    <p>
+        <label for="miles">Distance:</label>
+        <span class="rp-calc-input"><input type="number" id="miles" name="miles" value="0" /> miles</span>
+        or
+        <span class="rp-calc-input"><input type="number" id="km" name="km" value="0" /> km</span>
+    </p>
+    <p>
+        <label></label>
+        <span>
+        <button type="button" name="halfmarathon">Half-marathon</button>
+        <button type="button" name="marathon">Marathon</button>
+        </span>
+    </p>
+    <p>
+        <label for="weightlbs">Weight:</label>
+        <span class="rp-calc-input">
+        <input type="number" id="weightlbs" name="weightlbs" value="0" /> lbs
+        </span>
+    </p>
+    <p>
+        <label></label>
+        <span class="rp-calc-input">
+        <input type="number" id="weightst" name="weightst" value="0" /> st <input type="number" id="weightstlbs" name="weightstlbs" value="0" /> lbs
+        </span>
+    </p>
+    <p>
+        <label></label>
+        <span class="rp-calc-input">
+        <input type="number" id="weightkgs" name="weightkgs" value="0" /> kg
+        </span>
+    </p>
+    <p>
+        <label for="calories">Calories:</label>
+        <span class="rp-calc-input">
+        <input type="number" id="calories" name="calories" value="0" readonly /> kcals
+        </span>
+    </p>
+    </form>
 </article>
+
+@section Scripts {
+<script type="text/javascript">
+    $().ready(function() {
+        const milesEl = $('#miles');
+        const kmEl = $('#km');
+        const weightLbsEl = $('#weightlbs');
+        const weightStEl = $('#weightst');
+        const weightStLbsEl = $('#weightstlbs');
+        const weightKgEl = $('#weightkgs');
+        const caloriesEl = $('#calories');
+        function calculateDistances(src) {
+            console.log('Calculating distance for ' + src + ' km: ' + kmEl.val() + ' mile: ' + milesEl.val());
+            $.getJSON('/api/calculator/distance', {
+                km: kmEl.val(),
+                mile: milesEl.val(),
+                source: src
+            })
+            .done(function(data) {
+                console.log('distances returned: ' + data.km + 'km / ' + data.mile + 'mile');
+                if (src === 'mile') {
+                    kmEl.val(data.km);
+                } else if (src === 'km') {
+                    milesEl.val(data.mile);
+                } else {
+                    kmEl.val(data.km);
+                    milesEl.val(data.mile);
+                }
+                calculateCalories();
+            })
+            .fail(function() {
+                console.log('failed calculating distances, probably invalid input, not updating anything');
+                // TODO: display an error somewhere?
+            });
+        }
+        function calculateWeight(src) {
+            console.log('Calculating weight for ' + src + ' lbs: ' + weightLbsEl.val() + ' st/lbs: ' + weightStEl.val() + '/' + weightStLbsEl.val() + ' kgs: ' + weightKgEl.val());
+            $.getJSON('/api/calculator/weight', {
+                source: src,
+                lbs: weightLbsEl.val(),
+                st: weightStEl.val(),
+                stlbs: weightStLbsEl.val(),
+                kg: weightKgEl.val()
+            })
+            .done(function(data) {
+                console.log('weight returned: lbs:' + data.lbs + ', st/lbs:' + data.st + '/' + data.stlbs + ', kg: ' + data.kg);
+                if (src === 'lbs') {
+                    weightStEl.val(data.st);
+                    weightStLbsEl.val(data.stlbs);
+                    weightKgEl.val(data.kg);
+                } else if (src === 'st') {
+                    weightLbsEl.val(data.lbs);
+                    weightKgEl.val(data.kg);
+                } else if (src === 'stlbs') {
+                    weightLbsEl.val(data.lbs);
+                    weightKgEl.val(data.kg);
+                } else if (src === 'kg') {
+                    weightLbsEl.val(data.lbs);
+                    weightStEl.val(data.st);
+                    weightStLbsEl.val(data.stlbs);
+                }
+                calculateCalories();
+            })
+            .fail(function() {
+                console.log('failed calculating distances, probably invalid input, not updating anything');
+                // TODO: display an error somewhere?
+            });
+        }
+        function calculateCalories() {
+            console.log('Calculating calories for ' + kmEl.val() + 'km, ' + weightKgEl.val() + 'kg');
+            $.getJSON('/api/calculator/calories', {
+                km: kmEl.val(),
+                weight: weightKgEl.val()
+            })
+            .done(function(data) {
+                console.log('calories returned: ' + data.calories);
+                caloriesEl.val(data.calories);
+            })
+            .fail(function() {
+                console.log('failed calculating calories, probably invalid input, not updating anything');
+                // TODO: display an error somewhere?
+            });
+        }
+        milesEl.on('change input paste keyup', function() { calculateDistances('mile'); });
+        kmEl.on('change input paste keyup', function() { calculateDistances('km'); });
+        weightLbsEl.on('change input paste keyup', function() { calculateWeight('lbs'); });
+        weightStEl.on('change input paste keyup', function() { calculateWeight('st'); });
+        weightStLbsEl.on('change input paste keyup', function() { calculateWeight('stlbs'); });
+        weightKgEl.on('change input paste keyup', function() { calculateWeight('kg'); });
+        $('button[name="halfmarathon"]').click(function() { calculateDistances('halfmarathon'); });
+        $('button[name="marathon"]').click(function() { calculateDistances('marathon'); });
+    });    
+</script>
+}

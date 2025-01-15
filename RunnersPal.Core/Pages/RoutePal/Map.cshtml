@@ -37,52 +37,54 @@
 @section Scripts {
 <script type="text/javascript">
     const map = L.map('map');
-    
-    const routeNameEl = $('form[name="rp-map"] input[name="routename"]');
-    let mapPointsEl = $('form[name="rp-map"] input[name="points"]');
-    let mapPoints = mapPointsEl.val() === '' ? [] : JSON.parse(mapPointsEl.val());
-    if ((typeof mapPoints !== 'object') || (typeof mapPoints.length !== 'number') || mapPoints.length === 0) {
-        if (!navigator.geolocation) {
-            map.setView([54.505, -0.09], 6);
+
+    $().ready(function() {        
+        const routeNameEl = $('form[name="rp-map"] input[name="routename"]');
+        let mapPointsEl = $('form[name="rp-map"] input[name="points"]');
+        let mapPoints = mapPointsEl.val() === '' ? [] : JSON.parse(mapPointsEl.val());
+        if ((typeof mapPoints !== 'object') || (typeof mapPoints.length !== 'number') || mapPoints.length === 0) {
+            if (!navigator.geolocation) {
+                map.setView([54.505, -0.09], 6);
+            } else {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        map.setView([position.coords.latitude, position.coords.longitude], 12);
+                    },
+                    function() {
+                        map.setView([54.505, -0.09], 6);
+                    });
+            }
         } else {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    map.setView([position.coords.latitude, position.coords.longitude], 12);
-                },
-                function() {
-                    map.setView([54.505, -0.09], 6);
-                });
+            map.fitBounds(L.latLngBounds(mapPoints));
         }
-    } else {
-	    map.fitBounds(L.latLngBounds(mapPoints));
-    }
-    L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
-	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		maxZoom: 19,
-		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-	}).addTo(map);
+        L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-    const distanceFormEl = $('form[name="rp-map"] input[name="distance"]');
-    const route = new MapRoute(map, mapPointsEl, distanceFormEl, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
-    for (const mapPoint of mapPoints) {
-        route.addPoint(mapPoint);
-    }
+        const distanceFormEl = $('form[name="rp-map"] input[name="distance"]');
+        const route = new MapRoute(map, mapPointsEl, distanceFormEl, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
+        for (const mapPoint of mapPoints) {
+            route.addPoint(mapPoint);
+        }
 
-    const saveBtnEl = $('form[name="rp-map"] input[name="save"]');
-    saveBtnEl.prop('disabled', true);
-    route.onChange(rpUpdateSaveButton);
-    routeNameEl.on('change input paste keyup', rpUpdateSaveButton);
+        const saveBtnEl = $('form[name="rp-map"] input[name="save"]');
+        saveBtnEl.prop('disabled', true);
+        route.onChange(rpUpdateSaveButton);
+        routeNameEl.on('change input paste keyup', rpUpdateSaveButton);
 
-    $('form[name="rp-map"] button[name="undo"]').click(function() { route.undoLastPoint(); });
-    $('form[name="rp-map"] button[name="clear"]').click(function() {
-        if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
-            route.clearRoute();
+        $('form[name="rp-map"] button[name="undo"]').click(function() { route.undoLastPoint(); });
+        $('form[name="rp-map"] button[name="clear"]').click(function() {
+            if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
+                route.clearRoute();
+        });
+
+        function rpUpdateSaveButton() {
+            saveBtnEl.prop('disabled',
+                !routeNameEl.val() || /^\s*$/.test(routeNameEl.val()) || // no route name
+                distanceFormEl.val() === '' || distanceFormEl.val() === '0'); // no points
+        }
     });
-
-    function rpUpdateSaveButton() {
-        saveBtnEl.prop('disabled',
-            !routeNameEl.val() || /^\s*$/.test(routeNameEl.val()) || // no route name
-            distanceFormEl.val() === '' || distanceFormEl.val() === '0'); // no points
-    }
 </script>
 }

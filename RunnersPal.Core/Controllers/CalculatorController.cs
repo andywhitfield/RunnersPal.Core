@@ -19,6 +19,8 @@ public class CalculatorController(
     : ControllerBase
 {
     private const int _rounding = 4;
+    private const decimal _poundsToKg = 0.45359237m;
+    private const decimal _kgToPounds = 1/_poundsToKg;
 
     [HttpGet("distance")]
     public async Task<ActionResult<DistanceApiModel>> Distance([FromQuery] string? km, [FromQuery] string? mile, [FromQuery] string? source)
@@ -31,20 +33,20 @@ public class CalculatorController(
                     logger.LogInformation("From mile [{Mile}] cannot be parsed", mile);
                     return BadRequest();
                 }
-                return new DistanceApiModel(fromMiles, decimal.Round(paceService.ConvertFromMilesToKm(fromMiles), _rounding));
+                return new DistanceApiModel(fromMiles, R(paceService.ConvertFromMilesToKm(fromMiles)));
             case "km":
                 if (!decimal.TryParse(km, out var fromKm))
                 {
                     logger.LogInformation("From km [{Km}] cannot be parsed", km);
                     return BadRequest();
                 }
-                return new DistanceApiModel(decimal.Round(paceService.ConvertFromKmToMiles(fromKm), _rounding), fromKm);
+                return new DistanceApiModel(R(paceService.ConvertFromKmToMiles(fromKm)), fromKm);
             case "halfmarathon":
                 var hmKm = (await routeRepository.GetSystemRoutesAsync().Where(r => r.Name == "Half-marathon").SingleAsync()).Distance / 1000;
-                return new DistanceApiModel(decimal.Round(paceService.ConvertFromKmToMiles(hmKm), _rounding), hmKm);
+                return new DistanceApiModel(R(paceService.ConvertFromKmToMiles(hmKm)), hmKm);
             case "marathon":
                 var fullKm = (await routeRepository.GetSystemRoutesAsync().Where(r => r.Name == "Marathon").SingleAsync()).Distance / 1000;
-                return new DistanceApiModel(decimal.Round(paceService.ConvertFromKmToMiles(fullKm), _rounding), fullKm);
+                return new DistanceApiModel(R(paceService.ConvertFromKmToMiles(fullKm)), fullKm);
             default:
                 return BadRequest();
         }
@@ -80,6 +82,36 @@ public class CalculatorController(
             return BadRequest();
         
         return paceAll;
+    }
+
+    [HttpGet("calories")]
+    public ActionResult<CaloriesApiModel> Calories([FromQuery] string? km, [FromQuery] string? weight)
+    {
+        if (!decimal.TryParse(km, out var distanceInKm))
+            return BadRequest();
+        
+        if (!decimal.TryParse(weight, out var weightInKg))
+            return BadRequest();
+        
+        return new CaloriesApiModel((int)Math.Floor(distanceInKm * weightInKg * 1.036m));
+    }
+
+    [HttpGet("weight")]
+    public ActionResult<WeightApiModel> Weight([FromQuery] string? source, [FromQuery] string? lbs, [FromQuery] string? st, [FromQuery] string? stlbs, [FromQuery] string? kg)
+    {
+        var weight = (source ?? "") switch
+        {
+            "lbs" => WeightFromLbs(lbs),
+            "st" => WeightFromStLbs(st, stlbs),
+            "stlbs" => WeightFromStLbs(st, stlbs),
+            "kg" => WeightFromKg(kg),
+            _ => null
+        };
+
+        if (weight == null)
+            return BadRequest();
+        
+        return weight;
     }
 
     [Authorize]
@@ -175,8 +207,8 @@ public class CalculatorController(
 
         var distance3 = Convert.ToDecimal(time.Value.TotalSeconds / paceInKm.Value.TotalSeconds);
         return new PaceAllApiModel(
-            decimal.Round(distance3, _rounding),
-            decimal.Round(paceService.ConvertFromKmToMiles(distance3), _rounding),
+            R(distance3),
+            R(paceService.ConvertFromKmToMiles(distance3)),
             "", "", "");    
     }
 
@@ -263,4 +295,36 @@ public class CalculatorController(
 
         return new PaceAllApiModel(0, 0, "", "", paceInMile);
     }
+
+    private static WeightApiModel? WeightFromLbs(string? lbs)
+    {
+        if (!decimal.TryParse(lbs, out var val))
+            return null;
+
+        var st = Math.Floor(val / 14);
+        return new WeightApiModel(R(val), R(st), R(val - (st * 14)), R(val * _poundsToKg));
+    }
+
+    private static WeightApiModel? WeightFromStLbs(string? st, string? stlbs)
+    {
+        if (!decimal.TryParse(st, out var stones))
+            return null;
+        if (!decimal.TryParse(stlbs, out var lbs))
+            return null;
+
+        var totalLbs = (stones * 14) + lbs;
+        return new WeightApiModel(R(totalLbs), R(stones), R(lbs), R(totalLbs * _poundsToKg));
+    }
+
+    private static WeightApiModel? WeightFromKg(string? kg)
+    {
+        if (!decimal.TryParse(kg, out var val))
+            return null;
+
+        var lbs = val * _kgToPounds;
+        var st = Math.Floor(lbs / 14);
+        return new WeightApiModel(R(lbs), R(st), R(lbs - (st * 14)), R(val));
+    }
+
+    private static decimal R(decimal d) => decimal.Round(d, _rounding);
 }

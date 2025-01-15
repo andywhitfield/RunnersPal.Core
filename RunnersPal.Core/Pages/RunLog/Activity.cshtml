@@ -137,263 +137,265 @@
 <script src="https://cdn.jsdelivr.net/npm/responsive-tabs@1.6.3/js/jquery.responsiveTabs.min.js" integrity="sha256-cTeYby7c1UOyfhJPAcRhH6n8U0N5FoOB4g4atuw5+/Q=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/thedatepicker@2.4.0/dist/the-datepicker.min.js" integrity="sha256-c5E6Y8HrRw6sNkkT4EWZ+lbI7G7XVNS+kVcG2VAAgqA=" crossorigin="anonymous"></script>
 <script type="text/javascript">
-$('#rp-distance').responsiveTabs({
-    activate: onTabActivated,
-    startCollapsed: 'accordion'
-});
-
-const runlogDatepicker = new TheDatepicker.Datepicker(document.getElementById('rp-runlog-date'));
-runlogDatepicker.options.setTitle('Run date');
-runlogDatepicker.options.classNames.setClassName(TheDatepicker.ClassNameType.HeaderTitleContent, "rp-runlog-datepicker-title");
-runlogDatepicker.options.setInputFormat('Y-m-d');
-runlogDatepicker.options.setAllowEmpty(false);
-runlogDatepicker.render();
-
-const runLogMainForm = $('#rp-runlog-main');
-const runLogDistanceSelector = $('#rp-runlog-distance');
-const runLogDistanceType = $('form[name="rp-runlog"] input[name="distancetype"]');
-runLogDistanceSelector.hide();
-const runLogDistanceManual = $('form[name="rp-runlog"] input[name="distancemanual"]');
-const runLogRouteId = $('form[name="rp-runlog"] input[name="routeid"]');
-const runLogDistanceSelection = $('form[name="rp-runlog"] button[name="rp-distance-select"]');
-const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
-const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
-const runLogManualDistanceInput = $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]');
-const runLogMapTab = $('#tab-map-new-route');
-const runLogMapDistance = $('form[name="rp-runlog"] input[name="mapdistance"]');
-const runLogMapPoints = $('form[name="rp-runlog"] input[name="mappoints"]');
-runLogDistanceSelected.hide();
-runLogDistanceSelectedEdit.hide();
-runLogDistanceSelection.click(function() {
-    runLogDistanceSelector.show();
-    runLogMainForm.hide();
-});
-runLogDistanceSelectedEdit.click(function() {
-    runLogDistanceSelector.show();
-    runLogMainForm.hide();
-    $('#rp-distance').responsiveTabs('activate',
-        runLogDistanceType.val() === '1' ? 0 :
-        runLogDistanceType.val() === '2' ? 3 :
-        runLogDistanceType.val() === '3' ? 1 :
-        runLogDistanceType.val() === '4' ? 2 :
-        0
-    );
-});
-runLogManualDistanceInput.on('keydown', function (evt) {
-    if (evt.which === 13) {
-        evt.preventDefault();
-        onEnteredManualDistance();
-        return false;
-    }
-});
-$('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(function() {
-    runLogMainForm.show();
-    runLogDistanceSelector.hide();
-
-    runLogManualDistanceInput.val(runLogDistanceManual.val());
-});
-$('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(onEnteredManualDistance);
-$('form[name="rp-runlog"] a[data-routeid][data-routetype]').click(onSelectRunRoute);
-const runLogPace = $('.rp-pace');
-const runLogTimeTaken = $('form[name="rp-runlog"] input[name="timetaken"]');
-runLogPace.hide();
-runLogTimeTaken.on('input', updateRunPace);
-function updateRunPace() {
-    console.log('Calculating pace for time '+runLogTimeTaken.val()
-        +', distance type '+runLogDistanceType.val()
-        +', distance '+runLogDistanceManual.val()
-        +', routeid '+runLogRouteId.val());
-    $.getJSON('/api/calculator/pace', {
-        timeTaken: runLogTimeTaken.val(),
-        distanceType: runLogDistanceType.val(),
-        distanceManual: runLogDistanceManual.val(),
-        routeId: runLogRouteId.val(),
-        mapDistance: runLogMapDistance.val()
-    })
-    .done(function(data) {
-        console.log('pace returned: ' + data.pace);
-        $('span', runLogPace).text(data.pace);
-        runLogPace.show();
-    })
-    .fail(function() {
-        console.log('failed calculating pace, hiding pace');
-        runLogPace.hide();
-    });
-}
-const runLogUserRoutes = $('.rp-saved-routes');
-$('span', runLogUserRoutes).hide();
-$('div.pagination', runLogUserRoutes).hide();
-const runLogUserRoutesFind = $('form[name="rp-runlog"] input[name="findroute"]');
-$('form[name="rp-runlog"] button[name="rp-route-find"]').click(function() { loadRunLogUserRoutes(1); });
-runLogUserRoutesFind.on('keydown', function (evt) {
-    if (evt.which === 13) {
-        evt.preventDefault();
-        loadRunLogUserRoutes(1);
-        return false;
-    }
-});
-function onSelectRunRoute() {
-    runLogDistanceType.val($(this).attr('data-routetype'));
-    runLogRouteId.val($(this).attr('data-routeid'));
-    runLogDistanceSelected.val($(this).text());
-    runLogDistanceSelected.show();
-    runLogDistanceSelectedEdit.show();
-    runLogDistanceSelection.hide();
-    runLogMainForm.show();
-    runLogDistanceSelector.hide();
-    updateRunPace();
-}
-function onEnteredManualDistance() {
-    runLogDistanceType.val('2');
-    runLogDistanceManual.val(runLogManualDistanceInput.val());
-    runLogDistanceSelected.val(runLogManualDistanceInput.val() + '@(await Model.UserUnitsAsync())');
-    runLogDistanceSelected.show();
-    runLogDistanceSelectedEdit.show();
-    runLogDistanceSelection.hide();
-    runLogMainForm.show();
-    runLogDistanceSelector.hide();
-    updateRunPace();
-}
-function onTabActivated(event, tab) {
-    if (tab.selector === '#tab-saved-routes' && runLogUserRoutes.attr('data-initialised') !== 'true') {
-        console.log('initialising saved routes tab');
-        runLogUserRoutes.attr('data-initialised', 'true');
-        loadRunLogUserRoutes(1);
-    } else if (tab.selector === '#tab-map-new-route') {
-        if ($('#map').attr('data-initialised') === 'true') {
-            console.log('resetting route with original name, notes, and points');
-            $('form[name="rp-runlog"] input[name="rp-map-name"]').val($('form[name="rp-runlog"] input[name="mapname"]').val());
-            $('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val($('form[name="rp-runlog"] input[name="mapnotes"]').val());
-            const newMapRoute = runLogMapTab.data('route');
-            newMapRoute.clearRoute();
-            const newMapPoints = runLogMapPoints.val() === '' ? [] : JSON.parse(runLogMapPoints.val());
-            for (const newMapPoint of newMapPoints) {
-                newMapRoute.addPoint(newMapPoint);
-            }
-            newMapRoute.fitBounds(newMapPoints);
-        } else {
-            console.log('initialising route mapping tab');
-            $('#map').attr('data-initialised', 'true');
-            initialiseMap();
-        }
-    } else if (tab.selector === '#tab-manual-distance') {
-        runLogManualDistanceInput.trigger('focus');
-    }
-}
-function loadRunLogUserRoutes(pageNumber) {
-    console.log('getting page '+pageNumber+' of user routes with find filter ['+runLogUserRoutesFind.val()+']');
-    $.getJSON('/api/route/list', {
-        pageNumber: pageNumber,
-        find: runLogUserRoutesFind.val()
-    })
-    .done(onRunLogUserRoutesLoaded)
-    .fail(function() {
-        console.log('failed getting saved routes');
-    });
-}
-function onRunLogUserRoutesLoaded(data) {
-    console.log('routes returned - ' + data.routes.length);
-    $('li', runLogUserRoutes).remove();
-    $('div.pagination', runLogUserRoutes).hide();
-    $('div.pagination', runLogUserRoutes).empty();
-    if (data.routes.length >= 0) {
-        $('span', runLogUserRoutes).hide();
-        for (const runLogUserRoute of data.routes) {
-            const newRouteItem = $('ul', runLogUserRoutes).append('<li data-routeid='+runLogUserRoute.id+'><a data-routetype="3" data-routeid="'+runLogUserRoute.id+'" href="#" title="Select this route"></a> <span></span> <a href="/routepal/map?routeid='+runLogUserRoute.id+'" title="Open route in a new tab" target="_blank">&RightArrowBar;</a></li>');
-            $('li[data-routeid="'+runLogUserRoute.id+'"] a:first', newRouteItem).text(runLogUserRoute.name);
-            $('li[data-routeid="'+runLogUserRoute.id+'"] span:first', newRouteItem).text(runLogUserRoute.distance + (runLogUserRoute.lastRunDate !== '' ? ' last run on '+runLogUserRoute.lastRunDate : ''));
-            $('a[data-routeid][data-routetype]', newRouteItem).click(onSelectRunRoute);
-        }
-        if (data.pagination.pageCount > 1) {
-            if (data.pagination.pageNumber > 1)
-                $('div.pagination', runLogUserRoutes).append('<a title="Go to previous page of routes" href="#" data-page="'+(data.pagination.pageNumber-1)+'">&laquo;</a>');
-            for (const runLogUserRoutePage of data.pagination.pages) {
-                $('div.pagination', runLogUserRoutes).append(runLogUserRoutePage.isSelected
-                    ? $('<a class="pagination-active">'+runLogUserRoutePage.pageNumber+'</a>')
-                    : $('<a title="Go to page '+runLogUserRoutePage.pageNumber+'" href="#" data-page="'+runLogUserRoutePage.pageNumber+'">'+runLogUserRoutePage.pageNumber+'</a>'));
-            }
-            if (data.pagination.pageNumber < data.pagination.pageCount)
-                $('div.pagination', runLogUserRoutes).append('<a title="Go to the next page of routes" href="#" data-page="'+(data.pagination.pageNumber+1)+'">&raquo;</a>');
-            $('a[data-page]', runLogUserRoutes).click(function() {
-                console.log('loading routes page '+$(this).attr('data-page'));
-                loadRunLogUserRoutes($(this).attr('data-page'));
-            });
-            $('div.pagination', runLogUserRoutes).show();
-        }
-    } else {
-        $('span', runLogUserRoutes).show();
-    }
-}
 const map = L.map('map');
-const runLogMapDistanceCurrent = $('form[name="rp-runlog"] input[name="rp-map-distance"]');
-function initialiseMap() {
-    if (!navigator.geolocation) {
-        map.setView([54.505, -0.09], 6);
-    } else {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                map.setView([position.coords.latitude, position.coords.longitude], 12);
-            },
-            function() {
-                map.setView([54.505, -0.09], 6);
-            });
-    }
-    L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
-	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		maxZoom: 19,
-		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-	}).addTo(map);
-
-    const mapPointsEl = $('form[name="rp-runlog"] input[name="rp-map-points"]');
-    const route = new MapRoute(map, mapPointsEl, runLogMapDistanceCurrent, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
-    runLogMapTab.data('route', route);
-
-    $('button[name="undo"]', runLogMapTab).click(function() { route.undoLastPoint(); });
-    $('button[name="clear"]', runLogMapTab).click(function() {
-        if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
-            route.clearRoute();
+$().ready(function() {
+    $('#rp-distance').responsiveTabs({
+        activate: onTabActivated,
+        startCollapsed: 'accordion'
     });
 
-    $('button[name="rp-distance-select-map-ok"]', runLogMapTab).click(function() {
-        // TODO: check there are points & name
-        // update 'real' input fields with the new values
-        $('form[name="rp-runlog"] input[name="mapname"]').val($('form[name="rp-runlog"] input[name="rp-map-name"]').val());
-        $('form[name="rp-runlog"] input[name="mapnotes"]').val($('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val());
-        runLogMapPoints.val($('form[name="rp-runlog"] input[name="rp-map-points"]').val());
-        runLogMapDistance.val($('form[name="rp-runlog"] input[name="rp-map-distance"]').val());
-        console.log('set new mapped fields: '+
-            'name=['+$('form[name="rp-runlog"] input[name="mapname"]').val()+'], '+
-            'notes=['+$('form[name="rp-runlog"] input[name="mapnotes"]').val()+'], '+
-            'points=['+runLogMapPoints.val()+'], '+
-            'distance=['+runLogMapDistance.val()+']');
+    const runlogDatepicker = new TheDatepicker.Datepicker(document.getElementById('rp-runlog-date'));
+    runlogDatepicker.options.setTitle('Run date');
+    runlogDatepicker.options.classNames.setClassName(TheDatepicker.ClassNameType.HeaderTitleContent, "rp-runlog-datepicker-title");
+    runlogDatepicker.options.setInputFormat('Y-m-d');
+    runlogDatepicker.options.setAllowEmpty(false);
+    runlogDatepicker.render();
 
-        runLogDistanceType.val(4);
-        runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="mapname"]').val());
+    const runLogMainForm = $('#rp-runlog-main');
+    const runLogDistanceSelector = $('#rp-runlog-distance');
+    const runLogDistanceType = $('form[name="rp-runlog"] input[name="distancetype"]');
+    runLogDistanceSelector.hide();
+    const runLogDistanceManual = $('form[name="rp-runlog"] input[name="distancemanual"]');
+    const runLogRouteId = $('form[name="rp-runlog"] input[name="routeid"]');
+    const runLogDistanceSelection = $('form[name="rp-runlog"] button[name="rp-distance-select"]');
+    const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
+    const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
+    const runLogManualDistanceInput = $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]');
+    const runLogMapTab = $('#tab-map-new-route');
+    const runLogMapDistance = $('form[name="rp-runlog"] input[name="mapdistance"]');
+    const runLogMapPoints = $('form[name="rp-runlog"] input[name="mappoints"]');
+    runLogDistanceSelected.hide();
+    runLogDistanceSelectedEdit.hide();
+    runLogDistanceSelection.click(function() {
+        runLogDistanceSelector.show();
+        runLogMainForm.hide();
+    });
+    runLogDistanceSelectedEdit.click(function() {
+        runLogDistanceSelector.show();
+        runLogMainForm.hide();
+        $('#rp-distance').responsiveTabs('activate',
+            runLogDistanceType.val() === '1' ? 0 :
+            runLogDistanceType.val() === '2' ? 3 :
+            runLogDistanceType.val() === '3' ? 1 :
+            runLogDistanceType.val() === '4' ? 2 :
+            0
+        );
+    });
+    runLogManualDistanceInput.on('keydown', function (evt) {
+        if (evt.which === 13) {
+            evt.preventDefault();
+            onEnteredManualDistance();
+            return false;
+        }
+    });
+    $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(function() {
+        runLogMainForm.show();
+        runLogDistanceSelector.hide();
+
+        runLogManualDistanceInput.val(runLogDistanceManual.val());
+    });
+    $('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').click(onEnteredManualDistance);
+    $('form[name="rp-runlog"] a[data-routeid][data-routetype]').click(onSelectRunRoute);
+    const runLogPace = $('.rp-pace');
+    const runLogTimeTaken = $('form[name="rp-runlog"] input[name="timetaken"]');
+    runLogPace.hide();
+    runLogTimeTaken.on('input', updateRunPace);
+    function updateRunPace() {
+        console.log('Calculating pace for time '+runLogTimeTaken.val()
+            +', distance type '+runLogDistanceType.val()
+            +', distance '+runLogDistanceManual.val()
+            +', routeid '+runLogRouteId.val());
+        $.getJSON('/api/calculator/pace', {
+            timeTaken: runLogTimeTaken.val(),
+            distanceType: runLogDistanceType.val(),
+            distanceManual: runLogDistanceManual.val(),
+            routeId: runLogRouteId.val(),
+            mapDistance: runLogMapDistance.val()
+        })
+        .done(function(data) {
+            console.log('pace returned: ' + data.pace);
+            $('span', runLogPace).text(data.pace);
+            runLogPace.show();
+        })
+        .fail(function() {
+            console.log('failed calculating pace, hiding pace');
+            runLogPace.hide();
+        });
+    }
+    const runLogUserRoutes = $('.rp-saved-routes');
+    $('span', runLogUserRoutes).hide();
+    $('div.pagination', runLogUserRoutes).hide();
+    const runLogUserRoutesFind = $('form[name="rp-runlog"] input[name="findroute"]');
+    $('form[name="rp-runlog"] button[name="rp-route-find"]').click(function() { loadRunLogUserRoutes(1); });
+    runLogUserRoutesFind.on('keydown', function (evt) {
+        if (evt.which === 13) {
+            evt.preventDefault();
+            loadRunLogUserRoutes(1);
+            return false;
+        }
+    });
+    function onSelectRunRoute() {
+        runLogDistanceType.val($(this).attr('data-routetype'));
+        runLogRouteId.val($(this).attr('data-routeid'));
+        runLogDistanceSelected.val($(this).text());
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
         runLogDistanceSelection.hide();
         runLogMainForm.show();
         runLogDistanceSelector.hide();
         updateRunPace();
-    });    
-}
-
-if ($('form[name="rp-runlog"] input[name="activityid"]').val() !== '') {
-    switch (runLogDistanceType.val()) {
-        case '2':
-            runLogDistanceSelected.val(runLogDistanceManual.val() + '@(await Model.UserUnitsAsync())');
-            break;
-        case '1':
-        case '3':
-            runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="mapname"]').val());
-            break;
     }
-    runLogDistanceSelected.show();
-    runLogDistanceSelectedEdit.show();
-    runLogDistanceSelection.hide();
-    runLogMainForm.show();
-    runLogDistanceSelector.hide();
-    updateRunPace();
-}
+    function onEnteredManualDistance() {
+        runLogDistanceType.val('2');
+        runLogDistanceManual.val(runLogManualDistanceInput.val());
+        runLogDistanceSelected.val(runLogManualDistanceInput.val() + '@(await Model.UserUnitsAsync())');
+        runLogDistanceSelected.show();
+        runLogDistanceSelectedEdit.show();
+        runLogDistanceSelection.hide();
+        runLogMainForm.show();
+        runLogDistanceSelector.hide();
+        updateRunPace();
+    }
+    function onTabActivated(event, tab) {
+        if (tab.selector === '#tab-saved-routes' && runLogUserRoutes.attr('data-initialised') !== 'true') {
+            console.log('initialising saved routes tab');
+            runLogUserRoutes.attr('data-initialised', 'true');
+            loadRunLogUserRoutes(1);
+        } else if (tab.selector === '#tab-map-new-route') {
+            if ($('#map').attr('data-initialised') === 'true') {
+                console.log('resetting route with original name, notes, and points');
+                $('form[name="rp-runlog"] input[name="rp-map-name"]').val($('form[name="rp-runlog"] input[name="mapname"]').val());
+                $('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val($('form[name="rp-runlog"] input[name="mapnotes"]').val());
+                const newMapRoute = runLogMapTab.data('route');
+                newMapRoute.clearRoute();
+                const newMapPoints = runLogMapPoints.val() === '' ? [] : JSON.parse(runLogMapPoints.val());
+                for (const newMapPoint of newMapPoints) {
+                    newMapRoute.addPoint(newMapPoint);
+                }
+                newMapRoute.fitBounds(newMapPoints);
+            } else {
+                console.log('initialising route mapping tab');
+                $('#map').attr('data-initialised', 'true');
+                initialiseMap();
+            }
+        } else if (tab.selector === '#tab-manual-distance') {
+            runLogManualDistanceInput.trigger('focus');
+        }
+    }
+    function loadRunLogUserRoutes(pageNumber) {
+        console.log('getting page '+pageNumber+' of user routes with find filter ['+runLogUserRoutesFind.val()+']');
+        $.getJSON('/api/route/list', {
+            pageNumber: pageNumber,
+            find: runLogUserRoutesFind.val()
+        })
+        .done(onRunLogUserRoutesLoaded)
+        .fail(function() {
+            console.log('failed getting saved routes');
+        });
+    }
+    function onRunLogUserRoutesLoaded(data) {
+        console.log('routes returned - ' + data.routes.length);
+        $('li', runLogUserRoutes).remove();
+        $('div.pagination', runLogUserRoutes).hide();
+        $('div.pagination', runLogUserRoutes).empty();
+        if (data.routes.length >= 0) {
+            $('span', runLogUserRoutes).hide();
+            for (const runLogUserRoute of data.routes) {
+                const newRouteItem = $('ul', runLogUserRoutes).append('<li data-routeid='+runLogUserRoute.id+'><a data-routetype="3" data-routeid="'+runLogUserRoute.id+'" href="#" title="Select this route"></a> <span></span> <a href="/routepal/map?routeid='+runLogUserRoute.id+'" title="Open route in a new tab" target="_blank">&RightArrowBar;</a></li>');
+                $('li[data-routeid="'+runLogUserRoute.id+'"] a:first', newRouteItem).text(runLogUserRoute.name);
+                $('li[data-routeid="'+runLogUserRoute.id+'"] span:first', newRouteItem).text(runLogUserRoute.distance + (runLogUserRoute.lastRunDate !== '' ? ' last run on '+runLogUserRoute.lastRunDate : ''));
+                $('a[data-routeid][data-routetype]', newRouteItem).click(onSelectRunRoute);
+            }
+            if (data.pagination.pageCount > 1) {
+                if (data.pagination.pageNumber > 1)
+                    $('div.pagination', runLogUserRoutes).append('<a title="Go to previous page of routes" href="#" data-page="'+(data.pagination.pageNumber-1)+'">&laquo;</a>');
+                for (const runLogUserRoutePage of data.pagination.pages) {
+                    $('div.pagination', runLogUserRoutes).append(runLogUserRoutePage.isSelected
+                        ? $('<a class="pagination-active">'+runLogUserRoutePage.pageNumber+'</a>')
+                        : $('<a title="Go to page '+runLogUserRoutePage.pageNumber+'" href="#" data-page="'+runLogUserRoutePage.pageNumber+'">'+runLogUserRoutePage.pageNumber+'</a>'));
+                }
+                if (data.pagination.pageNumber < data.pagination.pageCount)
+                    $('div.pagination', runLogUserRoutes).append('<a title="Go to the next page of routes" href="#" data-page="'+(data.pagination.pageNumber+1)+'">&raquo;</a>');
+                $('a[data-page]', runLogUserRoutes).click(function() {
+                    console.log('loading routes page '+$(this).attr('data-page'));
+                    loadRunLogUserRoutes($(this).attr('data-page'));
+                });
+                $('div.pagination', runLogUserRoutes).show();
+            }
+        } else {
+            $('span', runLogUserRoutes).show();
+        }
+    }
+    const runLogMapDistanceCurrent = $('form[name="rp-runlog"] input[name="rp-map-distance"]');
+    function initialiseMap() {
+        if (!navigator.geolocation) {
+            map.setView([54.505, -0.09], 6);
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    map.setView([position.coords.latitude, position.coords.longitude], 12);
+                },
+                function() {
+                    map.setView([54.505, -0.09], 6);
+                });
+        }
+        L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const mapPointsEl = $('form[name="rp-runlog"] input[name="rp-map-points"]');
+        const route = new MapRoute(map, mapPointsEl, runLogMapDistanceCurrent, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
+        runLogMapTab.data('route', route);
+
+        $('button[name="undo"]', runLogMapTab).click(function() { route.undoLastPoint(); });
+        $('button[name="clear"]', runLogMapTab).click(function() {
+            if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
+                route.clearRoute();
+        });
+
+        $('button[name="rp-distance-select-map-ok"]', runLogMapTab).click(function() {
+            // TODO: check there are points & name
+            // update 'real' input fields with the new values
+            $('form[name="rp-runlog"] input[name="mapname"]').val($('form[name="rp-runlog"] input[name="rp-map-name"]').val());
+            $('form[name="rp-runlog"] input[name="mapnotes"]').val($('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val());
+            runLogMapPoints.val($('form[name="rp-runlog"] input[name="rp-map-points"]').val());
+            runLogMapDistance.val($('form[name="rp-runlog"] input[name="rp-map-distance"]').val());
+            console.log('set new mapped fields: '+
+                'name=['+$('form[name="rp-runlog"] input[name="mapname"]').val()+'], '+
+                'notes=['+$('form[name="rp-runlog"] input[name="mapnotes"]').val()+'], '+
+                'points=['+runLogMapPoints.val()+'], '+
+                'distance=['+runLogMapDistance.val()+']');
+
+            runLogDistanceType.val(4);
+            runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="mapname"]').val());
+            runLogDistanceSelected.show();
+            runLogDistanceSelectedEdit.show();
+            runLogDistanceSelection.hide();
+            runLogMainForm.show();
+            runLogDistanceSelector.hide();
+            updateRunPace();
+        });    
+    }
+
+    if ($('form[name="rp-runlog"] input[name="activityid"]').val() !== '') {
+        switch (runLogDistanceType.val()) {
+            case '2':
+                runLogDistanceSelected.val(runLogDistanceManual.val() + '@(await Model.UserUnitsAsync())');
+                break;
+            case '1':
+            case '3':
+                runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="mapname"]').val());
+                break;
+        }
+        runLogDistanceSelected.show();
+        runLogDistanceSelectedEdit.show();
+        runLogDistanceSelection.hide();
+        runLogMainForm.show();
+        runLogDistanceSelector.hide();
+        updateRunPace();
+    }
+});
 </script>
 }
