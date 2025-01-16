@@ -62,7 +62,7 @@ public class IndexModel(
             qualifyingActivities = runLogRepository.GetRunLogByDateRangeAsync(userAccount, mostRecentActivity.Date.AddYears(-18), mostRecentActivity.Date);
             periodGrouping = dt => new(dt.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             nextPeriod = dt => dt.AddYears(1);
-            periodDateFormat = "MMM yyyy";
+            periodDateFormat = "yyyy";
         }
         else
         {
