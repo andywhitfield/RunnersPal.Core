@@ -51,7 +51,7 @@ public class IndexModel(
         if (string.Equals(ByPeriod, "bymonth", StringComparison.InvariantCultureIgnoreCase))
         {
             ByPeriod = "bymonth";
-            qualifyingActivities = runLogRepository.GetRunLogByDateRangeAsync(userAccount, mostRecentActivity.Date.AddMonths(-18), mostRecentActivity.Date);
+            qualifyingActivities = runLogRepository.GetRunLogByDateRangeAsync(userAccount, mostRecentActivity.Date.AddMonths(-18), mostRecentActivity.Date.Date.AddDays(1));
             periodGrouping = dt => new(dt.Year, dt.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             nextPeriod = dt => dt.AddMonths(1);
             periodDateFormat = "MMM yyyy";
@@ -59,7 +59,7 @@ public class IndexModel(
         else if (string.Equals(ByPeriod, "byyear", StringComparison.InvariantCultureIgnoreCase))
         {
             ByPeriod = "byyear";
-            qualifyingActivities = runLogRepository.GetRunLogByDateRangeAsync(userAccount, mostRecentActivity.Date.AddYears(-18), mostRecentActivity.Date);
+            qualifyingActivities = runLogRepository.GetRunLogByDateRangeAsync(userAccount, mostRecentActivity.Date.AddYears(-18), mostRecentActivity.Date.Date.AddDays(1));
             periodGrouping = dt => new(dt.Year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             nextPeriod = dt => dt.AddYears(1);
             periodDateFormat = "yyyy";
@@ -67,7 +67,7 @@ public class IndexModel(
         else
         {
             ByPeriod = "byweek";
-            qualifyingActivities = runLogRepository.GetRunLogByDateRangeAsync(userAccount, mostRecentActivity.Date.AddMonths(-6), mostRecentActivity.Date);
+            qualifyingActivities = runLogRepository.GetRunLogByDateRangeAsync(userAccount, mostRecentActivity.Date.AddMonths(-6), mostRecentActivity.Date.Date.AddDays(1));
             periodGrouping = WeekEnding;
             nextPeriod = dt => dt.AddDays(7);
             periodDateFormat = "dd MMM";
