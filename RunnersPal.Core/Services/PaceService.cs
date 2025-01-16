@@ -43,6 +43,18 @@ public class PaceService(ILogger<PaceService> logger, IUserService userService)
         return time.Ticks == 0 ? null : time;
     }
 
+    public TimeSpan? CalculatePaceAsTimeSpan(UserAccount userAccount, RunLog runLog)
+    {
+        var timeTaken = TimeTaken(runLog.TimeTaken);
+        if (timeTaken == null)
+            return null;
+        var routeDistanceInMeters = runLog.Route.Distance;
+        var distanceUnits = (DistanceUnits)userAccount.DistanceUnits;
+        var pace = Convert.ToDecimal(timeTaken.Value.TotalSeconds) / userService.ToDistanceUnits(routeDistanceInMeters, distanceUnits);
+        logger.LogDebug("TimeTaken: {TimeTaken} ({TimeTakenSeconds}s); Distance: {Distance}; Pace: {Pace}", timeTaken, timeTaken.Value.TotalSeconds, routeDistanceInMeters, pace);
+        return TimeSpan.FromSeconds(Convert.ToDouble(pace));
+    }
+
     public string CalculatePace(UserAccount userAccount, RunLog runLog)
         => CalculatePace(userAccount, TimeTaken(runLog.TimeTaken), runLog.Route.Distance, null) ?? "unknown pace";
 

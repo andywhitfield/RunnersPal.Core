@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "{byPeriod?}"
 @model User.IndexModel
 
 <aside>
@@ -6,10 +6,95 @@
 </aside>
 
 <article>
-    <p>
-    User stats
+    <h1>Stats</h1>
+    @if (Model.ShowGraph) {
+    <p>Chart run log activities by:
+    @if (Model.ByPeriod == "byweek") {
+    <strong>Week</strong>
+    } else {
+    <a href="/user/byweek">Week</a>
+    }
+    |
+    @if (Model.ByPeriod == "bymonth") {
+    <strong>Month</strong>
+    } else {
+    <a href="/user/bymonth">Month</a>
+    }
+    |
+    @if (Model.ByPeriod == "byyear") {
+    <strong>Year</strong>
+    } else {
+    <a href="/user/byyear">Year</a>
+    }
     </p>
     <p>
-        <a href="/user/profile">Profile</a>
+        <div id="rp-stats-chart"></div>
     </p>
+    } else {
+    <p>When you are logged in and have logged at least one run, you will see a chart of your total distance run and average pace.</p>
+    <p>Go to the <a href="/RunLog">Log</a> page to start logging your runs today.</p>
+    }
 </article>
+
+@section Head {
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/css/highcharts.min.css">
+<style type="text/css">
+    :root {
+        --highcharts-color-0: #87eb66;
+        --highcharts-color-1: #d866eb;
+    }
+</style>
+}
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/highcharts.min.js"></script>
+@if (Model.ShowGraph) {
+<script type="text/javascript">
+$().ready(function() {
+    var dateSeries = @Html.Raw(Model.DateSeries);
+    Highcharts.chart('rp-stats-chart', {
+        chart: {
+            styledMode: true
+        },
+        title: {
+            text: 'Total Distance / Average Pace',
+            x: -20
+        },
+        xAxis: {
+            categories: dateSeries
+        },
+        yAxis: [{
+            title: {
+                text: '@Model.DistanceUnit'
+            },
+            min: 0.0
+        },{
+            title: {
+                text: '@Model.PaceUnit'
+            },
+            min: 0.0,
+            opposite: true
+        }],
+        tooltip: {
+            formatter: function () {
+                return this.series.name == 'Distance'
+                    ? ('<b>Total distance</b><br/>@(Model.ByPeriod == "byweek" ? "w/e " : "")' + dateSeries[this.x] + ': ' + this.y + '@Model.DistanceUnit')
+                    : ('<b>Average pace</b><br/>@(Model.ByPeriod == "byweek" ? "w/e " : "")' + dateSeries[this.x] + ': ' + this.y + '@Model.PaceUnit');
+            }
+        },
+        series: [{
+            name: 'Distance',
+            data: @Html.Raw(Model.Distance),
+            type: '@Model.ChartType',
+            animation: false
+        }, {
+            name: 'Pace',
+            yAxis: 1,
+            data: @Html.Raw(Model.Pace),
+            type: '@Model.ChartType',
+            animation: false
+        }]
+    });
+});
+</script>
+}
+}

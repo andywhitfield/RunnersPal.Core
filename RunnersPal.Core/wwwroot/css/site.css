@@ -294,6 +294,11 @@ span.rp-calc-input {
     display: inline-block;
 }
 
+#rp-stats-chart {
+    width: 100%;
+    min-height: 500px;
+}
+
 @media (max-width: 800px) {
     header {
         -webkit-flex-direction: column;

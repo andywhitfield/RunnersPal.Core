@@ -24,6 +24,7 @@ $().ready(function() {
     const datesLoaded = new Set();
     var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         initialView: 'dayGridMonth',
+        firstDay: 1,
         headerToolbar: false,
         dateClick: function(info) {
             window.location = '/runlog/activity?date=' + info.dateStr;

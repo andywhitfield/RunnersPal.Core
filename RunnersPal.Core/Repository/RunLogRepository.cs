@@ -29,7 +29,7 @@ public class RunLogRepository(ILogger<RunLogRepository> logger, SqliteDataContex
     public IAsyncEnumerable<RunLog> GetByDateAsync(UserAccount userAccount, DateTime forDate)
     {
         var fromDate = new DateTime(forDate.Year, forDate.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
-        var toDate = fromDate.AddMonths(2);
+        var toDate = fromDate.AddMonths(3);
         return context.RunLog.Include(r => r.Route).Where(r => r.UserAccountId == userAccount.Id && r.Date >= fromDate && r.Date < toDate && r.LogState == RunLog.LogStateValid).AsAsyncEnumerable();
     }
 
@@ -42,6 +42,15 @@ public class RunLogRepository(ILogger<RunLogRepository> logger, SqliteDataContex
             .Select(g => g.OrderByDescending(rl => rl.Date).First())
             .AsAsyncEnumerable();
     }
+
+    public Task<RunLog?> GetLatestRunLogAsync(UserAccount userAccount)
+        => context.RunLog.Include(r => r.Route).OrderByDescending(r => r.Date).FirstOrDefaultAsync(r => r.UserAccountId == userAccount.Id && r.LogState == RunLog.LogStateValid);
+
+    public IAsyncEnumerable<RunLog> GetRunLogByDateRangeAsync(UserAccount userAccount, DateTime from, DateTime to)
+        => context.RunLog
+            .Include(r => r.Route)
+            .Where(r => r.UserAccountId == userAccount.Id && r.Date >= from && r.Date <= to && r.LogState == RunLog.LogStateValid)
+            .AsAsyncEnumerable();
 
     public Task DeleteRunLogAsync(RunLog existingActivity)
     {
