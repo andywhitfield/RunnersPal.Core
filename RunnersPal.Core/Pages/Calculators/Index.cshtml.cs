@@ -4,5 +4,5 @@ namespace RunnersPal.Core.Pages.Calculators;
 
 public class IndexModel : PageModel
 {
-    public Task OnGet() => Task.CompletedTask;
+    public void OnGet() { }
 }

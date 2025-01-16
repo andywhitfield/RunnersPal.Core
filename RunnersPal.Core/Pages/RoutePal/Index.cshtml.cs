@@ -8,5 +8,5 @@ public class IndexModel(IUserService userService)
 {
     public bool IsLoggedIn => userService.IsLoggedIn;
     
-    public Task OnGet() => Task.CompletedTask;
+    public void OnGet() { }
 }

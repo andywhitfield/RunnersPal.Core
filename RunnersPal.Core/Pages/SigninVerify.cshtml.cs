@@ -17,14 +17,10 @@ public class SigninVerifyModel(ILogger<SigninVerifyModel> logger, IFido2 fido2,
 {
     public bool IsReturningUser { get; private set; }
 
-    [BindProperty(SupportsGet = true)]
-    public string? Email { get; set; }
-    [BindProperty(SupportsGet = true)]
-    public string? ReturnUrl { get; set; }
-    [BindProperty(SupportsGet = true)]
-    public string? VerifyOptions { get; set; }
-    [BindProperty]
-    public string? VerifyResponse { get; set; }
+    [BindProperty(SupportsGet = true)] public string? Email { get; set; }
+    [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
+    [BindProperty(SupportsGet = true)] public string? VerifyOptions { get; set; }
+    [BindProperty] public string? VerifyResponse { get; set; }
 
     public async Task OnGet() =>
         IsReturningUser = await userAccountRepository.GetUserAccountByEmailAsync(Email ?? "") != null;

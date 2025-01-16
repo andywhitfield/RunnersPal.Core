@@ -51,7 +51,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
             return;
         }
 
-        Date = existingActivity.Date.ToString("yyy-MM-dd");
+        Date = existingActivity.Date.ToString("yyyy-MM-dd");
         TimeTaken = paceService.TimeTakenDisplayFormat(existingActivity.TimeTaken);
         Comment = existingActivity.Comment;
         DistanceType =

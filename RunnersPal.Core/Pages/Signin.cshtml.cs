@@ -12,14 +12,10 @@ public class SigninModel(ILogger<SigninModel> logger, IConfiguration configurati
     IUserAccountRepository userAccountRepository)
     : PageModel
 {
-    [BindProperty(SupportsGet = true)]
-    public string? ReturnUrl { get; set; }
-    [BindProperty]
-    public string? Email { get; set; }
+    [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
+    [BindProperty] public string? Email { get; set; }
 
-    public void OnGet()
-    {
-    }
+    public void OnGet() { }
 
     public async Task<IActionResult> OnPost()
     {
