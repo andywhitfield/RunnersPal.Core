@@ -6,6 +6,7 @@ using RunnersPal.Core.Services;
 namespace RunnersPal.Core.Pages.RoutePal;
 
 public class MapModel(ILogger<MapModel> logger,
+    IUserService userService,
     IUserAccountRepository userAccountRepository,
     IRouteRepository routeRepository)
     : PageModel
@@ -21,7 +22,7 @@ public class MapModel(ILogger<MapModel> logger,
     {
         if (routeId != null)
         {
-            if (User == null)
+            if (!userService.IsLoggedIn)
             {
                 logger.LogInformation("No User authenticated, cannot load any route");
                 return BadRequest();
@@ -46,7 +47,7 @@ public class MapModel(ILogger<MapModel> logger,
 
     public async Task<IActionResult> OnPost()
     {
-        if (User == null)
+        if (!userService.IsLoggedIn)
         {
             logger.LogWarning("No User authenticated, cannot save any route");
             return BadRequest();
