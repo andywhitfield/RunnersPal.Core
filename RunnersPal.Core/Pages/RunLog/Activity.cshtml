@@ -31,6 +31,7 @@
         <button type="button" name="rp-distance-select">Pick a route...</button>
         <input type="text" name="rp-distance-selected" readonly />
         <button type="button" name="rp-distance-selected-edit">Edit...</button>
+        <a name="rp-distance-selected-routelink" href="/routepal/map?routeid=@Model.RouteId" title="Open route in a new tab" target="_blank">&RightArrowBar;</a>
     </div>
     <div>
         <label for="rp-runlog-timetaken">Time taken:</label>
@@ -160,12 +161,14 @@ $().ready(function() {
     const runLogDistanceSelection = $('form[name="rp-runlog"] button[name="rp-distance-select"]');
     const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
     const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
+    const runLogDistanceSelectedRouteLink = $('form[name="rp-runlog"] a[name="rp-distance-selected-routelink"]');
     const runLogManualDistanceInput = $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]');
     const runLogMapTab = $('#tab-map-new-route');
     const runLogMapDistance = $('form[name="rp-runlog"] input[name="mapdistance"]');
     const runLogMapPoints = $('form[name="rp-runlog"] input[name="mappoints"]');
     runLogDistanceSelected.hide();
     runLogDistanceSelectedEdit.hide();
+    runLogDistanceSelectedRouteLink.hide();
     runLogDistanceSelection.click(function() {
         runLogDistanceSelector.show();
         runLogMainForm.hide();
@@ -240,6 +243,12 @@ $().ready(function() {
         runLogDistanceSelected.val($(this).text());
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
+        if (runLogDistanceType.val() === '3') {
+            runLogDistanceSelectedRouteLink.attr('href', '/routepal/map?routeid='+$(this).attr('data-routeid'));
+            runLogDistanceSelectedRouteLink.show();
+        } else {
+            runLogDistanceSelectedRouteLink.hide();
+        }
         runLogDistanceSelection.hide();
         runLogMainForm.show();
         runLogDistanceSelector.hide();
@@ -251,6 +260,7 @@ $().ready(function() {
         runLogDistanceSelected.val(runLogManualDistanceInput.val() + '@(await Model.UserUnitsAsync())');
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
+        runLogDistanceSelectedRouteLink.hide();
         runLogDistanceSelection.hide();
         runLogMainForm.show();
         runLogDistanceSelector.hide();
@@ -372,6 +382,7 @@ $().ready(function() {
             runLogDistanceSelected.val($('form[name="rp-runlog"] input[name="mapname"]').val());
             runLogDistanceSelected.show();
             runLogDistanceSelectedEdit.show();
+            runLogDistanceSelectedRouteLink.hide();
             runLogDistanceSelection.hide();
             runLogMainForm.show();
             runLogDistanceSelector.hide();
@@ -391,6 +402,10 @@ $().ready(function() {
         }
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
+        if (runLogDistanceType.val() === '3')
+            runLogDistanceSelectedRouteLink.show();
+        else
+            runLogDistanceSelectedRouteLink.hide();
         runLogDistanceSelection.hide();
         runLogMainForm.show();
         runLogDistanceSelector.hide();
