@@ -255,6 +255,12 @@ form[name="rp-runlog"] textarea {
     width: 100%;
 }
 
+.rp-route-deleted {
+    font-style: italic;
+    font-size: small;
+    color: red;
+}
+
 .the-datepicker__rp-runlog-datepicker-title {
     color: black;
 }

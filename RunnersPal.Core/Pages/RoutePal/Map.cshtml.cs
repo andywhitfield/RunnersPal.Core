@@ -17,6 +17,7 @@ public class MapModel(ILogger<MapModel> logger,
     [BindProperty] public string? Points { get; set; }
     [BindProperty] public decimal Distance { get; set; }
     [BindProperty] public string? Delete { get; set; }
+    public bool IsRouteDeleted { get; private set; }
 
     public async Task<IActionResult> OnGet([FromQuery] int? routeId)
     {
@@ -40,6 +41,7 @@ public class MapModel(ILogger<MapModel> logger,
             Points = route.MapPoints ?? "";
             Distance = route.Distance;
             RouteNotes = route.Notes ?? "";
+            IsRouteDeleted = route.RouteType == Models.Route.DeletedRoute;
         }
 
         return Page();
