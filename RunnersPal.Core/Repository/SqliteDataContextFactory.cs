@@ -9,7 +9,7 @@ public class SqliteDataContextFactory : IDesignTimeDbContextFactory<SqliteDataCo
 {
     public SqliteDataContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<SqliteDataContext>();
+        DbContextOptionsBuilder<SqliteDataContext> optionsBuilder = new();
         optionsBuilder.UseSqlite("Data Source=RunnersPal.Core/runnerspal.db");
         return new SqliteDataContext(optionsBuilder.Options);
     }
