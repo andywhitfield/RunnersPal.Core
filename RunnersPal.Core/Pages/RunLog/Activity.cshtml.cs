@@ -69,7 +69,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
     public async Task<IActionResult> OnPost()
     {
         if (!string.IsNullOrEmpty(Cancel))
-            return Redirect("/runlog");
+            return Redirect(GetRedirectUri());
 
         _userAccount = await userAccountRepository.GetUserAccountAsync(User);
 
@@ -87,7 +87,9 @@ public class ActivityModel(ILogger<ActivityModel> logger,
         {
             await DeleteRunAsync(_userAccount, ActivityId.Value);
         }
-        return Redirect("/runlog");
+        return Redirect(GetRedirectUri());
+
+        string GetRedirectUri() => $"/runlog?date={Date.ParseDateTime():yyyy-MM-dd}";
     }
 
     public async Task<string> UserUnitsAsync()
