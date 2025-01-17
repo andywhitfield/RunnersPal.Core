@@ -9,7 +9,7 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
     public ValueTask<Models.Route?> GetRouteAsync(int routeId)
         => context.Route.FindAsync(routeId);
 
-    public async Task<Models.Route> CreateNewRouteAsync(UserAccount user, string name, string points, decimal distance, string? notes)
+    public async Task<Models.Route> CreateNewRouteAsync(UserAccount user, string name, string points, decimal distance, string? notes, int? replacesRouteId)
     {
         logger.LogDebug("Creating new route [{Name}] for [{User}]", name, user.Id);
         var newRoute = context.Route.Add(new()
@@ -20,7 +20,8 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
             Distance = distance,
             DistanceUnits = (int)DistanceUnits.Meters,
             Notes = notes,
-            RouteType = Models.Route.PrivateRoute
+            RouteType = Models.Route.PrivateRoute,
+            ReplacesRouteId = replacesRouteId
         });
         await context.SaveChangesAsync();
         return newRoute.Entity;

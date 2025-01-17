@@ -62,6 +62,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
         RouteId = existingActivity.Route.Id;
         MapName = existingActivity.Route.Name;
         MapNotes = existingActivity.Route.Notes;
+        MapPoints = existingActivity.Route.MapPoints;
         MapDistance = existingActivity.Route.Distance;
     }
 
@@ -127,7 +128,8 @@ public class ActivityModel(ILogger<ActivityModel> logger,
                     userService.ToUserDistance(distanceInMeters, userAccount),
                     "",
                     distanceInMeters,
-                    "");
+                    "",
+                    null);
 
                 logger.LogDebug("Creating a new run log entry");
                 newRunLog = await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), manualRoute, TimeTaken!, Comment, replacedRunLog);
@@ -157,7 +159,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
                 }
 
                 logger.LogDebug("Creating a new mapped route for {MapName} ({MapNotes}): {MapPoints}", MapName, MapNotes, MapPoints);
-                var newUserRoute = await routeRepository.CreateNewRouteAsync(userAccount, MapName, MapPoints, MapDistance.Value, MapNotes);
+                var newUserRoute = await routeRepository.CreateNewRouteAsync(userAccount, MapName, MapPoints, MapDistance.Value, MapNotes, replacedRunLog?.RouteId);
 
                 logger.LogDebug("Creating a new run log entry");
                 newRunLog = await runLogRepository.CreateNewAsync(userAccount, Date.ParseDateTime(), newUserRoute, TimeTaken!, Comment, replacedRunLog);
@@ -173,7 +175,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
     private async Task<bool> SaveRunAsync(UserAccount userAccount, int activityId)
     {
         logger.LogInformation("Saving run {Id}", activityId);
-        var currentActivity = await DeleteRunAsync(userAccount, activityId);
+        var currentActivity = await DeleteRunAsync(userAccount, activityId, true);
         if (currentActivity == null)
             return false;
         
@@ -184,7 +186,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
         return true;
     }
 
-    private async Task<Models.RunLog?> DeleteRunAsync(UserAccount userAccount, int activityId)
+    private async Task<Models.RunLog?> DeleteRunAsync(UserAccount userAccount, int activityId, bool deleteRoute = false)
     {
         logger.LogInformation("Deleting run {Id}", activityId);
         var existingActivity = await runLogRepository.GetRunLogAsync(activityId);
@@ -192,6 +194,12 @@ public class ActivityModel(ILogger<ActivityModel> logger,
         {
             logger.LogWarning("RunLog {ActivityId} not found or doesn't belong to user {UserAccountId}", activityId, userAccount.Id);
             return null;
+        }
+
+        if (DistanceType == 4 && deleteRoute && existingActivity.Route.RouteType == Models.Route.PrivateRoute)
+        {
+            logger.LogInformation("Deleting route {RouteId}", existingActivity.RouteId);
+            await routeRepository.DeleteRouteAsync(existingActivity.Route);
         }
         
         await runLogRepository.DeleteRunLogAsync(existingActivity);

@@ -88,7 +88,7 @@ public class MapModel(ILogger<MapModel> logger,
         }
         else if (string.IsNullOrEmpty(Delete))
         {
-            var newRoute = await routeRepository.CreateNewRouteAsync(userAccount, RouteName, Points, Distance, RouteNotes);
+            var newRoute = await routeRepository.CreateNewRouteAsync(userAccount, RouteName, Points, Distance, RouteNotes, null);
             RouteId = newRoute.Id;
         }
         else

@@ -63,7 +63,11 @@
         <ul>
             <li><a href="#tab-common-routes">Common routes</a></li>
             <li><a href="#tab-saved-routes">My saved routes</a></li>
+            @if (Model.ActivityId != null) {
+            <li><a href="#tab-map-new-route">Route map</a></li>
+            } else {
             <li><a href="#tab-map-new-route">Map a new route</a></li>
+            }
             <li><a href="#tab-manual-distance">Enter a distance</a></li>
         </ul>
 
@@ -273,20 +277,13 @@ $().ready(function() {
             loadRunLogUserRoutes(1);
         } else if (tab.selector === '#tab-map-new-route') {
             if ($('#map').attr('data-initialised') === 'true') {
-                console.log('resetting route with original name, notes, and points');
-                $('form[name="rp-runlog"] input[name="rp-map-name"]').val($('form[name="rp-runlog"] input[name="mapname"]').val());
-                $('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val($('form[name="rp-runlog"] input[name="mapnotes"]').val());
-                const newMapRoute = runLogMapTab.data('route');
-                newMapRoute.clearRoute();
-                const newMapPoints = runLogMapPoints.val() === '' ? [] : JSON.parse(runLogMapPoints.val());
-                for (const newMapPoint of newMapPoints) {
-                    newMapRoute.addPoint(newMapPoint);
-                }
-                newMapRoute.fitBounds(newMapPoints);
+                resetMap();
             } else {
                 console.log('initialising route mapping tab');
                 $('#map').attr('data-initialised', 'true');
                 initialiseMap();
+                if ($('form[name="rp-runlog"] input[name="activityid"]').val() !== '')
+                    resetMap();
             }
         } else if (tab.selector === '#tab-manual-distance') {
             runLogManualDistanceInput.trigger('focus');
@@ -338,16 +335,18 @@ $().ready(function() {
     }
     const runLogMapDistanceCurrent = $('form[name="rp-runlog"] input[name="rp-map-distance"]');
     function initialiseMap() {
-        if (!navigator.geolocation) {
-            map.setView([54.505, -0.09], 6);
-        } else {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    map.setView([position.coords.latitude, position.coords.longitude], 12);
-                },
-                function() {
-                    map.setView([54.505, -0.09], 6);
-                });
+        if ($('form[name="rp-runlog"] input[name="activityid"]').val() === '') {
+            if (!navigator.geolocation) {
+                map.setView([54.505, -0.09], 6);
+            } else {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        map.setView([position.coords.latitude, position.coords.longitude], 12);
+                    },
+                    function() {
+                        map.setView([54.505, -0.09], 6);
+                    });
+            }
         }
         L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -388,6 +387,18 @@ $().ready(function() {
             runLogDistanceSelector.hide();
             updateRunPace();
         });    
+    }
+    function resetMap() {
+        console.log('resetting route with original name, notes, and points');
+        $('form[name="rp-runlog"] input[name="rp-map-name"]').val($('form[name="rp-runlog"] input[name="mapname"]').val());
+        $('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val($('form[name="rp-runlog"] input[name="mapnotes"]').val());
+        const newMapRoute = runLogMapTab.data('route');
+        newMapRoute.clearRoute();
+        const newMapPoints = runLogMapPoints.val() === '' ? [] : JSON.parse(runLogMapPoints.val());
+        for (const newMapPoint of newMapPoints) {
+            newMapRoute.addPoint(newMapPoint);
+        }
+        newMapRoute.fitBounds(newMapPoints);
     }
 
     if ($('form[name="rp-runlog"] input[name="activityid"]').val() !== '') {
