@@ -1,0 +1,56 @@
+﻿@page
+@model RunLog.ListModel
+
+<aside>
+    <vc:user-nav />
+</aside>
+
+<article>
+<h1>Run Log : List of all activities</h1>
+<p><a href="/runlog/activity">Log a new run</a> | <a href="/runlog?date=@Model.Date" title="Switch back to the calendar view">Calendar view</a></p>
+@if (!Model.Activities.Any()) {
+<p>No run entries logged yet. <a href="/runlog/activity">Log a new run</a> today.</p>
+} else {
+@if (Model.Pagination.PageCount > 1) {
+<p>
+<div class="pagination">
+    @if (Model.Pagination.PageNumber > 1) {
+    <a title="Go to previous page of activities" href="/runlog/list?pageNumber=@(Model.Pagination.PageNumber - 1)">&laquo;</a>
+    }
+    @foreach (var pg in Model.Pagination.Pages) {
+    @if (pg.IsSelected) {
+    <a class="pagination-active">@pg.PageNumber</a>
+    } else {
+    <a title="Go to page @pg.PageNumber" href="/runlog/list?pageNumber=@pg.PageNumber">@pg.PageNumber</a>
+    }
+    @if (pg.IsNextPageSkipped) {
+    <a class="skip">&bull;&bull;</a>
+    }
+    }
+    @if (Model.Pagination.PageNumber < Model.Pagination.PageCount) {
+    <a title="Go to the next page of activities" href="/runlog/list?pageNumber=@(Model.Pagination.PageNumber + 1)">&raquo;</a>
+    }
+</div>
+</p>
+}
+<ul class="rp-list">
+    <li class="rp-list">
+        <ul class="rp-list-item">
+            @foreach (var activity in Model.Activities) {
+            <li class="rp-list-item">
+                <div></div>
+                <div class="rp-list-item-entry">
+                    <div>
+                        <a href="/runlog/activity?activityid=@activity.Id">@activity.Date.ToString("dd MMM yyyy")</a>
+                    </div>
+                    <div>@await Model.RunLogTitleAsync(activity)</div>
+                    <div>@await Model.RunLogPaceAsync(activity)</div>
+                </div>
+                <div>@activity.Comment</div>
+            </li>
+            }
+        </ul>
+    </li>
+</ul>
+}
+</article>

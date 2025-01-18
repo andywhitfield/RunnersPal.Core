@@ -40,7 +40,10 @@ public class ActivityModel(ILogger<ActivityModel> logger,
     {
         SystemRoutes = await routeRepository.GetSystemRoutesAsync().ToListAsync();
         if (ActivityId == null)
+        {
+            Date = (DateTime.TryParse(Date, out var dt) ? dt : DateTime.Today).ToString("yyyy-MM-dd");
             return;
+        }
 
         _userAccount = await userAccountRepository.GetUserAccountAsync(User);
         var existingActivity = await runLogRepository.GetRunLogAsync(ActivityId.Value);
