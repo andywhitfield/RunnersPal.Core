@@ -72,10 +72,22 @@
         </ul>
 
         <div id="tab-common-routes">
-            <ul>
-                @foreach (var systemRoute in Model.SystemRoutes) {
-                <li><a href="#" data-routetype="1" data-routeid="@systemRoute.Id">@systemRoute.Name</a></li>
-                }
+            <ul class="rp-list">
+                <li class="rp-list">
+                    <ul class="rp-list-item">
+                    @foreach (var systemRoute in Model.SystemRoutes) {
+                    <li class="rp-list-item">
+                    <div></div>
+                    <div class="rp-list-item-entry">
+                        <div></div>
+                        <div><a href="#" data-routetype="1" data-routeid="@systemRoute.Id">@systemRoute.Name</a></div>
+                        <div></div>
+                    </div>
+                    <div></div>
+                    </li>
+                    }
+                    </ul>
+                </li>
             </ul>
             <div>
             <button name="rp-distance-select-cancel" type="button">Cancel</button>
