@@ -37,19 +37,29 @@
 </div>
 </p>
 }
-<ul>
-    @foreach (var route in Model.Routes) {
-    <li>
-    <span><a href="/routepal/map?routeid=@route.Id">@route.Name</a> @(await Model.RouteDistanceAsync(route))</span>
-    @{ Models.RunLog? lastRun = null; }
-    @if ((lastRun = Model.LastRun(route)) != null) {
-    <span>
-        last run on <a href="/runlog/activity?activityid=@lastRun.Id">@lastRun.Date.ToString("D")</a>
-        <a href="/runlog/list?routeid=@lastRun.RouteId" title="View all runs for this route">&RightArrowBar;</a>
-    </span>
-    }
+<ul class="rp-list">
+    <li class="rp-list">
+        <ul class="rp-list-item">
+            @foreach (var route in Model.Routes) {
+            <li class="rp-list-item">
+            <div></div>
+            <div class="rp-list-item-entry">
+                <div>
+                    <a title="View the mapped route" href="/routepal/map?routeid=@route.Id">@route.Name</a>
+                </div>
+                <div>@(await Model.RouteDistanceAsync(route))</div>
+                @{ Models.RunLog? lastRun = null; }
+                @if ((lastRun = Model.LastRun(route)) != null) {
+                <div>Last run on <a title="View this run activity" href="/runlog/activity?activityid=@lastRun.Id">@lastRun.Date.ToString("D")</a></div>
+                } else {
+                <div></div>
+                }
+            </div>
+            <div><a href="/runlog/list?routeid=@route.Id" title="View all runs for this route">View all runs</a></div>
+            </li>
+            }
+        </ul>
     </li>
-    }
 </ul>
 } else {
 <p>You have no saved routes. Start by <a href="/routepal/map">plotting a new route here.</a></p>
