@@ -34,6 +34,6 @@ public class ListModel(IUserAccountRepository userAccountRepository,
     public async Task<string> RouteDistanceAsync(Models.Route route)
         => userService.ToUserDistance(route.Distance, _userAccount ??= await userAccountRepository.GetUserAccountAsync(User));
 
-    public DateOnly? LastRun(Models.Route route)
-        => _lastRunsForRoutes.TryGetValue(route.Id, out var runLog) ? DateOnly.FromDateTime(runLog.Date) : null;
+    public Models.RunLog? LastRun(Models.Route route)
+        => _lastRunsForRoutes.TryGetValue(route.Id, out var runLog) ? runLog : null;
 }

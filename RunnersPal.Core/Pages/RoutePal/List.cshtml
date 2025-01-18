@@ -41,9 +41,12 @@
     @foreach (var route in Model.Routes) {
     <li>
     <span><a href="/routepal/map?routeid=@route.Id">@route.Name</a> @(await Model.RouteDistanceAsync(route))</span>
-    @{ DateOnly? lastRun = null; }
+    @{ Models.RunLog? lastRun = null; }
     @if ((lastRun = Model.LastRun(route)) != null) {
-    <span>last run on <a href="#">@lastRun.Value.ToString("D")</a><!-- TODO: link to log view, filtered by the route --></span>
+    <span>
+        last run on <a href="/runlog/activity?activityid=@lastRun.Id">@lastRun.Date.ToString("D")</a>
+        <a href="/runlog/list?routeid=@lastRun.RouteId" title="View all runs for this route">&RightArrowBar;</a>
+    </span>
     }
     </li>
     }

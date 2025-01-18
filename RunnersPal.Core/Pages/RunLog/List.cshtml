@@ -6,7 +6,11 @@
 </aside>
 
 <article>
+@if (Model.RouteId == null) {
 <h1>Run Log : List of all activities</h1>
+} else {
+<h1>Run Log : List of all runs on route @Model.RouteName</h1>
+}
 <p><a href="/runlog/activity">Log a new run</a> | <a href="/runlog?date=@Model.Date" title="Switch back to the calendar view">Calendar view</a></p>
 @if (!Model.Activities.Any()) {
 <p>No run entries logged yet. <a href="/runlog/activity">Log a new run</a> today.</p>
@@ -15,20 +19,20 @@
 <p>
 <div class="pagination">
     @if (Model.Pagination.PageNumber > 1) {
-    <a title="Go to previous page of activities" href="/runlog/list?pageNumber=@(Model.Pagination.PageNumber - 1)">&laquo;</a>
+    <a title="Go to previous page of activities" href="/runlog/list?pageNumber=@(Model.Pagination.PageNumber - 1)&routeid=@Model.RouteId">&laquo;</a>
     }
     @foreach (var pg in Model.Pagination.Pages) {
     @if (pg.IsSelected) {
     <a class="pagination-active">@pg.PageNumber</a>
     } else {
-    <a title="Go to page @pg.PageNumber" href="/runlog/list?pageNumber=@pg.PageNumber">@pg.PageNumber</a>
+    <a title="Go to page @pg.PageNumber" href="/runlog/list?pageNumber=@pg.PageNumber&routeid=@Model.RouteId">@pg.PageNumber</a>
     }
     @if (pg.IsNextPageSkipped) {
     <a class="skip">&bull;&bull;</a>
     }
     }
     @if (Model.Pagination.PageNumber < Model.Pagination.PageCount) {
-    <a title="Go to the next page of activities" href="/runlog/list?pageNumber=@(Model.Pagination.PageNumber + 1)">&raquo;</a>
+    <a title="Go to the next page of activities" href="/runlog/list?pageNumber=@(Model.Pagination.PageNumber + 1)&routeid=@Model.RouteId">&raquo;</a>
     }
 </div>
 </p>
