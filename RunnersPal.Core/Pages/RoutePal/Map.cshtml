@@ -18,6 +18,9 @@
     }
     <button type="button" name="undo">Undo</button>
     <button type="button" name="clear">Clear</button>
+    @if (Model.RouteId == null && Model.LoadUnsaved == null) {
+    <button type="button" name="loadunsaved">Load unsaved route</button>
+    }
     @if (Model.RouteId.HasValue && !Model.IsRouteDeleted) {
     <button type="submit" name="delete" value="delete" data-confirm="Are you sure you want to delete this route?">Delete</button>
     }
@@ -46,6 +49,31 @@
     $().ready(function() {        
         const routeNameEl = $('form[name="rp-map"] input[name="routename"]');
         let mapPointsEl = $('form[name="rp-map"] input[name="points"]');
+        @if (Model.RouteId != null) {
+        <text>
+        console.log('saved route, clearing local storage');
+        localStorage.removeItem('map.points');
+        localStorage.removeItem('map.name');
+        localStorage.removeItem('map.notes');
+        </text>
+        } else if (Model.LoadUnsaved == true) {
+        <text>
+        if (localStorage.getItem('map.points'))
+            mapPointsEl.val(localStorage.getItem('map.points'));
+        if (localStorage.getItem('map.name'))
+            routeNameEl.val(localStorage.getItem('map.name'));
+        if (localStorage.getItem('map.notes'))
+            $('form[name="rp-map"] textarea[name="routenotes"]').val(localStorage.getItem('map.notes'));
+        console.log('loading an unsaved route local storage: '+routeNameEl.val());
+        </text>
+        } else {
+        <text>
+        if (localStorage.getItem('map.points'))
+            $('form[name="rp-map"] button[name="loadunsaved"]').click(function() { window.location = '/routepal/map?loadunsaved=true'; });
+        else
+            $('form[name="rp-map"] button[name="loadunsaved"]').hide();
+        </text>
+        }
         let mapPoints = mapPointsEl.val() === '' ? [] : JSON.parse(mapPointsEl.val());
         if ((typeof mapPoints !== 'object') || (typeof mapPoints.length !== 'number') || mapPoints.length === 0) {
             if (!navigator.geolocation) {
@@ -86,9 +114,17 @@
         });
 
         function rpUpdateSaveButton() {
-            saveBtnEl.prop('disabled',
-                !routeNameEl.val() || /^\s*$/.test(routeNameEl.val()) || // no route name
-                distanceFormEl.val() === '' || distanceFormEl.val() === '0'); // no points
+            const isSaveDisabled = !routeNameEl.val() || /^\s*$/.test(routeNameEl.val()) || // no route name
+                distanceFormEl.val() === '' || distanceFormEl.val() === '0'; // no points
+            saveBtnEl.prop('disabled', isSaveDisabled);
+
+            if (!isSaveDisabled) {
+                $('form[name="rp-map"] button[name="loadunsaved"]').hide();
+                console.log('saving route ['+routeNameEl.val()+'] to local storage');
+                localStorage.setItem('map.points', mapPointsEl.val());
+                localStorage.setItem('map.name', routeNameEl.val());
+                localStorage.setItem('map.notes', $('form[name="rp-map"] textarea[name="routenotes"]').val());
+            }
         }
     });
 </script>

@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RunnersPal.Core.Repository;
@@ -12,6 +13,7 @@ public class MapModel(ILogger<MapModel> logger,
     : PageModel
 {
     [BindProperty(SupportsGet = true)] public int? RouteId { get; set; }
+    [BindProperty(SupportsGet = true)] public bool? LoadUnsaved { get; set; }
     [BindProperty] public string? RouteName { get; set; }
     [BindProperty] public string? RouteNotes { get; set; }
     [BindProperty] public string? Points { get; set; }
@@ -19,9 +21,9 @@ public class MapModel(ILogger<MapModel> logger,
     [BindProperty] public string? Delete { get; set; }
     public bool IsRouteDeleted { get; private set; }
 
-    public async Task<IActionResult> OnGet([FromQuery] int? routeId)
+    public async Task<IActionResult> OnGet()
     {
-        if (routeId != null)
+        if (RouteId != null)
         {
             if (!userService.IsLoggedIn)
             {
@@ -30,10 +32,10 @@ public class MapModel(ILogger<MapModel> logger,
             }
 
             var userAccount = await userAccountRepository.GetUserAccountAsync(User);
-            var route = await routeRepository.GetRouteAsync(routeId.Value);
+            var route = await routeRepository.GetRouteAsync(RouteId.Value);
             if (route == null || route.CreatorAccount.Id != userAccount.Id)
             {
-                logger.LogWarning("Route {RouteId} is not owned by user {UserAccountId}, cannot view this route", routeId, userAccount.Id);
+                logger.LogWarning("Route {RouteId} is not owned by user {UserAccountId}, cannot view this route", RouteId, userAccount.Id);
                 return BadRequest();
             }
 
@@ -51,8 +53,8 @@ public class MapModel(ILogger<MapModel> logger,
     {
         if (!userService.IsLoggedIn)
         {
-            logger.LogWarning("No User authenticated, cannot save any route");
-            return BadRequest();
+            logger.LogWarning("No User authenticated, redirecting to login page");
+            return Redirect($"/signin?ReturnUrl={WebUtility.UrlEncode("/routepal/map?loadunsaved=true")}");
         }
         if (string.IsNullOrWhiteSpace(RouteName) || string.IsNullOrWhiteSpace(Points))
         {
