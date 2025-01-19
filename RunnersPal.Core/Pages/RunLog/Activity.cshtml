@@ -319,7 +319,7 @@ $().ready(function() {
     }
     function onRunLogUserRoutesLoaded(data) {
         console.log('routes returned - ' + data.routes.length);
-        $('li.rp-list-item-entry', runLogUserRoutes).remove();
+        $('li.rp-list-item', runLogUserRoutes).remove();
         $('div.pagination', runLogUserRoutes).hide();
         $('div.pagination', runLogUserRoutes).empty();
         if (data.routes.length >= 0) {
