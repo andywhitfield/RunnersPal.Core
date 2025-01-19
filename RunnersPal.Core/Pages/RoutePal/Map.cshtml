@@ -33,6 +33,9 @@
         <label for="rp-map-name">Name:</label>
         <input type="text" id="rp-map-name" name="routename" class="rp-map-name" value="@Model.RouteName" />
         Distance: <span class="rp-map-distance">0</span>
+        @if (!Model.IsLoggedIn) {
+        <button type="button" name="switchunits">switch to @Model.SwitchToUnit</button>
+        }
     </div>
     <div>
         <label for="rp-map-notes">Notes:<br/><small>(optional)</small></label>
@@ -113,6 +116,13 @@
                 route.clearRoute();
         });
 
+        function saveToLocalStorage() {
+            console.log('saving route ['+routeNameEl.val()+'] to local storage');
+            localStorage.setItem('map.points', mapPointsEl.val());
+            localStorage.setItem('map.name', routeNameEl.val());
+            localStorage.setItem('map.notes', $('form[name="rp-map"] textarea[name="routenotes"]').val());
+        }
+
         function rpUpdateSaveButton() {
             const isSaveDisabled = !routeNameEl.val() || /^\s*$/.test(routeNameEl.val()) || // no route name
                 distanceFormEl.val() === '' || distanceFormEl.val() === '0'; // no points
@@ -120,12 +130,14 @@
 
             if (!isSaveDisabled) {
                 $('form[name="rp-map"] button[name="loadunsaved"]').hide();
-                console.log('saving route ['+routeNameEl.val()+'] to local storage');
-                localStorage.setItem('map.points', mapPointsEl.val());
-                localStorage.setItem('map.name', routeNameEl.val());
-                localStorage.setItem('map.notes', $('form[name="rp-map"] textarea[name="routenotes"]').val());
+                saveToLocalStorage();
             }
         }
+
+        $('form[name="rp-map"] button[name="switchunits"]').click(function() {
+            saveToLocalStorage();
+            window.location = '/routepal/map?loadunsaved=true&unit=@Model.SwitchToUnit';
+        });
     });
 </script>
 }

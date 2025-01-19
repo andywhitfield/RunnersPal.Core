@@ -14,12 +14,14 @@ public class MapModel(ILogger<MapModel> logger,
 {
     [BindProperty(SupportsGet = true)] public int? RouteId { get; set; }
     [BindProperty(SupportsGet = true)] public bool? LoadUnsaved { get; set; }
+    [BindProperty(SupportsGet = true)] public string? Unit { get; set; }
     [BindProperty] public string? RouteName { get; set; }
     [BindProperty] public string? RouteNotes { get; set; }
     [BindProperty] public string? Points { get; set; }
     [BindProperty] public decimal Distance { get; set; }
     [BindProperty] public string? Delete { get; set; }
     public bool IsRouteDeleted { get; private set; }
+    public bool IsLoggedIn => userService.IsLoggedIn;
 
     public async Task<IActionResult> OnGet()
     {
@@ -103,8 +105,14 @@ public class MapModel(ILogger<MapModel> logger,
     }
     
     public async Task<string> UserUnitsAsync()
-        => (Models.DistanceUnits?)(await userAccountRepository.GetUserAccountOrNullAsync(User))?.DistanceUnits switch { Models.DistanceUnits.Miles => "miles", Models.DistanceUnits.Kilometers => "km", _ => "km" };
+        => !userService.IsLoggedIn && !string.IsNullOrEmpty(Unit)
+            ? string.Equals(Unit, "miles", StringComparison.InvariantCultureIgnoreCase) ? "miles" : "km"
+            : (Models.DistanceUnits?)(await userAccountRepository.GetUserAccountOrNullAsync(User))?.DistanceUnits switch { Models.DistanceUnits.Miles => "miles", Models.DistanceUnits.Kilometers => "km", _ => "km" };
 
     public async Task<decimal> UserUnitsMultiplierAsync()
-        => (Models.DistanceUnits?)(await userAccountRepository.GetUserAccountOrNullAsync(User))?.DistanceUnits switch { Models.DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, Models.DistanceUnits.Kilometers => 1000, _ => 1000 };
+        => !userService.IsLoggedIn && !string.IsNullOrEmpty(Unit)
+            ? string.Equals(Unit, "miles", StringComparison.InvariantCultureIgnoreCase) ? 1000 * UserService.KilometersToMiles : 1000
+            : (Models.DistanceUnits?)(await userAccountRepository.GetUserAccountOrNullAsync(User))?.DistanceUnits switch { Models.DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, Models.DistanceUnits.Kilometers => 1000, _ => 1000 };
+    
+    public string SwitchToUnit => string.Equals(Unit, "miles", StringComparison.InvariantCultureIgnoreCase) ? "km" : "miles";
 }
