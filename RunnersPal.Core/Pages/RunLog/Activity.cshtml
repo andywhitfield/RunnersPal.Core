@@ -379,20 +379,23 @@ $().ready(function() {
         }
     }
     const runLogMapDistanceCurrent = $('form[name="rp-runlog"] input[name="rp-map-distance"]');
-    function initialiseMap() {
-        if ($('form[name="rp-runlog"] input[name="activityid"]').val() === '') {
-            if (!navigator.geolocation) {
-                map.setView([54.505, -0.09], 6);
-            } else {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        map.setView([position.coords.latitude, position.coords.longitude], 12);
-                    },
-                    function() {
-                        map.setView([54.505, -0.09], 6);
-                    });
-            }
+    function setMapDefaultView() {
+        if (!navigator.geolocation) {
+            map.setView([54.505, -0.09], 6);
+        } else {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    map.setView([position.coords.latitude, position.coords.longitude], 12);
+                },
+                function() {
+                    map.setView([54.505, -0.09], 6);
+                });
         }
+    }
+    function initialiseMap() {
+        if ($('form[name="rp-runlog"] input[name="activityid"]').val() === '')
+            setMapDefaultView();
+
         L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -443,10 +446,13 @@ $().ready(function() {
         const newMapRoute = runLogMapTab.data('route');
         newMapRoute.clearRoute();
         const newMapPoints = runLogMapPoints.val() === '' ? [] : JSON.parse(runLogMapPoints.val());
-        for (const newMapPoint of newMapPoints) {
+        for (const newMapPoint of newMapPoints)
             newMapRoute.addPoint(newMapPoint);
-        }
-        newMapRoute.fitBounds(newMapPoints);
+
+        if (newMapPoints.length > 0)
+            newMapRoute.fitBounds(newMapPoints);
+        else
+            setMapDefaultView();
     }
     function updateEditMapOkButton() {
         const editMapNameEl = $('form[name="rp-runlog"] input[name="rp-map-name"]');
