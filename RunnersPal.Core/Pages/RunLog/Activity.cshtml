@@ -394,6 +394,10 @@ $().ready(function() {
         const route = new MapRoute(map, mapPointsEl, runLogMapDistanceCurrent, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));
         runLogMapTab.data('route', route);
 
+        updateEditMapOkButton();
+        route.onChange(updateEditMapOkButton);
+        $('form[name="rp-runlog"] input[name="rp-map-name"]').on('change input paste keyup', updateEditMapOkButton);
+
         $('button[name="undo"]', runLogMapTab).click(function() { route.undoLastPoint(); });
         $('button[name="clear"]', runLogMapTab).click(function() {
             if (confirm('Are you sure you want to clear this route, removing all points and start/end markers?'))
@@ -435,6 +439,13 @@ $().ready(function() {
             newMapRoute.addPoint(newMapPoint);
         }
         newMapRoute.fitBounds(newMapPoints);
+    }
+    function updateEditMapOkButton() {
+        const editMapNameEl = $('form[name="rp-runlog"] input[name="rp-map-name"]');
+        const isMapOkBtnDisabled = !editMapNameEl.val() || /^\s*$/.test(editMapNameEl.val()) || // no route name
+            runLogMapDistanceCurrent.val() === '' || runLogMapDistanceCurrent.val() === '0'; // no points
+        console.log('checking if ok button should be disabled: ['+editMapNameEl.val()+'] / ['+runLogMapDistanceCurrent.val()+'] = '+isMapOkBtnDisabled);
+        $('button[name="rp-distance-select-map-ok"]', runLogMapTab).prop('disabled', isMapOkBtnDisabled);
     }
 
     if ($('form[name="rp-runlog"] input[name="activityid"]').val() !== '') {
