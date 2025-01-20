@@ -11,7 +11,7 @@
     } else {
     <h1>Log a new run</h1>
     }
-    <form name="rp-runlog" method="post">
+    <form name="rp-runlog" method="post" novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" name="activityid" value="@Model.ActivityId">
     <input type="hidden" name="distancetype" value="@Model.DistanceType">
@@ -133,7 +133,7 @@
         </div>
         <div id="tab-manual-distance">
             <label for="rp-distance-select-manual-value">Manual distance:</label>
-            <input type="text" id="rp-distance-select-manual-value" name="rp-distance-select-manual-value" value="@Model.DistanceManual" />
+            <input type="number" id="rp-distance-select-manual-value" name="rp-distance-select-manual-value" value="@Model.DistanceManual" />
             @(await Model.UserUnitsAsync())
             <div>
             <label></label>
@@ -212,6 +212,12 @@ $().ready(function() {
             return false;
         }
     });
+    function onRunLogManualDistanceInput() {
+        $('form[name="rp-runlog"] button[name="rp-distance-select-manual-ok"]').prop('disabled',
+            runLogManualDistanceInput.val() === '' || runLogManualDistanceInput.val() === '0');
+    }
+    runLogManualDistanceInput.on('change input paste keyup', onRunLogManualDistanceInput);
+    onRunLogManualDistanceInput();
     $('form[name="rp-runlog"] button[name="rp-distance-select-cancel"]').click(function() {
         runLogMainForm.show();
         runLogDistanceSelector.hide();
@@ -285,6 +291,8 @@ $().ready(function() {
         updateRunPace();
     }
     function onEnteredManualDistance() {
+        if (runLogManualDistanceInput.val() === '' || runLogManualDistanceInput.val() === '0')
+            return;
         runLogDistanceType.val('2');
         runLogDistanceManual.val(runLogManualDistanceInput.val());
         runLogDistanceSelected.val(runLogManualDistanceInput.val() + '@(await Model.UserUnitsAsync())');
@@ -297,6 +305,7 @@ $().ready(function() {
         updateRunPace();
     }
     function onTabActivated(event, tab) {
+        console.log('tab activated: '+tab.selector);
         if (tab.selector === '#tab-saved-routes' && runLogUserRoutes.attr('data-initialised') !== 'true') {
             console.log('initialising saved routes tab');
             runLogUserRoutes.attr('data-initialised', 'true');
@@ -405,7 +414,6 @@ $().ready(function() {
         });
 
         $('button[name="rp-distance-select-map-ok"]', runLogMapTab).click(function() {
-            // TODO: check there are points & name
             // update 'real' input fields with the new values
             $('form[name="rp-runlog"] input[name="mapname"]').val($('form[name="rp-runlog"] input[name="rp-map-name"]').val());
             $('form[name="rp-runlog"] input[name="mapnotes"]').val($('form[name="rp-runlog"] textarea[name="rp-map-notes"]').val());
