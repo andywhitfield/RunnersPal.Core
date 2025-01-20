@@ -224,7 +224,16 @@ $().ready(function() {
     const runLogTimeTaken = $('form[name="rp-runlog"] input[name="timetaken"]');
     runLogPace.hide();
     runLogTimeTaken.on('input', updateRunPace);
+    function updateRunLogAddSaveButtonStatus() {
+        const isAddSaveDisabled =
+            runLogDistanceType.val() === '' || runLogDistanceType.val() === '0' ||
+            runLogTimeTaken.val() === '';
+        $('form[name="rp-runlog"] input[name="add"]').prop('disabled', isAddSaveDisabled);
+        $('form[name="rp-runlog"] input[name="save"]').prop('disabled', isAddSaveDisabled);
+    }
+    updateRunLogAddSaveButtonStatus();
     function updateRunPace() {
+        updateRunLogAddSaveButtonStatus();
         console.log('Calculating pace for time '+runLogTimeTaken.val()
             +', distance type '+runLogDistanceType.val()
             +', distance '+runLogDistanceManual.val()
