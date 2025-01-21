@@ -51,8 +51,15 @@
                 }
             })
             .fail(function() {
-                console.log('failed calculating distances, probably invalid input, not updating anything');
-                // TODO: display an error somewhere?
+                console.warn('failed calculating distances, probably invalid input, showing zeros');
+                if (src === 'mile') {
+                    kmEl.val('0');
+                } else if (src === 'km') {
+                    milesEl.val('0');
+                } else {
+                    kmEl.val('0');
+                    milesEl.val('0');
+                }
             });
         }
         milesEl.on('click', function() { milesEl.select() });
