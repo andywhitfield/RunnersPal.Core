@@ -84,8 +84,15 @@
                 calculateCalories();
             })
             .fail(function() {
-                console.log('failed calculating distances, probably invalid input, not updating anything');
-                // TODO: display an error somewhere?
+                console.warn('failed calculating distances, probably invalid input, showing zeros');
+                if (src === 'mile') {
+                    kmEl.val('0');
+                } else if (src === 'km') {
+                    milesEl.val('0');
+                } else {
+                    kmEl.val('0');
+                    milesEl.val('0');
+                }
             });
         }
         function calculateWeight(src) {
@@ -117,8 +124,22 @@
                 calculateCalories();
             })
             .fail(function() {
-                console.log('failed calculating distances, probably invalid input, not updating anything');
-                // TODO: display an error somewhere?
+                console.warn('failed calculating weight, probably invalid input, showing zeros');
+                if (src === 'lbs') {
+                    weightStEl.val('0');
+                    weightStLbsEl.val('0');
+                    weightKgEl.val('0');
+                } else if (src === 'st') {
+                    weightLbsEl.val('0');
+                    weightKgEl.val('0');
+                } else if (src === 'stlbs') {
+                    weightLbsEl.val('0');
+                    weightKgEl.val('0');
+                } else if (src === 'kg') {
+                    weightLbsEl.val('0');
+                    weightStEl.val('0');
+                    weightStLbsEl.val('0');
+                }
             });
         }
         function calculateCalories() {
@@ -132,8 +153,8 @@
                 caloriesEl.val(data.calories);
             })
             .fail(function() {
-                console.log('failed calculating calories, probably invalid input, not updating anything');
-                // TODO: display an error somewhere?
+                console.warn('failed calculating calories, probably invalid input, showing zeros');
+                caloriesEl.val('0');
             });
         }
         milesEl.on('change input paste keyup', function() { calculateDistances('mile'); });
