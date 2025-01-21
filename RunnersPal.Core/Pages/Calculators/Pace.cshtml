@@ -73,8 +73,15 @@
                 }
             })
             .fail(function() {
-                console.log('failed calculating distances, probably invalid input, not updating anything');
-                // TODO: display an error somewhere?
+                console.warn('failed calculating distances, probably invalid input, showing zeros');
+                if (src === 'mile') {
+                    kmEl.val('0');
+                } else if (src === 'km') {
+                    milesEl.val('0');
+                } else {
+                    kmEl.val('0');
+                    milesEl.val('0');
+                }
             });
         }
         function calculatePace(src) {
@@ -91,12 +98,16 @@
                 } else if (src === 'km') {
                     paceMilesEl.val(data.paceMile);
                 } else {
-                    console.log('unkown src, not updating anything');
+                    console.warn('unkown src, not updating anything');
                 }
             })
             .fail(function() {
-                console.log('failed calculating pace, probably invalid input, not updating anything');
-                // TODO: display an error somewhere?
+                console.warn('failed calculating pace, probably invalid input, showing zeros');
+                if (src === 'mile') {
+                    paceKmEl.val('0');
+                } else if (src === 'km') {
+                    paceMilesEl.val('0');
+                }
             });
         }
         function calculateAll(dest) {
@@ -122,8 +133,16 @@
                 }
             })
             .fail(function() {
-                console.log('failed calculating distances, probably invalid input, not updating anything');
-                // TODO: display an error somewhere?
+                console.log('failed calculating all, probably invalid input, showing zeros');
+                if (dest === 'distance') {
+                    kmEl.val('0');
+                    milesEl.val('0');
+                } else if (dest === 'timetaken') {
+                    timeTakenEl.val('0');
+                } else if (dest === 'pace') {
+                    paceKmEl.val('0');
+                    paceMilesEl.val('0');
+                }
             });
         }
         milesEl.on('change input paste keyup', function() { calculateDistances('mile'); });
