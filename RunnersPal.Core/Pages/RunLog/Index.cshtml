@@ -17,10 +17,30 @@
     <div id="calendar"></div>
 </article>
 
+@section Head {
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.css">
+<style type="text/css">
+.rp-toast {
+    cursor: default;
+    color: red;
+}
+</style>
+}
 @section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/toastify-js@1.12.0/src/toastify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js" integrity="sha256-ZztCtsADLKbUFK/X6nOYnJr0eelmV2X3dhLDB/JK6fM=" crossorigin="anonymous"></script>
 <script type="text/javascript">
 $().ready(function() {
+    const toast = Toastify({
+        text: "Could not load run log activities",
+        duration: 3000,
+        close: true,
+        gravity: 'top',
+        position: 'center',
+        stopOnFocus: true,
+        className: 'rp-toast',
+        style: { background: 'black' }
+    });
     const datesLoaded = new Set();
     var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         initialView: 'dayGridMonth',
@@ -44,6 +64,8 @@ $().ready(function() {
         if (datesLoaded.has(calendarMonth.getTime())) {
             console.log('run events already loaded for date ' + calendarMonth + ', no need to load events');
         } else {
+            @if (Model.IsLoggedIn) {
+            <text>
             console.log('run events not loaded for date ' + calendarMonth + ', loading...');
             $.getJSON('/api/runlog/activities?date='+encodeURIComponent(calendarMonth.toISOString()))
                 .done(function(data) {
@@ -54,12 +76,18 @@ $().ready(function() {
                         else
                             console.log('event ' + runLogEntry.id + ' already in calendar, not adding again');
                     });
+                    console.log('added '+data.length+' events to calendar');
                     datesLoaded.add(calendarMonth.getTime());
                 })
                 .fail(function() {
-                    // TODO: should do something here!
-                    console.log('failed getting run activities');
+                    console.warn('failed getting run activities');
+                    if (toast.shown)
+                        toast.hideToast();
+                    toast.showToast();
+                    toast.shown = true;
                 });
+            </text>
+            }
         }
     }
 
