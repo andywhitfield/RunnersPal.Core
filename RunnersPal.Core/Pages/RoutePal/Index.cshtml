@@ -8,16 +8,25 @@
 <article>
 <h1>Route mapping</h1>
 @if (Model.IsLoggedIn) {
-<p>
-    <ul>
-        <li><a href="/routepal/map">Plot a new route</a><div>Map a new running route</div></li>
-        <li><a href="/routepal/list">Saved routes</a><div>View and edit your saved routes</div></li>
-    </ul>
-</p>
+<div class="rp-home-options">
+    <div>
+        <h2><a href="/routepal/map">Plot a new route</a></h2>
+        <div><a href="/routepal/map" title="Plot a new route"><img src="/images/mapping.jpg" alt="Route mapping" width="282" height="180" class="rp-calc" /></a></div>
+        <div>Map a new running route</div>
+    </div>
+    <div>
+        <h2><a href="/routepal/list">Saved routes</a></h2>
+        <div><a href="/routepal/list"><img class="rp-calc" src="/images/filed.jpg" alt="Saved routes" width="252" height="180" /></a></div>
+        <div>View and edit your saved routes</div>
+    </div>
+</div>
 } else {
-<p>
-<a href="/routepal/map">Plot a new route</a>
-<div>Map a new running route. If you want to save the route, first <a href="/signin?returnurl=/routepal/map">login</a>.</div>
-</p>
+<div class="rp-home-options">
+    <div>
+        <h2><a href="/routepal/map">Plot a new route</a></h2>
+        <div><a href="/routepal/map" title="Plot a new route"><img src="/images/mapping.jpg" alt="Route mapping" width="282" height="180" class="rp-calc" /></a></div>
+        <div>Map a new running route. If you want to save the route, first <a href="/signin?returnurl=/routepal/map">login</a>.</div>
+    </div>
+</div>
 }
 </article>
