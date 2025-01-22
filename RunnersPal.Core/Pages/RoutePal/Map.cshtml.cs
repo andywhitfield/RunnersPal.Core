@@ -35,7 +35,7 @@ public class MapModel(ILogger<MapModel> logger,
 
             var userAccount = await userAccountRepository.GetUserAccountAsync(User);
             var route = await routeRepository.GetRouteAsync(RouteId.Value);
-            if (route == null || route.CreatorAccount.Id != userAccount.Id)
+            if (route == null || route.Creator != userAccount.Id)
             {
                 logger.LogWarning("Route {RouteId} is not owned by user {UserAccountId}, cannot view this route", RouteId, userAccount.Id);
                 return BadRequest();
@@ -71,7 +71,7 @@ public class MapModel(ILogger<MapModel> logger,
             var route = await routeRepository.GetRouteAsync(RouteId.Value);
             if (route?.Creator != userAccount.Id)
             {
-                logger.LogWarning("Route {RouteId} is not owned by user {UserAccountId}, cannot update this route", RouteId, userAccount.Id);
+                logger.LogWarning("Route {RouteId} not found or is not owned by user {UserAccountId}, cannot update this route", RouteId, userAccount.Id);
                 return BadRequest();
             }
 
