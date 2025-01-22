@@ -6,7 +6,7 @@ using RunnersPal.Core.Repository;
 namespace RunnersPal.Core.Tests.RoutePal;
 
 [TestClass]
-public class Map_Authenticated_Tests
+public class Map_AddNew_Tests
 {
     private readonly WebApplicationFactoryTest _webApplicationFactory = new();
 

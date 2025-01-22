@@ -23,6 +23,14 @@ public class Map_UnAuthenticated_Tests
     }
 
     [TestMethod]
+    public async Task When_not_logged_on_Should_not_load_route()
+    {
+        using var client = _webApplicationFactory.CreateClient(false, false);
+        using var response = await client.GetAsync("/routepal/map?routeid=1");
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task Given_not_logged_on_When_saving_route_Should_redirect_to_login()
     {
         using var client = _webApplicationFactory.CreateClient(false, false);
