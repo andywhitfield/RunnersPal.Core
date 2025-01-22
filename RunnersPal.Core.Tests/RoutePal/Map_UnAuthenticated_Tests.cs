@@ -3,7 +3,7 @@ using System.Net;
 namespace RunnersPal.Core.Tests.RoutePal;
 
 [TestClass]
-public class MapTests
+public class Map_UnAuthenticated_Tests
 {
     private readonly WebApplicationFactoryTest _webApplicationFactory = new();
 
