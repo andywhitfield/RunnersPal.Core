@@ -45,9 +45,9 @@ public class WebApplicationFactoryTest : WebApplicationFactory<Program>
         await context.SaveChangesAsync();
     }
 
-    public static string GetFormValidationToken(string responseContent, string formAction)
+    public static string GetFormValidationToken(string responseContent, string? formAction = null)
     {
-        var validationToken = responseContent[responseContent.IndexOf($"action=\"{formAction}\"")..];
+        var validationToken = responseContent[responseContent.IndexOf(formAction == null ? "<form " : $"action=\"{formAction}\"")..];
         validationToken = validationToken[validationToken.IndexOf("__RequestVerificationToken")..];
         validationToken = validationToken[(validationToken.IndexOf("value=\"") + 7)..];
         validationToken = validationToken[..validationToken.IndexOf('"')];
