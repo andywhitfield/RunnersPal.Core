@@ -13,14 +13,14 @@
     }
     <form name="rp-runlog" method="post" novalidate>
     @Html.AntiForgeryToken()
-    <input type="hidden" name="activityid" value="@Model.ActivityId">
-    <input type="hidden" name="distancetype" value="@Model.DistanceType">
-    <input type="hidden" name="distancemanual" value="@Model.DistanceManual">
-    <input type="hidden" name="routeid" value="@Model.RouteId">
-    <input type="hidden" name="mapname" value="@Model.MapName">
-    <input type="hidden" name="mapnotes" value="@Model.MapNotes">
-    <input type="hidden" name="mappoints" value="@Model.MapPoints">
-    <input type="hidden" name="mapdistance" value="@Model.MapDistance">
+    <input type="hidden" name="activityid" value="@Model.ActivityId" />
+    <input type="hidden" name="distancetype" value="@Model.DistanceType" />
+    <input type="hidden" name="distancemanual" value="@Model.DistanceManual" />
+    <input type="hidden" name="routeid" value="@Model.RouteId" />
+    <input type="hidden" name="mapname" value="@Model.MapName" />
+    <input type="hidden" name="mapnotes" value="@Model.MapNotes" />
+    <input type="hidden" name="mappoints" value="@Model.MapPoints" />
+    <input type="hidden" name="mapdistance" value="@Model.MapDistance" />
     <div id="rp-runlog-main">
     <div>
         <label for="rp-runlog-date">Date:</label>
@@ -110,8 +110,8 @@
             </div>
         </div>
         <div id="tab-map-new-route">
-            <input type="hidden" name="rp-map-points" value="">
-            <input type="hidden" name="rp-map-distance" value="">
+            <input type="hidden" name="rp-map-points" value="" />
+            <input type="hidden" name="rp-map-distance" value="" />
             <div class="rp-map-name">
                 <label for="rp-map-name">Name:</label>
                 <input type="text" id="rp-map-name" name="rp-map-name" class="rp-map-name" />

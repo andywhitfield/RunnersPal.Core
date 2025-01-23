@@ -1,5 +1,4 @@
 using System.Net;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RunnersPal.Core.Models;
@@ -8,7 +7,7 @@ using RunnersPal.Core.Repository;
 namespace RunnersPal.Core.Tests.RunLog;
 
 [TestClass]
-public class RunLogActivity_Tests
+public class RunLogActivity_Add_Tests
 {
     private readonly WebApplicationFactoryTest _webApplicationFactory = new();
 
@@ -115,7 +114,7 @@ public class RunLogActivity_Tests
         Assert.AreEqual("29:21", runActivity.TimeTaken);
         Assert.AreEqual(userRoute.Id, runActivity.RouteId);
 
-        async Task<Models.Route> CreateRouteAsync()
+        async Task<Route> CreateRouteAsync()
         {
             await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
             await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
@@ -123,7 +122,7 @@ public class RunLogActivity_Tests
             {
                 CreatorAccount = await context.UserAccount.SingleAsync(ua => ua.EmailAddress == TestStubAuthHandler.TestUserEmail),
                 Name = "test-route",
-                RouteType = Models.Route.PrivateRoute,
+                RouteType = Route.PrivateRoute,
                 Distance = 6000,
                 DistanceUnits = (int)DistanceUnits.Meters
             });
