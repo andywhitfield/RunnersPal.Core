@@ -132,6 +132,45 @@ public class RunLogActivity_Tests
         }
     }
 
+    [TestMethod]
+    public async Task Should_add_new_activity_using_new_mapped_route()
+    {
+        using var client = _webApplicationFactory.CreateClient(true, false);
+        using var response = await client.GetAsync("/runlog/activity");
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var activityGetPage = await response.Content.ReadAsStringAsync();
+        using var responsePost = await client.PostAsync("/runlog/activity", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "__RequestVerificationToken", WebApplicationFactoryTest.GetFormValidationToken(activityGetPage) },
+            { "add", "Add" },
+            { "date", "2024-01-20" },
+            { "timetaken", "15:10" },
+            { "mapname", "new route" },
+            { "mapnotes", "just made up" },
+            { "mappoints", """[{"lat":50,"lng":0.1},{"lat":50.5,"lng":-1.2}]""" },
+            { "mapdistance", "3500" },
+            { "distancetype", "4" }
+        }));
+        Assert.AreEqual(HttpStatusCode.Redirect, responsePost.StatusCode);
+        Assert.AreEqual(new Uri($"/runlog?date=2024-01-20", UriKind.Relative), responsePost.Headers.Location);
+
+        await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
+        await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
+        var runActivity = await context.RunLog.SingleOrDefaultAsync(x => x.Date == new DateTime(2024, 1, 20, 0, 0, 0, DateTimeKind.Utc));
+        Assert.IsNotNull(runActivity);
+        Assert.IsNull(runActivity.Comment);
+        Assert.AreEqual(Models.RunLog.LogStateValid, runActivity.LogState);
+        Assert.AreEqual("15:10", runActivity.TimeTaken);
+        var runRoute = await context.Route.FindAsync(runActivity.RouteId);
+        Assert.IsNotNull(runRoute);
+        Assert.AreEqual("new route", runRoute.Name);
+        Assert.AreEqual(3500, runRoute.Distance);
+        Assert.AreEqual((int)DistanceUnits.Meters, runRoute.DistanceUnits);
+        Assert.AreEqual("""[{"lat":50,"lng":0.1},{"lat":50.5,"lng":-1.2}]""", runRoute.MapPoints);
+        Assert.AreEqual("just made up", runRoute.Notes);
+        Assert.AreEqual(Models.Route.PrivateRoute, runRoute.RouteType);
+    }
+
     [TestCleanup]
     public void Cleanup() => _webApplicationFactory.Dispose();
 }
