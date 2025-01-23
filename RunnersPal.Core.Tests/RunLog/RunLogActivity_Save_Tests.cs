@@ -69,6 +69,54 @@ public class RunLogActivity_Save_Tests
         Assert.AreEqual((int)DistanceUnits.Meters, updatedRunRoute.DistanceUnits);
     }
 
+    [TestMethod]
+    public async Task Update_from_a_system_route_run_to_a_newly_mapped_route()
+    {
+        var run = await CreateRunLogAsync(new(2024, 1, 23, 0, 0, 0, DateTimeKind.Utc),
+            ctx => ctx.Route.SingleAsync(r => r.Name == "10 Kilometers" && r.RouteType == Route.SystemRoute),
+            "1:02:03");
+        using var client = _webApplicationFactory.CreateClient(true, false);
+        using var response = await client.GetAsync($"/runlog/activity?activityid={run.Id}");
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var activityGetPage = await response.Content.ReadAsStringAsync();
+        StringAssert.Contains(activityGetPage, $"""<input type="hidden" name="activityid" value="{run.Id}" """);
+        StringAssert.Contains(activityGetPage, """<input type="hidden" name="distancetype" value="1" """);
+        StringAssert.Contains(activityGetPage, $"""<input type="hidden" name="routeid" value="{run.RouteId}" """);
+        StringAssert.Contains(activityGetPage, """value="2024-01-23" """);
+        
+        using var responsePost = await client.PostAsync("/runlog/activity", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "__RequestVerificationToken", WebApplicationFactoryTest.GetFormValidationToken(activityGetPage) },
+            { "save", "Save" },
+            { "activityid", run.Id.ToString() },
+            { "date", "2024-01-23" },
+            { "timetaken", run.TimeTaken },
+            { "distancetype", "4" },
+            { "mapname", "switch to use a new route" },
+            { "mappoints", """[{"lat":50,"lng":0.1},{"lat":50.5,"lng":-1.2}]""" },
+            { "mapdistance", "3500" },
+        }));
+        Assert.AreEqual(HttpStatusCode.Redirect, responsePost.StatusCode);
+        Assert.AreEqual(new Uri($"/runlog?date=2024-01-23", UriKind.Relative), responsePost.Headers.Location);
+
+        await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
+        await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
+        var originalRunActivity = await context.RunLog.FindAsync(run.Id);
+        Assert.IsNotNull(originalRunActivity);
+        Assert.AreEqual(Models.RunLog.LogStateDeleted, originalRunActivity.LogState);
+
+        var updatedRunActivity = await context.RunLog.SingleOrDefaultAsync(x => x.Id != originalRunActivity.Id && x.Date == new DateTime(2024, 1, 23, 0, 0, 0, DateTimeKind.Utc));
+        Assert.IsNotNull(updatedRunActivity);
+        Assert.AreNotEqual(originalRunActivity.RouteId, updatedRunActivity.RouteId);
+        Assert.AreEqual(originalRunActivity.Id, updatedRunActivity.ReplacesRunLogId);
+        var updatedRunRoute = await context.Route.FindAsync(updatedRunActivity.RouteId);
+        Assert.IsNotNull(updatedRunRoute);
+        Assert.AreEqual("""[{"lat":50,"lng":0.1},{"lat":50.5,"lng":-1.2}]""", updatedRunRoute.MapPoints);
+        Assert.AreEqual("switch to use a new route", updatedRunRoute.Name);
+        Assert.AreEqual(3500m, updatedRunRoute.Distance);
+        Assert.AreEqual((int)DistanceUnits.Meters, updatedRunRoute.DistanceUnits);
+    }
+
     private async Task<Models.RunLog> CreateRunLogAsync(DateTime date,
         Func<SqliteDataContext, Task<Route>> getOrCreateRouteFunc, string timeTaken)
     {
