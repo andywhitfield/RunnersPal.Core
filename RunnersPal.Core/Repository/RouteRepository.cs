@@ -60,6 +60,6 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
             r.MapPoints != null &&
             r.MapPoints.Length > 0 &&
             (string.IsNullOrEmpty(find) || EF.Functions.Like(r.Name, $"%{find.Trim()}%") || (r.Notes != null && EF.Functions.Like(r.Notes, $"%{find.Trim()}%")))).ToListAsync();
-    
+
     public IAsyncEnumerable<Models.Route> GetSystemRoutesAsync() => context.Route.Where(r => r.RouteType == Models.Route.SystemRoute).OrderBy(r => r.Id).AsAsyncEnumerable();
 }

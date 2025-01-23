@@ -15,13 +15,13 @@ public class ProfileModel(IUserAccountRepository userAccountRepository)
     public async Task OnGet()
     {
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
-        Units = (DistanceUnits) userAccount.DistanceUnits;
+        Units = (DistanceUnits)userAccount.DistanceUnits;
     }
-    
+
     public async Task<IActionResult> OnPost()
     {
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
-        userAccount.DistanceUnits = (int) Units;
+        userAccount.DistanceUnits = (int)Units;
         await userAccountRepository.UpdateAsync(userAccount);
         return Redirect("/user/profile");
     }

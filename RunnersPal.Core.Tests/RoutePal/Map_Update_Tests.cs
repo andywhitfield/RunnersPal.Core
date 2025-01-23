@@ -125,7 +125,7 @@ public class Map_Update_Tests
             await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
             await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
             var userAccount = context.UserAccount.Add(new() { DisplayName = "another user", OriginalHostAddress = "", EmailAddress = "another-user-email" });
-            var route = context.Route.Add(new() { CreatorAccount = userAccount.Entity, Name = "test-route-by-another-user"});
+            var route = context.Route.Add(new() { CreatorAccount = userAccount.Entity, Name = "test-route-by-another-user" });
             await context.SaveChangesAsync();
             return route.Entity;
         }
@@ -144,7 +144,7 @@ public class Map_Update_Tests
             await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
             await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
             var userAccount = context.UserAccount.Add(new() { DisplayName = "another user", OriginalHostAddress = "", EmailAddress = "another-user-email" });
-            var route = context.Route.Add(new() { CreatorAccount = userAccount.Entity, Name = "test-route-by-another-user"});
+            var route = context.Route.Add(new() { CreatorAccount = userAccount.Entity, Name = "test-route-by-another-user" });
             await context.SaveChangesAsync();
             return route.Entity;
         }

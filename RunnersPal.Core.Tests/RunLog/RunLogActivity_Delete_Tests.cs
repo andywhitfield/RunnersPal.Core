@@ -28,7 +28,7 @@ public class RunLogActivity_Delete_Tests
         StringAssert.Contains(activityGetPage, """<input type="hidden" name="distancetype" value="1" """);
         StringAssert.Contains(activityGetPage, $"""<input type="hidden" name="routeid" value="{run.RouteId}" """);
         StringAssert.Contains(activityGetPage, """value="2024-01-13" """);
-        
+
         using var responsePost = await client.PostAsync("/runlog/activity", new FormUrlEncodedContent(new Dictionary<string, string>
         {
             { "__RequestVerificationToken", WebApplicationFactoryTest.GetFormValidationToken(activityGetPage) },

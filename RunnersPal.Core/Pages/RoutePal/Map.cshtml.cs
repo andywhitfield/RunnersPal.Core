@@ -103,7 +103,7 @@ public class MapModel(ILogger<MapModel> logger,
 
         return Redirect($"/routepal/map?routeid={RouteId}");
     }
-    
+
     public async Task<string> UserUnitsAsync()
         => !userService.IsLoggedIn && !string.IsNullOrEmpty(Unit)
             ? string.Equals(Unit, "miles", StringComparison.InvariantCultureIgnoreCase) ? "miles" : "km"
@@ -113,6 +113,6 @@ public class MapModel(ILogger<MapModel> logger,
         => !userService.IsLoggedIn && !string.IsNullOrEmpty(Unit)
             ? string.Equals(Unit, "miles", StringComparison.InvariantCultureIgnoreCase) ? 1000 * UserService.KilometersToMiles : 1000
             : (Models.DistanceUnits?)(await userAccountRepository.GetUserAccountOrNullAsync(User))?.DistanceUnits switch { Models.DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, Models.DistanceUnits.Kilometers => 1000, _ => 1000 };
-    
+
     public string SwitchToUnit => string.Equals(Unit, "miles", StringComparison.InvariantCultureIgnoreCase) ? "km" : "miles";
 }

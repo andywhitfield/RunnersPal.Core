@@ -7,6 +7,6 @@ public class IndexModel(IUserService userService)
     : PageModel
 {
     public bool IsLoggedIn => userService.IsLoggedIn;
-    
+
     public void OnGet() { }
 }

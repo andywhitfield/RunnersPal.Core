@@ -10,7 +10,7 @@ public class UserService(IHttpContextAccessor httpContextAccessor) : IUserServic
     public bool IsLoggedIn => !string.IsNullOrEmpty(httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name));
 
     public decimal ToDistanceUnits(decimal distanceInMeters, DistanceUnits distanceUnits)
-        =>  distanceInMeters / distanceUnits switch
+        => distanceInMeters / distanceUnits switch
         {
             DistanceUnits.Kilometers => 1000m,
             DistanceUnits.Miles => 1000m * KilometersToMiles,
@@ -31,7 +31,7 @@ public class UserService(IHttpContextAccessor httpContextAccessor) : IUserServic
         });
     }
 
-    public decimal ToDistanceInMeters(decimal distanceInUserUnits, UserAccount userAccount) 
+    public decimal ToDistanceInMeters(decimal distanceInUserUnits, UserAccount userAccount)
         => distanceInUserUnits * (DistanceUnits)userAccount.DistanceUnits switch
         {
             DistanceUnits.Kilometers => 1000m,

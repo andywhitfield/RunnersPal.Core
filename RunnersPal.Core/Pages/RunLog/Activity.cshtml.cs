@@ -102,7 +102,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
     public async Task<decimal> UserUnitsMultiplierAsync()
         => (DistanceUnits)(_userAccount ??= await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits
             switch { DistanceUnits.Miles => 1000 * UserService.KilometersToMiles, DistanceUnits.Kilometers => 1000, _ => 1 };
-    
+
     private async Task<Models.RunLog?> AddRunAsync(UserAccount userAccount, Models.RunLog? replacedRunLog = null)
     {
         logger.LogInformation("Adding new run");
@@ -183,11 +183,11 @@ public class ActivityModel(ILogger<ActivityModel> logger,
         var currentActivity = await DeleteRunAsync(userAccount, activityId, true);
         if (currentActivity == null)
             return false;
-        
+
         var newActivity = await AddRunAsync(userAccount, currentActivity);
         if (newActivity == null)
             return false;
-        
+
         return true;
     }
 
@@ -206,7 +206,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
             logger.LogInformation("Deleting route {RouteId}", existingActivity.RouteId);
             await routeRepository.DeleteRouteAsync(existingActivity.Route);
         }
-        
+
         await runLogRepository.DeleteRunLogAsync(existingActivity);
         return existingActivity;
     }

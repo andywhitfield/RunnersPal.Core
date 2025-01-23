@@ -20,7 +20,7 @@ public class CalculatorController(
 {
     private const int _rounding = 4;
     private const decimal _poundsToKg = 0.45359237m;
-    private const decimal _kgToPounds = 1/_poundsToKg;
+    private const decimal _kgToPounds = 1 / _poundsToKg;
 
     [HttpGet("distance")]
     public async Task<ActionResult<DistanceApiModel>> Distance([FromQuery] string? km, [FromQuery] string? mile, [FromQuery] string? source)
@@ -80,7 +80,7 @@ public class CalculatorController(
         };
         if (paceAll == null)
             return BadRequest();
-        
+
         return paceAll;
     }
 
@@ -89,10 +89,10 @@ public class CalculatorController(
     {
         if (!decimal.TryParse(km, out var distanceInKm))
             return BadRequest();
-        
+
         if (!decimal.TryParse(weight, out var weightInKg))
             return BadRequest();
-        
+
         return new CaloriesApiModel((int)Math.Floor(distanceInKm * weightInKg * 1.036m));
     }
 
@@ -110,7 +110,7 @@ public class CalculatorController(
 
         if (weight == null)
             return BadRequest();
-        
+
         return weight;
     }
 
@@ -173,7 +173,7 @@ public class CalculatorController(
                     logger.LogWarning("Getting pace for a newly mapped route, but no map distance was passed");
                     return BadRequest();
                 }
-                
+
                 routeDistanceInMeters = mapDistance;
                 distance = $"{userService.ToUserDistance(routeDistanceInMeters ?? 0, userAccount)} @ ";
                 break;
@@ -209,7 +209,7 @@ public class CalculatorController(
         return new PaceAllApiModel(
             R(distance3),
             R(paceService.ConvertFromKmToMiles(distance3)),
-            "", "", "");    
+            "", "", "");
     }
 
     private PaceAllApiModel? CalculateTimeTaken(string? distance, string? pace)
@@ -257,7 +257,7 @@ public class CalculatorController(
         if (paceInMile == null)
             return null;
 
-        return new PaceAllApiModel(0, 0, "", paceInKm, paceInMile);        
+        return new PaceAllApiModel(0, 0, "", paceInKm, paceInMile);
     }
 
     private PaceAllApiModel? PaceConvertFromMile(string? mile)
@@ -290,7 +290,7 @@ public class CalculatorController(
         var paceInMile = paceService.CalculatePace(Models.DistanceUnits.Miles, paceInKmTime, 1000, null, false);
         if (paceInMile == null)
             return null;
-        
+
         logger.LogDebug("Calculated mile pace as {Pace}", paceInMile);
 
         return new PaceAllApiModel(0, 0, "", "", paceInMile);

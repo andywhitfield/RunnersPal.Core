@@ -10,7 +10,7 @@ public class UserRouteService(IRouteRepository routeRepository, IRunLogRepositor
     {
         var userRoutes = await routeRepository.GetRoutesByUserAsync(userAccount, findFilter);
         var lastRunsForRoutes = await runLogRepository.GetLatestRunByRouteAsync(userAccount, userRoutes).ToDictionaryAsync(rl => rl.RouteId);
-        userRoutes.Sort((r1, r2) => -1 * (LastRun(r1) ?? DateOnly.FromDateTime(r1.CreatedDate)).CompareTo(LastRun(r2) ?? DateOnly.FromDateTime(r2.CreatedDate)));    
+        userRoutes.Sort((r1, r2) => -1 * (LastRun(r1) ?? DateOnly.FromDateTime(r1.CreatedDate)).CompareTo(LastRun(r2) ?? DateOnly.FromDateTime(r2.CreatedDate)));
         return (userRoutes, lastRunsForRoutes);
 
         DateOnly? LastRun(Models.Route route)

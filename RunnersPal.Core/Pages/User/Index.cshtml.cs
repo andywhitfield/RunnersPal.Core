@@ -40,8 +40,8 @@ public class IndexModel(
         }
 
         ShowGraph = true;
-        DistanceUnit = userAccount.DistanceUnits == (int) Models.DistanceUnits.Miles ? "miles" : "km";
-        PaceUnit = userAccount.DistanceUnits == (int) Models.DistanceUnits.Miles ? "min/miles" : "min/km";
+        DistanceUnit = userAccount.DistanceUnits == (int)Models.DistanceUnits.Miles ? "miles" : "km";
+        PaceUnit = userAccount.DistanceUnits == (int)Models.DistanceUnits.Miles ? "min/miles" : "min/km";
 
         IAsyncEnumerable<Models.RunLog> qualifyingActivities;
         Func<DateTime, DateTime> periodGrouping;
@@ -84,19 +84,19 @@ public class IndexModel(
                 Pace = decimal.Round(await g.AverageAsync(x => Convert.ToDecimal(x.Pace.TotalSeconds / 60)), 2)
             })
             .ToListAsync();
-        
+
         var fromDate = aggregated.Min(a => a.Period);
         var toDate = aggregated.Max(a => a.Period);
         var allAggregated =
             (from period in DateRange(fromDate, toDate, nextPeriod)
-            join aggregate in aggregated on period equals aggregate.Period into allPeriodsAgg
-            from g in allPeriodsAgg.DefaultIfEmpty()
-            select new
-            {
-                Period = period,
-                Distance = g?.Distance ?? 0,
-                Pace = g?.Pace ?? 0
-            }).ToList();
+             join aggregate in aggregated on period equals aggregate.Period into allPeriodsAgg
+             from g in allPeriodsAgg.DefaultIfEmpty()
+             select new
+             {
+                 Period = period,
+                 Distance = g?.Distance ?? 0,
+                 Pace = g?.Pace ?? 0
+             }).ToList();
 
         if (allAggregated.Count == 1)
             ChartType = "column";
