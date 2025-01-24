@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using RunnersPal.Core.Controllers.ApiModels;
+using RunnersPal.Core.Repository;
 
 namespace RunnersPal.Core.Tests.Controllers;
 
@@ -165,9 +167,65 @@ public class CalculatorControllerTests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var result = await response.Content.ReadFromJsonAsync<WeightApiModel>();
         Assert.IsNotNull(result);
-        Assert.AreEqual(Convert.ToDecimal(expectedLbs), result.Lbs, JsonSerializer.Serialize(result));
+        Assert.AreEqual(Convert.ToDecimal(expectedLbs), result.Lbs);
         Assert.AreEqual(Convert.ToDecimal(expectedSt), result.St);
         Assert.AreEqual(Convert.ToDecimal(expectedStlbs), result.Stlbs);
         Assert.AreEqual(Convert.ToDecimal(expectedKg), result.Kg);
+    }
+
+    [TestMethod]
+    public async Task Calculate_pace_requires_authenticated_user()
+    {
+        using var client = _webApplicationFactory.CreateClient(false);
+        using var response = await client.GetAsync("/api/calculator/pace");
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [TestMethod]
+    [DataRow(null, null, null, null, null, false, "")]
+    [DataRow("26:20", 1, null, "5 Kilometers", null, true, "8:28 min/mile")]
+    [DataRow("26:20", 1, null, null, null, false, "")]
+    [DataRow("26:20", 2, 4.5d /* miles */, null, null, true, "5:51 min/mile")]
+    [DataRow("26:20", 2, null, null, null, false, "")]
+    [DataRow("26:20", 2, 0d, null, null, false, "")]
+    [DataRow("26:20", 3, null, "route 1", null, true, "1.9miles @ 14:07 min/mile")]
+    [DataRow("26:20", 3, null, "other user route 1", null, false, "")]
+    [DataRow("26:20", 3, null, "unknown route", null, false, "")]
+    [DataRow("26:20", 4, null, null, 6200d, true, "3.9miles @ 6:50 min/mile")]
+    [DataRow("26:20", 4, null, null, 0d, false, "")]
+    public async Task Calculate_pace(string? timeTaken, int? distanceType, double? distanceManual, string? routeName, double? mapDistance,
+        bool expectOk, string expectedPace)
+    {
+        await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
+        await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
+        await CreateTestRoutesAsync(context);
+        var routeId = context.Route.FirstOrDefault(r => r.Name == routeName)?.Id;
+
+        using var client = _webApplicationFactory.CreateClient(true);
+        using var response = await client.GetAsync(QueryHelpers.AddQueryString("/api/calculator/pace", new Dictionary<string, string?>()
+        {
+            { "timeTaken", timeTaken }, { "distanceType", distanceType.ToString() }, { "distanceManual", distanceManual.ToString() },
+            { "routeId", routeId.ToString() }, { "mapDistance", mapDistance.ToString() }
+        }));
+        if (!expectOk)
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            return;
+        }
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<PaceApiModel>();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedPace, result.Pace);
+
+        static async Task CreateTestRoutesAsync(SqliteDataContext context)
+        {
+            var otherUserAccount = context.UserAccount.Add(new() { DisplayName = "other user", OriginalHostAddress = "" });
+            context.Route.AddRange(
+                new() { CreatorAccount = otherUserAccount.Entity, Name = "other user route 1", Distance = 2500, RouteType = Models.Route.PrivateRoute },
+                new() { CreatorAccount = await context.UserAccount.SingleAsync(ua => ua.EmailAddress == TestStubAuthHandler.TestUserEmail), Name = "route 1", Distance = 3000, RouteType = Models.Route.PrivateRoute }
+            );
+            await context.SaveChangesAsync();
+        }
     }
 }
