@@ -40,6 +40,8 @@ public class CalculatorControllerTests
     [DataRow("10", "5", "mile", true, 8.0467d, 5d)]
     [DataRow(null, "5.5", "mile", true, 8.8514d, 5.5d)]
     [DataRow(null, "-5", "mile", true, -8.0467d, -5d)]
+    [DataRow(null, null, "halfmarathon", true, 21.0975d, 13.1094d)]
+    [DataRow(null, null, "marathon", true, 42.195d, 26.2188d)]
     public async Task Calculate_distance(string? km, string? mile, string? source, bool expectOk, double expectedKm, double expectedMile)
     {
         using var client = _webApplicationFactory.CreateClient(false); // should allow un-auth user
@@ -58,5 +60,31 @@ public class CalculatorControllerTests
         Assert.IsNotNull(result);
         Assert.AreEqual(Convert.ToDecimal(expectedKm), result.Km);
         Assert.AreEqual(Convert.ToDecimal(expectedMile), result.Mile);
+    }
+
+    [TestMethod]
+    [DataRow(null, null, null, false, "", "")]
+    [DataRow("a", null, "km", false, "", "")]
+    [DataRow("5:30", null, "km", true, "", "8:51")]
+    [DataRow(null, "a", "mile", false, "", "")]
+    [DataRow(null, "9:20", "mile", true, "5:47", "")]
+    public async Task Calculate_pace_conversion(string? km, string? mile, string? source, bool expectOk, string expectedPaceKm, string expectedPaceMile)
+    {
+        using var client = _webApplicationFactory.CreateClient(false); // should allow un-auth user
+        using var response = await client.GetAsync(QueryHelpers.AddQueryString("/api/calculator/pace/convert", new Dictionary<string, string?>()
+        {
+            { "km", km }, { "mile", mile }, { "source", source }
+        }));
+        if (!expectOk)
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            return;
+        }
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<PaceAllApiModel>();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedPaceKm, result.PaceKm);
+        Assert.AreEqual(expectedPaceMile, result.PaceMile);
     }
 }
