@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RunnersPal.Core.Controllers.ApiModels;
 
@@ -86,5 +87,87 @@ public class CalculatorControllerTests
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedPaceKm, result.PaceKm);
         Assert.AreEqual(expectedPaceMile, result.PaceMile);
+    }
+
+    [TestMethod]
+    [DataRow(null, null, null, null, false, 0d, 0d, "", "", "")]
+    [DataRow("5", "31:00", null, "pace", true, 0d, 0d, "", "6:12", "9:58")]
+    [DataRow("5", null, "6:12", "timetaken", true, 0d, 0d, "31:00", "", "")]
+    [DataRow(null, "31:00", "6:12", "distance", true, 5d, 3.1069d, "", "", "")]
+    public async Task Calculate_all_pace_conversion(string? distance /* in KM */, string? timeTaken, string? pace, string? dest,
+        bool expectOk, double expectedDistanceKm, double expectedDistanceMile, string expectedTimeTaken, string expectedPaceKm, string expectedPaceMile)
+    {
+        using var client = _webApplicationFactory.CreateClient(false); // should allow un-auth user
+        using var response = await client.GetAsync(QueryHelpers.AddQueryString("/api/calculator/pace/all", new Dictionary<string, string?>()
+        {
+            { "distance", distance }, { "timeTaken", timeTaken }, { "pace", pace }, { "dest", dest }
+        }));
+        if (!expectOk)
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            return;
+        }
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<PaceAllApiModel>();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Convert.ToDecimal(expectedDistanceKm), result.DistanceKm);
+        Assert.AreEqual(Convert.ToDecimal(expectedDistanceMile), result.DistanceMile);
+        Assert.AreEqual(expectedTimeTaken, result.TimeTaken);
+        Assert.AreEqual(expectedPaceKm, result.PaceKm);
+        Assert.AreEqual(expectedPaceMile, result.PaceMile);
+    }
+
+    [TestMethod]
+    [DataRow(null, null, false, 0d)]
+    [DataRow("5", "60", true, 310d)]
+    public async Task Calculate_calories(string? km, string? weight, bool expectOk, double expectedCalories)
+    {
+        using var client = _webApplicationFactory.CreateClient(false); // should allow un-auth user
+        using var response = await client.GetAsync(QueryHelpers.AddQueryString("/api/calculator/calories", new Dictionary<string, string?>()
+        {
+            { "km", km }, { "weight", weight }
+        }));
+        if (!expectOk)
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            return;
+        }
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<CaloriesApiModel>();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Convert.ToDecimal(expectedCalories), result.Calories);
+    }
+
+    [TestMethod]
+    [DataRow(null, null, null, null, null, false, 0d, 0d, 0d, 0d)]
+    [DataRow("lbs", "145", null, null, null, true, 145d, 10d, 5d, 65.7709d)]
+    [DataRow("st", null, "10", "5", null, true, 145d, 10d, 5d, 65.7709d)]
+    [DataRow("st", null, "10", null, null, false, 0d, 0d, 0d, 0d)]
+    [DataRow("stlbs", null, "10", "5", null, true, 145d, 10d, 5d, 65.7709d)]
+    [DataRow("stlbs", null, null, "5", null, false, 0d, 0d, 0d, 0d)]
+    [DataRow("kg", null, null, null, "65.7709", true, 145d, 10d, 5d, 65.7709d)]
+    public async Task Calculate_weight(string? source, string? lbs, string? st, string? stlbs, string? kg,
+        bool expectOk, double expectedLbs, double expectedSt, double expectedStlbs, double expectedKg)
+    {
+        using var client = _webApplicationFactory.CreateClient(false); // should allow un-auth user
+        using var response = await client.GetAsync(QueryHelpers.AddQueryString("/api/calculator/weight", new Dictionary<string, string?>()
+        {
+            { "source", source }, { "lbs", lbs }, { "st", st }, { "stlbs", stlbs }, { "kg", kg }
+        }));
+        if (!expectOk)
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+            return;
+        }
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<WeightApiModel>();
+        Assert.IsNotNull(result);
+        Assert.AreEqual(Convert.ToDecimal(expectedLbs), result.Lbs, JsonSerializer.Serialize(result));
+        Assert.AreEqual(Convert.ToDecimal(expectedSt), result.St);
+        Assert.AreEqual(Convert.ToDecimal(expectedStlbs), result.Stlbs);
+        Assert.AreEqual(Convert.ToDecimal(expectedKg), result.Kg);
     }
 }
