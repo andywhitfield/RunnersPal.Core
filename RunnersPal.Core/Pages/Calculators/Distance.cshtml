@@ -33,34 +33,7 @@
         const milesEl = $('#miles');
         const kmEl = $('#km');
         function calculateDistances(src) {
-            console.log('Calculating distance for ' + src + ' km: ' + kmEl.val() + ' mile: ' + milesEl.val());
-            $.getJSON('/api/calculator/distance', {
-                km: kmEl.val(),
-                mile: milesEl.val(),
-                source: src
-            })
-            .done(function(data) {
-                console.log('distances returned: ' + data.km + 'km / ' + data.mile + 'mile');
-                if (src === 'mile') {
-                    kmEl.val(data.km);
-                } else if (src === 'km') {
-                    milesEl.val(data.mile);
-                } else {
-                    kmEl.val(data.km);
-                    milesEl.val(data.mile);
-                }
-            })
-            .fail(function() {
-                console.warn('failed calculating distances, probably invalid input, showing zeros');
-                if (src === 'mile') {
-                    kmEl.val('0');
-                } else if (src === 'km') {
-                    milesEl.val('0');
-                } else {
-                    kmEl.val('0');
-                    milesEl.val('0');
-                }
-            });
+            rpCalculateDistance(src, kmEl, milesEl);
         }
         milesEl.on('click', function() { milesEl.select() });
         milesEl.on('change input paste keyup', function() { calculateDistances('mile'); });

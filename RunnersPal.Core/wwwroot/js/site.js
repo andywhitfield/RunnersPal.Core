@@ -46,6 +46,39 @@ function rpInitialise() {
     });
 }
 
+function rpCalculateDistance(src, kmEl, milesEl, onSuccess) {
+    console.log('Calculating distance for ' + src + ' km: ' + kmEl.val() + ' mile: ' + milesEl.val());
+    $.getJSON('/api/calculator/distance', {
+        km: kmEl.val(),
+        mile: milesEl.val(),
+        source: src
+    })
+    .done(function(data) {
+        console.log('distances returned: ' + data.km + 'km / ' + data.mile + 'mile');
+        if (src === 'mile') {
+            kmEl.val(data.km);
+        } else if (src === 'km') {
+            milesEl.val(data.mile);
+        } else {
+            kmEl.val(data.km);
+            milesEl.val(data.mile);
+        }
+        if (typeof onSuccess !== 'undefined')
+            onSuccess();
+    })
+    .fail(function() {
+        console.warn('failed calculating distances, probably invalid input, showing zeros');
+        if (src === 'mile') {
+            kmEl.val('0');
+        } else if (src === 'km') {
+            milesEl.val('0');
+        } else {
+            kmEl.val('0');
+            milesEl.val('0');
+        }
+    });
+}
+
 coerceToArrayBuffer = function (thing, name) {
     if (typeof thing === "string") {
         // base64url to base64

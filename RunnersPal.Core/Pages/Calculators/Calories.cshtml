@@ -65,35 +65,7 @@
         const weightKgEl = $('#weightkgs');
         const caloriesEl = $('#calories');
         function calculateDistances(src) {
-            console.log('Calculating distance for ' + src + ' km: ' + kmEl.val() + ' mile: ' + milesEl.val());
-            $.getJSON('/api/calculator/distance', {
-                km: kmEl.val(),
-                mile: milesEl.val(),
-                source: src
-            })
-            .done(function(data) {
-                console.log('distances returned: ' + data.km + 'km / ' + data.mile + 'mile');
-                if (src === 'mile') {
-                    kmEl.val(data.km);
-                } else if (src === 'km') {
-                    milesEl.val(data.mile);
-                } else {
-                    kmEl.val(data.km);
-                    milesEl.val(data.mile);
-                }
-                calculateCalories();
-            })
-            .fail(function() {
-                console.warn('failed calculating distances, probably invalid input, showing zeros');
-                if (src === 'mile') {
-                    kmEl.val('0');
-                } else if (src === 'km') {
-                    milesEl.val('0');
-                } else {
-                    kmEl.val('0');
-                    milesEl.val('0');
-                }
-            });
+            rpCalculateDistance(src, kmEl, milesEl, calculateCalories);
         }
         function calculateWeight(src) {
             console.log('Calculating weight for ' + src + ' lbs: ' + weightLbsEl.val() + ' st/lbs: ' + weightStEl.val() + '/' + weightStLbsEl.val() + ' kgs: ' + weightKgEl.val());
