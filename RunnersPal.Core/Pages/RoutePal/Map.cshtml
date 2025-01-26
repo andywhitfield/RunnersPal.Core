@@ -79,25 +79,11 @@
         }
         let mapPoints = mapPointsEl.val() === '' ? [] : JSON.parse(mapPointsEl.val());
         if ((typeof mapPoints !== 'object') || (typeof mapPoints.length !== 'number') || mapPoints.length === 0) {
-            if (!navigator.geolocation) {
-                map.setView([54.505, -0.09], 6);
-            } else {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        map.setView([position.coords.latitude, position.coords.longitude], 12);
-                    },
-                    function() {
-                        map.setView([54.505, -0.09], 6);
-                    });
-            }
+            rpSetMapDefaultView(map);
         } else {
             map.fitBounds(L.latLngBounds(mapPoints));
         }
-        L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+        rpInitMap(map);
 
         const distanceFormEl = $('form[name="rp-map"] input[name="distance"]');
         const route = new MapRoute(map, mapPointsEl, distanceFormEl, $('span.rp-map-distance'), '@(await Model.UserUnitsAsync())', @(await Model.UserUnitsMultiplierAsync()));

@@ -181,6 +181,27 @@ L.LabelOverlay = L.Layer.extend({
     }
 });
 
+function rpInitMap(map) {
+    L.DomUtil.addClass(map._container,'crosshair-cursor-enabled');
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+}
+function rpSetMapDefaultView(map) {
+    if (!navigator.geolocation) {
+        map.setView([54.505, -0.09], 6);
+    } else {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                map.setView([position.coords.latitude, position.coords.longitude], 12);
+            },
+            function() {
+                map.setView([54.505, -0.09], 6);
+            });
+    }
+}
+
 class MapRoute {
     constructor(map, pointsFormElement, distanceFormElement, distanceDisplayElement, userUnits, metersToUserUnitMultiplier) {
         var self = this;
