@@ -27,6 +27,7 @@
     @if (Model.IsRouteDeleted) {
     <span class="rp-route-deleted">This route has been deleted</span>
     }
+    <button type="button" name="elevation" title="Show/Hide map elevation">&Delta;</button>
     </div>
 
     <div class="rp-map-name">
@@ -43,15 +44,80 @@
     </div>
     </form>
     <div id="map"></div>
+    <div id="elevation"><div id="rp-elevation-chart"></div></div>
 </article>
 
+@section Head {
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/css/highcharts.min.css">
+<style type="text/css">
+    :root {
+        --highcharts-color-0: #87eb66;
+    }
+
+    #elevation {
+        width: 80%;
+        height: 250px;
+        position: absolute;
+        top: 60%;
+        left: 55%;
+        transform: translate(-50%, -50%);
+        box-sizing: border-box;
+        z-index: 1000;
+        display: none;
+    }
+    #rp-elevation-chart { height: 100%; }
+</style>
+}
 @section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/highcharts.min.js"></script>
 <script type="text/javascript">
     const map = L.map('map');
 
     $().ready(function() {
         const routeNameEl = $('form[name="rp-map"] input[name="routename"]');
-        let mapPointsEl = $('form[name="rp-map"] input[name="points"]');
+        const mapPointsEl = $('form[name="rp-map"] input[name="points"]');
+
+        const elevationEl = $('#elevation');
+        elevationEl.hide();
+        $('form[name="rp-map"] button[name="elevation"]').click(function() {
+            if (elevationEl.is(':hidden')) {
+                $.post('/api/map/elevation', { points: mapPointsEl.val() })
+                .done(function(data) {
+                    console.log('elevation returned: ' + data.series.length + ' points');
+
+                    Highcharts.chart('rp-elevation-chart', {
+                        chart: {
+                            styledMode: true
+                        },
+                        title: undefined,
+                        series: [{
+                            name: 'Elevation (meters)',
+                            data: data.elevation,
+                            type: 'line',
+                            animation: false
+                        }],
+                        xAxis: {
+                            categories: data.series
+                        },
+                        yAxis: {
+                            title: { text: 'Height in meters' }
+                        },
+                        legend: { enabled: false }
+                    });
+
+                    elevationEl.show();
+                })
+                .fail(function() {
+                    console.warn('failed getting elevation');
+                    // TODO: show error?
+                });
+            } else {
+                elevationEl.hide();
+            }
+        });
+
+
+
         @if (Model.RouteId != null) {
         <text>
         console.log('saved route, clearing local storage');

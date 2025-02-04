@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using RunnersPal.Core.Geolib;
 using RunnersPal.Core.Repository;
 using RunnersPal.Core.Services;
 
@@ -20,6 +21,7 @@ builder.Services.AddDbContext<SqliteDataContext>((serviceProvider, options) =>
 #endif
 });
 builder.Services
+    .AddTransient<IGeoCalculator, GeoCalculator>()
     .AddScoped(sp => (ISqliteDataContext)sp.GetRequiredService<SqliteDataContext>())
     .AddScoped<IUserService, UserService>()
     .AddScoped<IUserAccountRepository, UserAccountRepository>()

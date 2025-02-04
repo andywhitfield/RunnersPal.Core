@@ -1,5 +1,7 @@
 # Setup
 
+[https://github.com/Jorl17/open-elevation/blob/master/docs/api.md]
+
 ## Local
 
 ```sh
