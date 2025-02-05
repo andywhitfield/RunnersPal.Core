@@ -28,7 +28,12 @@ builder.Services
     .AddScoped<IRouteRepository, RouteRepository>()
     .AddScoped<IRunLogRepository, RunLogRepository>()
     .AddScoped<IUserRouteService, UserRouteService>()
-    .AddScoped<IPaceService, PaceService>();
+    .AddScoped<IPaceService, PaceService>()
+    .AddScoped<IElevationService, ElevationService>()
+    .AddScoped<IOpenElevationClient, OpenElevationClient>();
+
+builder.Services
+    .AddHttpClient(nameof(OpenElevationClient), (sp, cfg) => cfg.BaseAddress = new(sp.GetRequiredService<IConfiguration>().GetValue("OpenElevationBaseUri", "http://localhost:50000/")));
 
 builder.Services
     .AddHttpContextAccessor()

@@ -53,19 +53,6 @@
     :root {
         --highcharts-color-0: #87eb66;
     }
-
-    #elevation {
-        width: 80%;
-        height: 250px;
-        position: absolute;
-        top: 60%;
-        left: 55%;
-        transform: translate(-50%, -50%);
-        box-sizing: border-box;
-        z-index: 1000;
-        display: none;
-    }
-    #rp-elevation-chart { height: 100%; }
 </style>
 }
 @section Scripts {
@@ -81,26 +68,31 @@
         elevationEl.hide();
         $('form[name="rp-map"] button[name="elevation"]').click(function() {
             if (elevationEl.is(':hidden')) {
-                $.post('/api/map/elevation', { points: mapPointsEl.val() })
+                $('#rp-elevation-chart').empty();
+                $.post('/api/map/elevation', { points: mapPointsEl.val(), unit: '@(await Model.UserUnitsAsync())' })
                 .done(function(data) {
                     console.log('elevation returned: ' + data.series.length + ' points');
 
                     Highcharts.chart('rp-elevation-chart', {
                         chart: {
+                            type: 'areaspline',
                             styledMode: true
                         },
                         title: undefined,
                         series: [{
                             name: 'Elevation (meters)',
                             data: data.elevation,
-                            type: 'line',
-                            animation: false
+                            marker: { enabled: false }
                         }],
                         xAxis: {
-                            categories: data.series
+                            categories: data.series,
+                            title: { text: 'Distance in @(await Model.UserUnitsAsync())' }
                         },
-                        yAxis: {
-                            title: { text: 'Height in meters' }
+                        yAxis: { title: { text: 'Height in meters' } },
+                        plotOptions: { areaspline: { fillOpacity: 0.5 } },
+                        tooltip: {
+                            headerFormat: '',
+                            pointFormat: 'Distance: {point.key} @(await Model.UserUnitsAsync())<br/>Elevation: {point.y} meters'
                         },
                         legend: { enabled: false }
                     });
@@ -109,14 +101,13 @@
                 })
                 .fail(function() {
                     console.warn('failed getting elevation');
-                    // TODO: show error?
+                    $('#rp-elevation-chart').append('<strong class="rp-elevation-error">Sorry, could not load the elevation profile for this route.</strong>');
+                    elevationEl.show();
                 });
             } else {
                 elevationEl.hide();
             }
         });
-
-
 
         @if (Model.RouteId != null) {
         <text>

@@ -433,7 +433,7 @@ $().ready(function() {
         if (newMapPoints.length > 0)
             newMapRoute.fitBounds(newMapPoints);
         else
-            setMapDefaultView();
+            rpSetMapDefaultView(map);
     }
     function updateEditMapOkButton() {
         const editMapNameEl = $('form[name="rp-runlog"] input[name="rp-map-name"]');

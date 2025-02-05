@@ -273,6 +273,29 @@ li.rp-list-item:hover {
     padding: 2px 8px 2px 8px;
 }
 
+#elevation {
+    width: 80%;
+    height: 250px;
+    position: absolute;
+    top: 60%;
+    left: 55%;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    z-index: 1000;
+    display: none;
+}
+
+#rp-elevation-chart {
+    height: 100%;
+}
+
+.rp-elevation-error {
+    background-color: white;
+    padding: 2px;
+    border: 1px solid black;
+    color: red;
+}
+
 #cal-date {
     font-size: larger;
     float: left;
