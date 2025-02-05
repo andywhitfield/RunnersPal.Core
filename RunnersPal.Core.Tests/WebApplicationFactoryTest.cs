@@ -14,20 +14,25 @@ public class WebApplicationFactoryTest : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<SqliteDataContext> _options;
+    private readonly Action<IServiceCollection>? _configureTestServices;
 
-    public WebApplicationFactoryTest()
+    public WebApplicationFactoryTest(Action<IServiceCollection>? configureTestServices = null)
     {
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
         _options = new DbContextOptionsBuilder<SqliteDataContext>().UseSqlite(_connection).Options;
+        _configureTestServices = configureTestServices;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
-        builder.ConfigureTestServices(services => services
-            .Replace(ServiceDescriptor.Scoped(_ => new SqliteDataContext(_options)))
-            .AddAuthentication("Test")
-            .AddScheme<AuthenticationSchemeOptions, TestStubAuthHandler>("Test", null));
-
+        builder.ConfigureTestServices(services =>
+        {
+            services
+                .Replace(ServiceDescriptor.Scoped(_ => new SqliteDataContext(_options)))
+                .AddAuthentication("Test")
+                .AddScheme<AuthenticationSchemeOptions, TestStubAuthHandler>("Test", null);
+            _configureTestServices?.Invoke(services);
+        });
 
     public HttpClient CreateClient(bool isAuthorized, bool allowAutoRedirect = true)
     {

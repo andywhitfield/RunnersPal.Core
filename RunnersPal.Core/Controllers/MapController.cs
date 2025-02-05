@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Controllers.ApiModels;
 using RunnersPal.Core.Geolib;
 using RunnersPal.Core.Models;
+using RunnersPal.Core.Repository;
 using RunnersPal.Core.Services;
 
 namespace RunnersPal.Core.Controllers;
@@ -14,6 +15,7 @@ namespace RunnersPal.Core.Controllers;
 public class MapController(
     ILogger<MapController> logger,
     IUserService userService,
+    IUserAccountRepository userAccountRepository,
     IElevationService elevationService)
     : ControllerBase
 {
@@ -31,19 +33,24 @@ public class MapController(
 
         if (latLng.Length < 2)
         {
-            logger.LogInformation("Only one point, not calculating elevation");
-            return Ok(new ElevationApiModel([], []));
+            logger.LogWarning("Only one point, not calculating elevation");
+            return BadRequest();
         }
 
         logger.LogDebug("Calculating elevation for latlng coords: [{LatLng}]", latLng.AsEnumerable());
 
         var elevation = (await elevationService.CalculateElevationAsync([.. latLng.Select(ll => (Coordinate)ll)]))?.ToList();
         if (elevation == null)
+        {
+            logger.LogWarning("Failed calculating elevation");
             return BadRequest();
+        }
 
-        return Ok(new ElevationApiModel([.. elevation.Select(e => ToUserUnit(e.Distance, unit).ToString("0.0"))], [.. elevation.Select(i => i.Elevation)]));
+        var distanceUnit = userService.IsLoggedIn
+            ? (DistanceUnits)(await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits
+            : (unit ?? "") switch { "km" => DistanceUnits.Kilometers, "miles" => DistanceUnits.Miles, _ => DistanceUnits.Kilometers };
+        return Ok(new ElevationApiModel(
+            [.. elevation.Select(e => userService.ToDistanceUnits(Convert.ToDecimal(e.Distance), distanceUnit).ToString("0.0"))],
+            [.. elevation.Select(i => i.Elevation)]));
     }
-
-    private decimal ToUserUnit(double distanceInMeters, string? unit)
-        => userService.ToDistanceUnits(Convert.ToDecimal(distanceInMeters), (unit ?? "") switch { "km" => DistanceUnits.Kilometers, "miles" => DistanceUnits.Miles, _ => DistanceUnits.Kilometers });
 }

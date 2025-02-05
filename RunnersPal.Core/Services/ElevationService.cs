@@ -30,6 +30,7 @@ public class ElevationService(
             }
         }
         elevationCoords.Add((coords[^1], distance));
+        logger.LogDebug("Looking up elevation for coords: [{Coords}]", elevationCoords.Select(x => $"{x.Coordinate}|{x.Distance}"));
 
         var elevations = await openElevationClient.LookupAsync(elevationCoords.Select(c => c.Coordinate));
         if (elevations == null)
