@@ -63,10 +63,12 @@
     $().ready(function() {
         const routeNameEl = $('form[name="rp-map"] input[name="routename"]');
         const mapPointsEl = $('form[name="rp-map"] input[name="points"]');
+        const elevationBtnEl = $('form[name="rp-map"] button[name="elevation"]');
 
         const elevationEl = $('#elevation');
         elevationEl.hide();
-        $('form[name="rp-map"] button[name="elevation"]').click(function() {
+        elevationBtnEl.prop('disabled', true);
+        elevationBtnEl.click(function() {
             if (elevationEl.is(':hidden')) {
                 $('#rp-elevation-chart').empty();
                 $.post('/api/map/elevation', { points: mapPointsEl.val(), unit: '@(await Model.UserUnitsAsync())' })
@@ -167,8 +169,11 @@
         }
 
         function rpUpdateSaveButton() {
-            const isSaveDisabled = !routeNameEl.val() || /^\s*$/.test(routeNameEl.val()) || // no route name
-                distanceFormEl.val() === '' || distanceFormEl.val() === '0'; // no points
+            elevationEl.hide();
+            const noMapPoints = distanceFormEl.val() === '' || distanceFormEl.val() === '0';
+            const noRouteName = !routeNameEl.val() || /^\s*$/.test(routeNameEl.val());
+            elevationBtnEl.prop('disabled', noMapPoints);
+            const isSaveDisabled = noRouteName || noMapPoints;
             saveBtnEl.prop('disabled', isSaveDisabled);
 
             if (!isSaveDisabled) {
