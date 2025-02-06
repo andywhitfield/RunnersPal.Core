@@ -67,6 +67,12 @@
 
         const elevationEl = $('#elevation');
         elevationEl.hide();
+        @if (!Model.IsElevationFeatureEnabled) {
+        <text>
+        elevationBtnEl.hide();
+        </text>
+        } else {
+        <text>
         elevationBtnEl.prop('disabled', true);
         elevationBtnEl.click(function() {
             if (elevationEl.is(':hidden')) {
@@ -110,6 +116,8 @@
                 elevationEl.hide();
             }
         });
+        </text>
+        }
 
         @if (Model.RouteId != null) {
         <text>

@@ -9,7 +9,8 @@ namespace RunnersPal.Core.Pages.RoutePal;
 public class MapModel(ILogger<MapModel> logger,
     IUserService userService,
     IUserAccountRepository userAccountRepository,
-    IRouteRepository routeRepository)
+    IRouteRepository routeRepository,
+    IConfiguration configuration)
     : PageModel
 {
     [BindProperty(SupportsGet = true)] public int? RouteId { get; set; }
@@ -22,6 +23,7 @@ public class MapModel(ILogger<MapModel> logger,
     [BindProperty] public string? Delete { get; set; }
     public bool IsRouteDeleted { get; private set; }
     public bool IsLoggedIn => userService.IsLoggedIn;
+    public bool IsElevationFeatureEnabled => configuration.GetValue("ElevationFeatureEnabled", false);
 
     public async Task<IActionResult> OnGet()
     {
