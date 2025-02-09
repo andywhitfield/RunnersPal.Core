@@ -5,32 +5,31 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using RunnersPal.Core.Controllers.ApiModels;
-using RunnersPal.Core.Geolib;
 using RunnersPal.Core.Models;
 using RunnersPal.Core.Repository;
-using RunnersPal.Core.Services;
+using RunnersPal.Elevation;
 
 namespace RunnersPal.Core.Tests.Controllers;
 
 [TestClass]
 public class MapControllerTests
 {
-    private readonly Mock<IOpenElevationClient> _openElevationClientMock = new();
+    private readonly Mock<IElevationLookup> _elevationLookupMock = new();
 
     private WebApplicationFactoryTest? _webApplicationFactory;
 
     [TestInitialize]
     public Task InitializeAsync()
     {
-        _webApplicationFactory = new(services => services.Replace(ServiceDescriptor.Scoped(_ => _openElevationClientMock.Object)));
+        _webApplicationFactory = new(services => services.Replace(ServiceDescriptor.Scoped(_ => _elevationLookupMock.Object)));
+        _elevationLookupMock.Setup(x => x.LookupAsync(It.IsAny<IEnumerable<ElevationPoint>>())).Returns(
+            new List<double> { 10d, 11d, 9d }.ToAsyncEnumerable());
         return TestStubAuthHandler.AddTestUserAsync(_webApplicationFactory.Services);
     }
 
     [TestMethod]
     public async Task Should_get_elevation_between_two_points_in_km()
     {
-        _openElevationClientMock.Setup(x => x.LookupAsync(It.IsAny<IEnumerable<Coordinate>>())).ReturnsAsync(
-            new OpenElevationResponseModel([new(50, 0, 10), new(50, 0.002, 11), new(50, 0.004, 9)]));
         using var client = _webApplicationFactory!.CreateClient(false); // should allow un-auth user
         using var response = await client.PostAsync("/api/map/elevation", new FormUrlEncodedContent(new Dictionary<string, string>
         {
@@ -47,8 +46,6 @@ public class MapControllerTests
     [TestMethod]
     public async Task Should_get_elevation_between_two_points_in_miles()
     {
-        _openElevationClientMock.Setup(x => x.LookupAsync(It.IsAny<IEnumerable<Coordinate>>())).ReturnsAsync(
-            new OpenElevationResponseModel([new(50, 0, 10), new(50, 0.002, 11), new(50, 0.004, 9)]));
         using var client = _webApplicationFactory!.CreateClient(false); // should allow un-auth user
         using var response = await client.PostAsync("/api/map/elevation", new FormUrlEncodedContent(new Dictionary<string, string>
         {
@@ -69,9 +66,6 @@ public class MapControllerTests
     [DataRow("Miles", false)]
     public async Task Given_logged_in_user_Should_get_elevation_between_two_points_in_user_units(string userUnits, bool expectDistanceInKm)
     {
-        _openElevationClientMock.Setup(x => x.LookupAsync(It.IsAny<IEnumerable<Coordinate>>())).ReturnsAsync(
-            new OpenElevationResponseModel([new(50, 0, 10), new(50, 0.002, 11), new(50, 0.004, 9)]));
-        
         if (!string.IsNullOrEmpty(userUnits))
         {
             await using var ctx = _webApplicationFactory!.Services.CreateAsyncScope();

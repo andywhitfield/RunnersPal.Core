@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using RunnersPal.Core.Geolib;
 using RunnersPal.Core.Repository;
 using RunnersPal.Core.Services;
+using RunnersPal.Elevation;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
@@ -30,10 +31,8 @@ builder.Services
     .AddScoped<IUserRouteService, UserRouteService>()
     .AddScoped<IPaceService, PaceService>()
     .AddScoped<IElevationService, ElevationService>()
-    .AddScoped<IOpenElevationClient, OpenElevationClient>();
-
-builder.Services
-    .AddHttpClient(nameof(OpenElevationClient), (sp, cfg) => cfg.BaseAddress = new(sp.GetRequiredService<IConfiguration>().GetValue("OpenElevationBaseUri", "http://localhost:50000/")));
+    .AddScoped<IElevationLookup, ElevationLookup>()
+    .AddSingleton<IElevationSummaryDataSource, ElevationSummaryDataSource>();
 
 builder.Services
     .AddHttpContextAccessor()

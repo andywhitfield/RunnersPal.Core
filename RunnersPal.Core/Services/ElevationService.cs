@@ -1,11 +1,12 @@
 using RunnersPal.Core.Geolib;
+using RunnersPal.Elevation;
 
 namespace RunnersPal.Core.Services;
 
 public class ElevationService(
     ILogger<ElevationService> logger,
     IGeoCalculator geoCalculator,
-    IOpenElevationClient openElevationClient)
+    IElevationLookup elevationLookup)
     : IElevationService
 {
     private const double _elevationFrequency = 125d;
@@ -32,20 +33,14 @@ public class ElevationService(
         elevationCoords.Add((coords[^1], distance));
         logger.LogDebug("Looking up elevation for coords: [{Coords}]", elevationCoords.Select(x => $"{x.Coordinate}|{x.Distance}"));
 
-        var elevations = await openElevationClient.LookupAsync(elevationCoords.Select(c => c.Coordinate));
-        if (elevations == null)
+        var elevations = await elevationLookup.LookupAsync(elevationCoords.Select(c => new ElevationPoint(c.Coordinate.Latitude, c.Coordinate.Longitude))).ToListAsync();
+        logger.LogDebug("Got elevation results: [{Elevations}]", elevations);
+        if (elevations.Count != elevationCoords.Count)
         {
-            logger.LogWarning("Could not get parse elevation response");
+            logger.LogWarning("Did not get expected number of elevation responses: expected {Expected} vs actual {Actual}", elevationCoords.Count, elevations.Count);
             return null;
         }
 
-        logger.LogDebug("Got elevation results: [{Elevations}]", elevations.Results);
-        if (elevations.Results.Count() != elevationCoords.Count)
-        {
-            logger.LogWarning("Did not get expected number of elevation responses: expected {Expected} vs actual {Actual}", elevationCoords.Count, elevations.Results.Count());
-            return null;
-        }
-
-        return elevationCoords.Zip(elevations.Results).Select(r => (r.First.Coordinate, r.First.Distance, r.Second.Elevation));
+        return elevationCoords.Zip(elevations).Select(r => (r.First.Coordinate, r.First.Distance, r.Second));
     }
 }
