@@ -6,7 +6,7 @@ namespace RunnersPal.Elevation;
 public class ElevationLookup(
     ILogger<ElevationLookup> logger,
     IElevationSummaryDataSource elevationSummaryDataSource)
-    : IElevationLookup
+    : IElevationLookup, IDisposable
 {
     static ElevationLookup()
     {
@@ -14,6 +14,8 @@ public class ElevationLookup(
     }
 
     private const double _seaLevel = 0;
+    private readonly Dictionary<string, OSGeo.GDAL.Dataset> _dataSets = [];
+    private bool _disposed;
 
     public async IAsyncEnumerable<double> LookupAsync(IEnumerable<ElevationPoint> points)
     {
@@ -26,15 +28,17 @@ public class ElevationLookup(
         var tifFile = await elevationSummaryDataSource.GetFilenameForPointAsync(point);
         logger.LogTrace("Using TIF file [{TifFile}] for point [{Point}]", tifFile, point);
 
-        // TODO: refactor this so we cache the dataset
+        if (!_dataSets.TryGetValue(tifFile, out var ds))
+        {
+            ds = OSGeo.GDAL.Gdal.Open(tifFile, OSGeo.GDAL.Access.GA_ReadOnly);
+            logger.LogTrace("Loaded file {Description}, raster size ({RasterXSize}, {RasterYSize})", ds.GetDescription(), ds.RasterXSize, ds.RasterYSize);
+            _dataSets.Add(tifFile, ds);
+        }
 
-        using var ds = OSGeo.GDAL.Gdal.Open(tifFile, OSGeo.GDAL.Access.GA_ReadOnly);
-        logger.LogTrace("Loaded file {Description}, raster size ({RasterXSize}, {RasterYSize})", ds.GetDescription(), ds.RasterXSize, ds.RasterYSize);
-
-        SpatialReference spatialReferenceRaster = new(ds.GetProjection());
-        SpatialReference spatialReference = new(null);
+        using SpatialReference spatialReferenceRaster = new(ds.GetProjection());
+        using SpatialReference spatialReference = new(null);
         spatialReference.ImportFromEPSG(4326);
-        var coordinateTransform = Osr.CreateCoordinateTransformation(spatialReference, spatialReferenceRaster, new());
+        using var coordinateTransform = Osr.CreateCoordinateTransformation(spatialReference, spatialReferenceRaster, new());
         double[] geoTransform = new double[6];
         ds.GetGeoTransform(geoTransform);
         var dev = geoTransform[1] * geoTransform[5] - geoTransform[2] * geoTransform[4];
@@ -70,5 +74,29 @@ public class ElevationLookup(
         logger.LogTrace("Got elevation: {ValueAtPoint}", valueAtPoint);
 
         return valueAtPoint == -32768 ? _seaLevel : valueAtPoint;
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                foreach (var ds in _dataSets)
+                {
+                    logger.LogTrace("Disposing dataset for [{Key}]", ds.Key);
+                    ds.Value.Dispose();
+                }
+            }
+
+            _disposed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }
