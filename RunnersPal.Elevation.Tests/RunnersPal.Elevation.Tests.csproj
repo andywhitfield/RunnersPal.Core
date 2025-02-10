@@ -1,0 +1,23 @@
+<Project Sdk="MSTest.Sdk/3.7.3">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="4.20.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RunnersPal.Elevation\RunnersPal.Elevation.csproj" />
+  </ItemGroup>
+
+</Project>
