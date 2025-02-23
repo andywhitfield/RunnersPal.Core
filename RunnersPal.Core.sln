@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunnersPal.Elevation", "Run
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunnersPal.Elevation.Tests", "RunnersPal.Elevation.Tests\RunnersPal.Elevation.Tests.csproj", "{37C549EA-9161-4A18-AA32-B133C7E14B58}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunnersPal.Elevation.Cli", "RunnersPal.Elevation.Cli\RunnersPal.Elevation.Cli.csproj", "{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,9 +21,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B9854BE0-B458-4184-B78A-35F98FE444CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -72,5 +71,20 @@ Global
 		{37C549EA-9161-4A18-AA32-B133C7E14B58}.Release|x64.Build.0 = Release|Any CPU
 		{37C549EA-9161-4A18-AA32-B133C7E14B58}.Release|x86.ActiveCfg = Release|Any CPU
 		{37C549EA-9161-4A18-AA32-B133C7E14B58}.Release|x86.Build.0 = Release|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Debug|x64.Build.0 = Debug|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Debug|x86.Build.0 = Debug|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Release|x64.ActiveCfg = Release|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Release|x64.Build.0 = Release|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Release|x86.ActiveCfg = Release|Any CPU
+		{FB22498F-4C7B-43D8-9880-6BC6FECC9EE8}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
