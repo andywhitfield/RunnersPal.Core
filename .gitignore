@@ -35,4 +35,4 @@ msbuild.wrn
 .vs/
 
 .keys/
-external/elevation/data
+external/elevation

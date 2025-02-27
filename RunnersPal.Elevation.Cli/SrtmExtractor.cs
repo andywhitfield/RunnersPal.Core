@@ -7,9 +7,10 @@ public class SrtmExtractor(string defaultElevationDataDirectory)
 {
     public void Extract()
     {
-        Console.Write($"Directory containing download rar files [{defaultElevationDataDirectory}]: ");
+        var defaultElevationDownloadDirectory = Path.Combine(defaultElevationDataDirectory, "download");
+        Console.Write($"Directory containing download rar files [{defaultElevationDownloadDirectory}]: ");
         var downloadDirectory = Console.ReadLine() ?? "";
-        downloadDirectory = string.IsNullOrWhiteSpace(downloadDirectory) ? defaultElevationDataDirectory : downloadDirectory;
+        downloadDirectory = string.IsNullOrWhiteSpace(downloadDirectory) ? defaultElevationDownloadDirectory : downloadDirectory;
 
         if (string.IsNullOrWhiteSpace(downloadDirectory))
         {

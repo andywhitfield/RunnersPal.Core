@@ -14,7 +14,7 @@ public class ElevationLookupTests
     [DataRow(52, -0.2, 59)]
     public async Task Lookup_returns_expected_elevation(double latitude, double longitude, double expectedElevation)
     {
-        var tifFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", "Resources", "data", "SRTM_NE_250m_1_1.tif");
+        var tifFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", "Resources", "SRTM_NE_250m_1_1.tif");
         Mock<IElevationSummaryDataSource> elevationSummaryDataSourceMock = new();
         elevationSummaryDataSourceMock.Setup(x => x.GetFilenameForPointAsync(It.IsAny<ElevationPoint>())).ReturnsAsync(tifFile);
         ElevationLookup lookup = new(Mock.Of<ILogger<ElevationLookup>>(), elevationSummaryDataSourceMock.Object);
@@ -25,7 +25,7 @@ public class ElevationLookupTests
     [TestMethod]
     public async Task Lookup_list_returns_expected_elevations()
     {
-        var tifFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", "Resources", "data", "SRTM_NE_250m_1_1.tif");
+        var tifFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "", "Resources", "SRTM_NE_250m_1_1.tif");
         Mock<IElevationSummaryDataSource> elevationSummaryDataSourceMock = new();
         elevationSummaryDataSourceMock.Setup(x => x.GetFilenameForPointAsync(It.IsAny<ElevationPoint>())).ReturnsAsync(tifFile);
         ElevationLookup lookup = new(Mock.Of<ILogger<ElevationLookup>>(), elevationSummaryDataSourceMock.Object);

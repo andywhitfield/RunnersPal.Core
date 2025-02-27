@@ -14,9 +14,14 @@ public class SrtmTiler(string defaultElevationDataDirectory)
 
     public void CreateTiles()
     {
-        Console.Write($"Directory containing extracted tif files [{defaultElevationDataDirectory}]: ");
+        var defaultElevationDownloadDirectory = Path.Combine(defaultElevationDataDirectory, "download");        
+        Console.Write($"Directory containing extracted tif files [{defaultElevationDownloadDirectory}]: ");
         var downloadDirectory = Console.ReadLine() ?? "";
-        downloadDirectory = string.IsNullOrWhiteSpace(downloadDirectory) ? defaultElevationDataDirectory : downloadDirectory;
+        downloadDirectory = string.IsNullOrWhiteSpace(downloadDirectory) ? defaultElevationDownloadDirectory : downloadDirectory;
+
+        Console.Write($"Directory to create tile files [{defaultElevationDataDirectory}]: ");
+        var tilesDirectory = Console.ReadLine() ?? "";
+        tilesDirectory = string.IsNullOrWhiteSpace(tilesDirectory) ? defaultElevationDataDirectory : tilesDirectory;
 
         if (string.IsNullOrWhiteSpace(downloadDirectory))
         {
@@ -27,6 +32,18 @@ public class SrtmTiler(string defaultElevationDataDirectory)
         if (!Directory.Exists(downloadDirectory))
         {
             Console.WriteLine($"Download directory [{downloadDirectory}] does not exist");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(tilesDirectory))
+        {
+            Console.WriteLine("No tiles directory!");
+            return;
+        }
+
+        if (!Directory.Exists(tilesDirectory))
+        {
+            Console.WriteLine($"Tiles directory [{tilesDirectory}] does not exist");
             return;
         }
 
@@ -63,7 +80,7 @@ public class SrtmTiler(string defaultElevationDataDirectory)
                 for (var y = 0; y < yTiles; y++)
                 {
                     var yMin = yMax - yDiff;
-                    var destFile = Path.Combine(Path.GetDirectoryName(tifFileName) ?? "", "data", $"{Path.GetFileNameWithoutExtension(tifFile)}_{x}_{y}.tif");
+                    var destFile = Path.Combine(tilesDirectory, $"{Path.GetFileNameWithoutExtension(tifFile)}_{x}_{y}.tif");
                     Console.WriteLine($"Creating tile: {xMin} {yMax} {xMax} {yMin} [{tifFile}]");
                     Gdal.wrapper_GDALTranslate(
                         destFile,

@@ -21,8 +21,8 @@ public class ElevationSummaryDataSource(
             if (_path == null)
             {
                 var path = configuration.GetValue("ElevationPath", Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? "");
-                if (!Directory.Exists(Path.Combine(path, "data")))
-                    throw new InvalidOperationException($"Elevation data directory not found. Expect a directory 'data' to exist in configured folder [{path}]");
+                if (!Directory.Exists(path))
+                    throw new InvalidOperationException($"Elevation data directory not found. Configured folder [{path}] does not exist.");
 
                 logger.LogDebug("Reading elevation data from path [{Path}]", path);
                 _path = path;
@@ -36,7 +36,7 @@ public class ElevationSummaryDataSource(
         if (_tree.Count != 0)
             return _tree;
 
-        var summaryFile = Path.Combine(ElevationPath, "data", "summary.json");
+        var summaryFile = Path.Combine(ElevationPath, "summary.json");
         await using var fileStream = new FileStream(summaryFile, FileMode.Open, FileAccess.Read, FileShare.Read);
         var summaries = await JsonSerializer.DeserializeAsync<List<SummaryItem>>(fileStream, _jsonSerializerOptions) ?? throw new InvalidOperationException($"Could not load summaries file [{summaryFile}]");
         logger.LogDebug("Loaded {SummariesCount} summaries", summaries.Count);

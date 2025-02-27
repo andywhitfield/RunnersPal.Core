@@ -9,10 +9,9 @@ public class SummaryFile(string defaultElevationDataDirectory)
 
     public async Task CreateAsync()
     {
-        var defaultTilesDirectory = Path.Combine(defaultElevationDataDirectory, "data");
-        Console.Write($"Directory containing tif tiles [{defaultTilesDirectory}]: ");
+        Console.Write($"Directory containing tif tiles [{defaultElevationDataDirectory}]: ");
         var tilesDirectory = Console.ReadLine() ?? "";
-        tilesDirectory = string.IsNullOrWhiteSpace(tilesDirectory) ? defaultTilesDirectory : tilesDirectory;
+        tilesDirectory = string.IsNullOrWhiteSpace(tilesDirectory) ? defaultElevationDataDirectory : tilesDirectory;
 
         if (string.IsNullOrWhiteSpace(tilesDirectory))
         {
@@ -44,7 +43,7 @@ public class SummaryFile(string defaultElevationDataDirectory)
             var lngmax = lngmin + ds.RasterXSize * geoTransform[1];
             var lmin = lmax + ds.RasterYSize * geoTransform[5];
 
-            summaries.Add(new(Path.Combine("data", Path.GetFileName(tifFile)), [lmin, lmax, lngmin, lngmax]));
+            summaries.Add(new(Path.GetFileName(tifFile), [lmin, lmax, lngmin, lngmax]));
 
             Console.WriteLine($"TIF file {Path.GetFileName(tifFile)} has coords ({lmin},{lmax})-({lngmin},{lngmax})");
         }

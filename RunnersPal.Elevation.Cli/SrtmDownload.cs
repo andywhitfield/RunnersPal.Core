@@ -11,9 +11,12 @@ public class SrtmDownload(string defaultElevationDataDirectory)
 
     public async Task DownloadAsync()
     {
-        Console.Write($"Download to directory [{defaultElevationDataDirectory}]: ");
+        var defaultElevationDownloadDirectory = Path.Combine(defaultElevationDataDirectory, "download");
+        if (!Directory.Exists(defaultElevationDownloadDirectory))
+            Directory.CreateDirectory(defaultElevationDownloadDirectory);
+        Console.Write($"Download to directory [{defaultElevationDownloadDirectory}]: ");
         var downloadDirectory = Console.ReadLine() ?? "";
-        downloadDirectory = string.IsNullOrWhiteSpace(downloadDirectory) ? defaultElevationDataDirectory : downloadDirectory;
+        downloadDirectory = string.IsNullOrWhiteSpace(downloadDirectory) ? defaultElevationDownloadDirectory : downloadDirectory;
 
         if (string.IsNullOrWhiteSpace(downloadDirectory))
         {

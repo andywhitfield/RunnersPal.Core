@@ -27,7 +27,7 @@ public class ElevationSummaryDataSourceTests
         var longitude = -0.1771682768125467d;
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
         var tifFile = await dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude));
-        Assert.AreEqual(Path.Combine(_elevationPath!, "data", "SRTM_NE_250m_1_1.tif"), tifFile);
+        Assert.AreEqual(Path.Combine(_elevationPath!, "SRTM_NE_250m_1_1.tif"), tifFile);
     }
 
     [TestMethod]
@@ -38,7 +38,7 @@ public class ElevationSummaryDataSourceTests
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
         var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
             () => dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude)));
-        Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, "data", "SRTM_SE_250m_1_0.tif")} not found. Is the summary file valid?", ex.Message);
+        Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, "SRTM_SE_250m_1_0.tif")} not found. Is the summary file valid?", ex.Message);
     }
 
     [TestMethod]
@@ -55,7 +55,7 @@ public class ElevationSummaryDataSourceTests
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
         var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
             () => dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude)));
-        Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, "data", expectedMissingFile)} not found. Is the summary file valid?", ex.Message);
+        Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, expectedMissingFile)} not found. Is the summary file valid?", ex.Message);
     }
 
     [TestMethod]
@@ -68,7 +68,7 @@ public class ElevationSummaryDataSourceTests
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
         var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
             () => dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude)));
-        Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, "data", expectedMissingFile)} not found. Is the summary file valid?", ex.Message);
+        Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, expectedMissingFile)} not found. Is the summary file valid?", ex.Message);
     }
 
     [TestMethod]
