@@ -5,6 +5,7 @@ SrtmDownload srtmDownload = new(defaultElevationDataDirectory);
 SrtmExtractor srtmExtractor = new(defaultElevationDataDirectory);
 SrtmTiler srtmTiler = new(defaultElevationDataDirectory);
 SummaryFile summaryFile = new(defaultElevationDataDirectory);
+SrtmElevationLookup lookup = new(defaultElevationDataDirectory);
 
 try
 {
@@ -29,6 +30,8 @@ Elevation Options
 2. Extract SRTM files
 3. Create tiles from SRTM files
 4. Create/Update summary json file
+5. Check elevation
+
 x. Exit
 
 """);
@@ -48,6 +51,9 @@ x. Exit
             break;
         case "4":
             await summaryFile.CreateAsync();
+            break;
+        case "5":
+            await lookup.GetElevationAsync();
             break;
         case "x":
             return false;

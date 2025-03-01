@@ -36,3 +36,4 @@ msbuild.wrn
 
 .keys/
 external/elevation
+appsettings.Development.json
