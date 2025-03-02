@@ -1,3 +1,3 @@
 namespace RunnersPal.Core.Controllers.ApiModels;
 
-public record ElevationApiModel(IEnumerable<string> Series, IEnumerable<double> Elevation);
+public record ElevationApiModel(string Stats, IEnumerable<string> Series, IEnumerable<double> Elevation);

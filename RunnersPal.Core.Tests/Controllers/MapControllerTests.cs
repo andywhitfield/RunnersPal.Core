@@ -41,6 +41,7 @@ public class MapControllerTests
         Assert.IsNotNull(result);
         Assert.AreEqual("0.0,0.3,0.3", string.Join(',', result.Series));
         Assert.AreEqual("10,11,9", string.Join(',', result.Elevation.Select(e => e.ToString("0"))));
+        Assert.AreEqual("Highest: 11m, Lowest: 9m, Total ascent: 1m", result.Stats);
     }
 
     [TestMethod]
@@ -58,6 +59,7 @@ public class MapControllerTests
         Assert.IsNotNull(result);
         Assert.AreEqual("0.0,0.2,0.2", string.Join(',', result.Series));
         Assert.AreEqual("10,11,9", string.Join(',', result.Elevation.Select(e => e.ToString("0"))));
+        Assert.AreEqual("Highest: 11m, Lowest: 9m, Total ascent: 1m", result.Stats);
     }
 
     [TestMethod]
@@ -86,5 +88,46 @@ public class MapControllerTests
         Assert.IsNotNull(result);
         Assert.AreEqual(expectDistanceInKm ? "0.0,0.3,0.3" : "0.0,0.2,0.2", string.Join(',', result.Series));
         Assert.AreEqual("10,11,9", string.Join(',', result.Elevation.Select(e => e.ToString("0"))));
+        Assert.AreEqual("Highest: 11m, Lowest: 9m, Total ascent: 1m", result.Stats);
+    }
+
+    [TestMethod]
+    public async Task Given_down_route_Should_show_no_total_ascent()
+    {
+        _elevationLookupMock.Reset();
+        _elevationLookupMock.Setup(x => x.LookupAsync(It.IsAny<IEnumerable<ElevationPoint>>())).Returns(
+            new List<double> { 11d, 10d, 9d }.ToAsyncEnumerable());
+        using var client = _webApplicationFactory!.CreateClient(false); // should allow un-auth user
+        using var response = await client.PostAsync("/api/map/elevation", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "points", """[{"lat":50,"lng":0},{"lat":50,"lng":0.004}]""" },
+        }));
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<ElevationApiModel>();
+        Assert.IsNotNull(result);
+        Assert.AreEqual("0.0,0.3,0.3", string.Join(',', result.Series));
+        Assert.AreEqual("11,10,9", string.Join(',', result.Elevation.Select(e => e.ToString("0"))));
+        Assert.AreEqual("Highest: 11m, Lowest: 9m, Total ascent: 0m", result.Stats);
+    }
+
+    [TestMethod]
+    public async Task Given_up_route_Should_show_total_ascent()
+    {
+        _elevationLookupMock.Reset();
+        _elevationLookupMock.Setup(x => x.LookupAsync(It.IsAny<IEnumerable<ElevationPoint>>())).Returns(
+            new List<double> { 9d, 10d, 12d }.ToAsyncEnumerable());
+        using var client = _webApplicationFactory!.CreateClient(false); // should allow un-auth user
+        using var response = await client.PostAsync("/api/map/elevation", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            { "points", """[{"lat":50,"lng":0},{"lat":50,"lng":0.004}]""" },
+        }));
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<ElevationApiModel>();
+        Assert.IsNotNull(result);
+        Assert.AreEqual("0.0,0.3,0.3", string.Join(',', result.Series));
+        Assert.AreEqual("9,10,12", string.Join(',', result.Elevation.Select(e => e.ToString("0"))));
+        Assert.AreEqual("Highest: 12m, Lowest: 9m, Total ascent: 3m", result.Stats);
     }
 }

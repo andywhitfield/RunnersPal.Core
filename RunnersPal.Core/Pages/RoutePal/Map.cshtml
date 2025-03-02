@@ -96,7 +96,8 @@
                             headerFormat: '',
                             pointFormat: 'Distance: {point.key} @(await Model.UserUnitsAsync())<br/>Elevation: {point.y} meters'
                         },
-                        legend: { enabled: false }
+                        legend: { enabled: false },
+                        subtitle: { text: data.stats, verticalAlign: 'top', align: 'right', floating: true }
                     });
 
                     elevationEl.show();

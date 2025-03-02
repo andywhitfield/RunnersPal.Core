@@ -49,7 +49,21 @@ public class MapController(
         var distanceUnit = userService.IsLoggedIn
             ? (DistanceUnits)(await userAccountRepository.GetUserAccountAsync(User)).DistanceUnits
             : (unit ?? "") switch { "km" => DistanceUnits.Kilometers, "miles" => DistanceUnits.Miles, _ => DistanceUnits.Kilometers };
+        double? min = default;
+        double? max = default;
+        double total = 0;
+        double? lastElevation = null;
+        foreach (var e in elevation)
+        {
+            min = min == null ? e.Elevation : Math.Min(min.Value, e.Elevation);
+            max = max == null ? e.Elevation : Math.Max(max.Value, e.Elevation);
+            if (lastElevation != null)
+                total += e.Elevation > lastElevation ? e.Elevation - lastElevation.Value : 0;
+            lastElevation = e.Elevation;
+        }
+
         return Ok(new ElevationApiModel(
+            min != null && max != null ? $"Highest: {max.Value:0}m, Lowest: {min.Value:0}m, Total ascent: {total:0}m" : "",
             [.. elevation.Select(e => userService.ToDistanceUnits(Convert.ToDecimal(e.Distance), distanceUnit).ToString("0.0"))],
             [.. elevation.Select(i => i.Elevation)]));
     }
