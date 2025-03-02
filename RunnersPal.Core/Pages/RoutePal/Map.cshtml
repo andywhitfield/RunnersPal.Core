@@ -152,7 +152,7 @@
         }
 
         const saveBtnEl = $('form[name="rp-map"] input[name="save"]');
-        rpUpdateSaveButton();
+        rpUpdateSaveButton(true);
         route.onChange(rpUpdateSaveButton);
         routeNameEl.on('change input paste keyup', rpUpdateSaveButton);
 
@@ -169,7 +169,7 @@
             localStorage.setItem('map.notes', $('form[name="rp-map"] textarea[name="routenotes"]').val());
         }
 
-        function rpUpdateSaveButton() {
+        function rpUpdateSaveButton(initialLoad) {
             elevationEl.hide();
             const noMapPoints = distanceFormEl.val() === '' || distanceFormEl.val() === '0';
             const noRouteName = !routeNameEl.val() || /^\s*$/.test(routeNameEl.val());
@@ -177,10 +177,10 @@
             const isSaveDisabled = noRouteName || noMapPoints;
             saveBtnEl.prop('disabled', isSaveDisabled);
 
-            if (!isSaveDisabled) {
+            if (!isSaveDisabled)
                 $('form[name="rp-map"] button[name="loadunsaved"]').hide();
+            if (!initialLoad)
                 saveToLocalStorage();
-            }
         }
 
         $('form[name="rp-map"] button[name="switchunits"]').click(function() {
