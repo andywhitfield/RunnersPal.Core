@@ -10,9 +10,21 @@ public class ElevationService(
     : IElevationService
 {
     private const double _elevationFrequency = 125d;
+    private const int _maxCoords = 8000;
 
     public async Task<IEnumerable<(Coordinate Coordinate, double Distance, double Elevation)>?> CalculateElevationAsync(Coordinate[] coords)
     {
+        if (coords.Length < 2)
+        {
+            logger.LogWarning("Less than two coords, not generating elevation for: {CoordsLength}", coords.Length);
+            return null;
+        }
+        if (coords.Length > _maxCoords)
+        {
+            logger.LogWarning("Too many coords, cannot generate elevation for: {CoordsLength}", coords.Length);
+            return null;
+        }
+
         List<(Coordinate Coordinate, double Distance)> elevationCoords = [(coords[0], 0d)];
         var distance = 0d;
         for (var i = 1; i < coords.Length; i++)
@@ -32,6 +44,12 @@ public class ElevationService(
         }
         elevationCoords.Add((coords[^1], distance));
         logger.LogDebug("Looking up elevation for coords: [{Coords}]", elevationCoords.Select(x => $"{x.Coordinate}|{x.Distance}"));
+
+        if (elevationCoords.Count > _maxCoords)
+        {
+            logger.LogWarning("Too many elevation coords to calculate, cannot generate elevation for: {ElevationCoordsCount}", elevationCoords.Count);
+            return null;
+        }
 
         var elevations = await elevationLookup.LookupAsync(elevationCoords.Select(c => new ElevationPoint(c.Coordinate.Latitude, c.Coordinate.Longitude))).ToListAsync();
         logger.LogDebug("Got elevation results: [{Elevations}]", elevations);

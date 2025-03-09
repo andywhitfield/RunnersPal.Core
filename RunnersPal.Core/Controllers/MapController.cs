@@ -62,6 +62,8 @@ public class MapController(
             lastElevation = e.Elevation;
         }
 
+        logger.LogDebug("Got #{ElevationCount} elevation for {LatLngCount} coords", elevation.Count, latLng.Length);
+
         return Ok(new ElevationApiModel(
             min != null && max != null ? $"Highest: {max.Value:0}m, Lowest: {min.Value:0}m, Total ascent: {total:0}m" : "",
             [.. elevation.Select(e => userService.ToDistanceUnits(Convert.ToDecimal(e.Distance), distanceUnit).ToString("0.0"))],
