@@ -8,7 +8,7 @@ using RunnersPal.Core.Repository;
 
 namespace RunnersPal.Core.Pages;
 
-public class SigninModel(ILogger<SigninModel> logger, IConfiguration configuration, IFido2 fido2,
+public class SigninModel(ILogger<SigninModel> logger, IFido2 fido2,
     IUserAccountRepository userAccountRepository)
     : PageModel
 {
@@ -34,13 +34,7 @@ public class SigninModel(ILogger<SigninModel> logger, IConfiguration configurati
                     .GetUserAccountAuthenticationsAsync(user)
                     .Select(uac => new PublicKeyCredentialDescriptor(uac.CredentialId))
                     .ToArrayAsync(),
-                UserVerificationRequirement.Discouraged,
-                new AuthenticationExtensionsClientInputs()
-                {
-                    Extensions = true,
-                    UserVerificationMethod = true,
-                    AppID = configuration.GetValue<string>("FidoOrigins")
-                }
+                UserVerificationRequirement.Discouraged
             ).ToJson();
         }
         else
@@ -50,13 +44,7 @@ public class SigninModel(ILogger<SigninModel> logger, IConfiguration configurati
                 new Fido2User() { Id = Encoding.UTF8.GetBytes(Email), Name = Email, DisplayName = Email },
                 [],
                 AuthenticatorSelection.Default,
-                AttestationConveyancePreference.None,
-                new()
-                {
-                    Extensions = true,
-                    UserVerificationMethod = true,
-                    AppID = configuration.GetValue<string>("FidoOrigins")
-                }
+                AttestationConveyancePreference.None
             ).ToJson();
         }
 
