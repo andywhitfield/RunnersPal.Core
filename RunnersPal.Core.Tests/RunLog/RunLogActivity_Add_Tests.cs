@@ -113,22 +113,19 @@ public class RunLogActivity_Add_Tests
         Assert.AreEqual(Models.RunLog.LogStateValid, runActivity.LogState);
         Assert.AreEqual("29:21", runActivity.TimeTaken);
         Assert.AreEqual(userRoute.Id, runActivity.RouteId);
+    }
 
-        async Task<Route> CreateRouteAsync()
-        {
-            await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
-            await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
-            var newRoute = context.Route.Add(new()
-            {
-                CreatorAccount = await context.UserAccount.SingleAsync(ua => ua.EmailAddress == TestStubAuthHandler.TestUserEmail),
-                Name = "test-route",
-                RouteType = Route.PrivateRoute,
-                Distance = 6000,
-                DistanceUnits = (int)DistanceUnits.Meters
-            });
-            await context.SaveChangesAsync();
-            return newRoute.Entity;
-        }
+    [TestMethod]
+    public async Task Should_add_new_activity_using_saved_route2()
+    {
+        var userRoute = await CreateRouteAsync();
+        using var client = _webApplicationFactory.CreateClient(true, false);
+        using var response = await client.GetAsync($"/runlog/activity?routeid={userRoute.Id}");
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var activityGetPage = await response.Content.ReadAsStringAsync();
+        Assert.Contains("""<input type="hidden" name="mapname" value="test-route" />""", activityGetPage);
+        Assert.Contains("""<input type="hidden" name="mapdistance" value="6000.0" />""", activityGetPage);
+        Assert.Contains($"""<input type="hidden" name="routeid" value="{userRoute.Id}" />""", activityGetPage);
     }
 
     [TestMethod]
@@ -168,6 +165,22 @@ public class RunLogActivity_Add_Tests
         Assert.AreEqual("""[{"lat":50,"lng":0.1},{"lat":50.5,"lng":-1.2}]""", runRoute.MapPoints);
         Assert.AreEqual("just made up", runRoute.Notes);
         Assert.AreEqual(Models.Route.PrivateRoute, runRoute.RouteType);
+    }
+
+    private async Task<Route> CreateRouteAsync()
+    {
+        await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
+        await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
+        var newRoute = context.Route.Add(new()
+        {
+            CreatorAccount = await context.UserAccount.SingleAsync(ua => ua.EmailAddress == TestStubAuthHandler.TestUserEmail),
+            Name = "test-route",
+            RouteType = Route.PrivateRoute,
+            Distance = 6000,
+            DistanceUnits = (int)DistanceUnits.Meters
+        });
+        await context.SaveChangesAsync();
+        return newRoute.Entity;
     }
 
     [TestCleanup]
