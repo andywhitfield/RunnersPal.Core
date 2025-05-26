@@ -20,7 +20,7 @@ public class ActivityModel(ILogger<ActivityModel> logger,
     [BindProperty(SupportsGet = true)] public string? Date { get; set; }
     [BindProperty] public int DistanceType { get; set; }
     [BindProperty] public decimal? DistanceManual { get; set; }
-    [BindProperty] public int? RouteId { get; set; }
+    [BindProperty(SupportsGet = true)] public int? RouteId { get; set; }
     [BindProperty] public string? MapPoints { get; set; }
     [BindProperty] public string? MapName { get; set; }
     [BindProperty] public string? MapNotes { get; set; }
@@ -39,13 +39,31 @@ public class ActivityModel(ILogger<ActivityModel> logger,
     public async Task OnGet()
     {
         SystemRoutes = await routeRepository.GetSystemRoutesAsync().ToListAsync();
+
+        _userAccount = await userAccountRepository.GetUserAccountAsync(User);
         if (ActivityId == null)
         {
             Date = (DateTime.TryParse(Date, out var dt) ? dt : DateTime.Today).ToString("yyyy-MM-dd");
+            if (RouteId != null)
+            {
+                logger.LogDebug("Getting user route {RouteId}", RouteId);
+                var userRoute = await routeRepository.GetRouteAsync(RouteId.Value);
+                if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != _userAccount.Id)
+                    return;
+
+                DistanceType =
+                    userRoute.RouteType == Models.Route.SystemRoute ? 1 :
+                    string.IsNullOrEmpty(userRoute.MapPoints) ? 2 :
+                    3;
+                DistanceManual = DistanceType == 2 ? decimal.Round(userService.ToUserDistanceUnits(userRoute.Distance, _userAccount), 4) : null;
+                MapName = userRoute.Name;
+                MapNotes = userRoute.Notes;
+                MapPoints = userRoute.MapPoints;
+                MapDistance = userRoute.Distance;
+            }
             return;
         }
 
-        _userAccount = await userAccountRepository.GetUserAccountAsync(User);
         var existingActivity = await runLogRepository.GetRunLogAsync(ActivityId.Value);
         if (existingActivity == null || existingActivity.UserAccountId != _userAccount.Id)
         {

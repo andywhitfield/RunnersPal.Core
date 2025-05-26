@@ -463,6 +463,15 @@ $().ready(function() {
         runLogMainForm.show();
         runLogDistanceSelector.hide();
         updateRunPace();
+    } else if (runLogRouteId.val() !== '' && runLogDistanceType.val() === '3') {
+        runLogDistanceSelected.val('@Model.MapName');
+        runLogDistanceSelected.show();
+        runLogDistanceSelectedEdit.show();
+        runLogDistanceSelectedRouteLink.attr('href', '/routepal/map?routeid='+runLogRouteId.val());
+        runLogDistanceSelectedRouteLink.show();
+        runLogDistanceSelection.hide();
+        runLogMainForm.show();
+        runLogDistanceSelector.hide();
     }
 });
 </script>
