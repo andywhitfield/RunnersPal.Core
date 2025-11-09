@@ -54,7 +54,7 @@ public class RunLogControllerTests
         var runLogEvents = await response.Content.ReadFromJsonAsync<RunLogEventApiModel[]>();
         Assert.IsNotNull(runLogEvents);
         var expectedRunEventList = expectedRunEvents.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        Assert.AreEqual(expectedRunEventList.Length, runLogEvents.Length);
+        Assert.HasCount(expectedRunEventList.Length, runLogEvents);
         foreach (var expectedRunEvent in expectedRunEventList)
             Assert.IsTrue(runLogEvents.Any(r => r.Date.ToString("yyyy-MM-dd") == expectedRunEvent));
     }

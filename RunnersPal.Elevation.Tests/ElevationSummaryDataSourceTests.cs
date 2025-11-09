@@ -36,7 +36,7 @@ public class ElevationSummaryDataSourceTests
         var latitude = 0d;
         var longitude = 0d;
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
-        var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude)));
         Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, "SRTM_SE_250m_1_0.tif")} not found. Is the summary file valid?", ex.Message);
     }
@@ -53,7 +53,7 @@ public class ElevationSummaryDataSourceTests
     public async Task Summary_for_valid_coords_throws_due_to_missing_file(double latitude, double longitude, string expectedMissingFile)
     {
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
-        var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude)));
         Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, expectedMissingFile)} not found. Is the summary file valid?", ex.Message);
     }
@@ -66,7 +66,7 @@ public class ElevationSummaryDataSourceTests
     public async Task Summary_for_max_min_coords_throws_due_to_missing_file(double latitude, double longitude, string expectedMissingFile)
     {
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
-        var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude)));
         Assert.AreEqual($"TIF file {Path.Combine(_elevationPath!, expectedMissingFile)} not found. Is the summary file valid?", ex.Message);
     }
@@ -79,7 +79,7 @@ public class ElevationSummaryDataSourceTests
     public async Task Summary_for_invalid_coords_throws(double latitude, double longitude)
     {
         ElevationSummaryDataSource dataSource = new(Mock.Of<ILogger<ElevationSummaryDataSource>>(), _configuration!);
-        var ex = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => dataSource.GetFilenameForPointAsync(new ElevationPoint(latitude, longitude)));
         Assert.AreEqual($"Could not get a file for the given point ({new ElevationPoint(latitude, longitude)}). Possibly invalid coordinates provided.", ex.Message);
     }

@@ -65,7 +65,7 @@ builder.Services
     {
         options.ServerName = "runners:pal";
         options.ServerDomain = builder.Configuration.GetValue<string>("FidoDomain");
-        options.Origins = [builder.Configuration.GetValue<string>("FidoOrigins")];
+        options.Origins = new HashSet<string>([builder.Configuration.GetValue<string>("FidoOrigins") ?? ""]);
     });
 
 var app = builder.Build();

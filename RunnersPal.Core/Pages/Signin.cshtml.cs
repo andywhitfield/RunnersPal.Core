@@ -29,23 +29,25 @@ public class SigninModel(ILogger<SigninModel> logger, IFido2 fido2,
         if ((user = await userAccountRepository.GetUserAccountByEmailAsync(Email)) != null)
         {
             logger.LogTrace("Found existing user account with email [{Email}], creating assertion options", Email);
-            options = fido2.GetAssertionOptions(
-                await userAccountRepository
+            options = fido2.GetAssertionOptions(new()
+            {
+                AllowedCredentials = await userAccountRepository
                     .GetUserAccountAuthenticationsAsync(user)
-                    .Select(uac => new PublicKeyCredentialDescriptor(uac.CredentialId))
+                    .Select(uac => new PublicKeyCredentialDescriptor(uac.CredentialId ?? []))
                     .ToArrayAsync(),
-                UserVerificationRequirement.Discouraged
-            ).ToJson();
+                UserVerification = UserVerificationRequirement.Discouraged
+            }).ToJson();
         }
         else
         {
             logger.LogTrace("Found no user account with email [{Email}], creating request new creds options", Email);
-            options = fido2.RequestNewCredential(
-                new Fido2User() { Id = Encoding.UTF8.GetBytes(Email), Name = Email, DisplayName = Email },
-                [],
-                AuthenticatorSelection.Default,
-                AttestationConveyancePreference.None
-            ).ToJson();
+            options = fido2.RequestNewCredential(new()
+            {
+                User = new Fido2User() { Id = Encoding.UTF8.GetBytes(Email), Name = Email, DisplayName = Email },
+                PubKeyCredParams = [],
+                AuthenticatorSelection = AuthenticatorSelection.Default,
+                AttestationPreference = AttestationConveyancePreference.None
+            }).ToJson();
         }
 
         logger.LogTrace("Created sign in options for: {Email}: {Options}", Email, options);

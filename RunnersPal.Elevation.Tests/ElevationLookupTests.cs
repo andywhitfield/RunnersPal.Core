@@ -2,6 +2,8 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Moq;
 
+[assembly: Parallelize]
+
 namespace RunnersPal.Elevation.Tests;
 
 [TestClass]
@@ -35,7 +37,7 @@ public class ElevationLookupTests
             new ElevationPoint(51, -0.2),
             new ElevationPoint(52, -0.2)
         ]).ToListAsync();
-        Assert.AreEqual(4, elevations.Count);
+        Assert.HasCount(4, elevations);
         Assert.AreEqual(136, elevations[0]);
         Assert.AreEqual(28, elevations[1]);
         Assert.AreEqual(85, elevations[2]);

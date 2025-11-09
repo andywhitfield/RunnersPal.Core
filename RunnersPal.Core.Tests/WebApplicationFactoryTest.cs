@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RunnersPal.Core.Repository;
 
+[assembly: Parallelize]
+
 namespace RunnersPal.Core.Tests;
 
 public class WebApplicationFactoryTest : WebApplicationFactory<Program>
