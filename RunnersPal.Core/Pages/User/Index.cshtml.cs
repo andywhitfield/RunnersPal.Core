@@ -77,11 +77,11 @@ public class IndexModel(
         var aggregated = await datesAndDistances
             .GroupBy(d => periodGrouping(d.Date))
             .OrderBy(g => g.Key)
-            .SelectAwait(async g => new
+            .Select(g => new
             {
                 Period = g.Key,
-                Distance = decimal.Round(userService.ToUserDistanceUnits(await g.SumAsync(x => x.Distance), userAccount), 2),
-                Pace = decimal.Round(await g.AverageAsync(x => Convert.ToDecimal(x.Pace.TotalSeconds / 60)), 2)
+                Distance = decimal.Round(userService.ToUserDistanceUnits(g.Sum(x => x.Distance), userAccount), 2),
+                Pace = decimal.Round(g.Average(x => Convert.ToDecimal(x.Pace.TotalSeconds / 60)), 2)
             })
             .ToListAsync();
 

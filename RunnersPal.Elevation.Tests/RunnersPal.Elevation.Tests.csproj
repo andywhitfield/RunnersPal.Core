@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.*" />
-    <PackageReference Include="System.Linq.Async" Version="6.0.*" />
   </ItemGroup>
 
   <ItemGroup>

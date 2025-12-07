@@ -13,6 +13,7 @@ public class ElevationSummaryDataSource(
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly RTree.RTree<string> _tree = new();
     private string? _path;
+    private readonly SemaphoreSlim _semaphoreSlim = new(1, 1);
 
     private string ElevationPath
     {
@@ -33,18 +34,26 @@ public class ElevationSummaryDataSource(
 
     private async Task<RTree.RTree<string>> GetTreeAsync()
     {
-        if (_tree.Count != 0)
+        await _semaphoreSlim.WaitAsync();
+        try
+        {
+            if (_tree.Count != 0)
+                return _tree;
+
+            var summaryFile = Path.Combine(ElevationPath, "summary.json");
+            await using var fileStream = new FileStream(summaryFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var summaries = await JsonSerializer.DeserializeAsync<List<SummaryItem>>(fileStream, _jsonSerializerOptions) ?? throw new InvalidOperationException($"Could not load summaries file [{summaryFile}]");
+            logger.LogDebug("Loaded {SummariesCount} summaries", summaries.Count);
+
+            foreach (var summary in summaries)
+                _tree.Add(new((float)summary.Coords[0], (float)summary.Coords[2], (float)summary.Coords[1], (float)summary.Coords[3], 0, 0), summary.File);
+
             return _tree;
-
-        var summaryFile = Path.Combine(ElevationPath, "summary.json");
-        await using var fileStream = new FileStream(summaryFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-        var summaries = await JsonSerializer.DeserializeAsync<List<SummaryItem>>(fileStream, _jsonSerializerOptions) ?? throw new InvalidOperationException($"Could not load summaries file [{summaryFile}]");
-        logger.LogDebug("Loaded {SummariesCount} summaries", summaries.Count);
-
-        foreach (var summary in summaries)
-            _tree.Add(new((float)summary.Coords[0], (float)summary.Coords[2], (float)summary.Coords[1], (float)summary.Coords[3], 0, 0), summary.File);
-
-        return _tree;
+        }
+        finally
+        {
+            _semaphoreSlim.Release();
+        }
     }
 
     public async Task<string> GetFilenameForPointAsync(ElevationPoint elevationPoint)
