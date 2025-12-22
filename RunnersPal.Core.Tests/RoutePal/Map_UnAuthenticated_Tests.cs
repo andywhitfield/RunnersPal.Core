@@ -27,7 +27,8 @@ public class Map_UnAuthenticated_Tests
     {
         using var client = _webApplicationFactory.CreateClient(false, false);
         using var response = await client.GetAsync("/routepal/map?routeid=1");
-        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.AreEqual(new Uri($"/signin?ReturnUrl={WebUtility.UrlEncode("/routepal/map?routeid=1")}", UriKind.Relative), response.Headers.Location);
     }
 
     [TestMethod]

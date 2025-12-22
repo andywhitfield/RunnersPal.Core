@@ -12,6 +12,7 @@ public class MapModel(ILogger<MapModel> logger,
     IRouteRepository routeRepository)
     : PageModel
 {
+    [BindProperty(SupportsGet = true)] public string? ShareLink { get; set; }
     [BindProperty(SupportsGet = true)] public int? RouteId { get; set; }
     [BindProperty(SupportsGet = true)] public bool? LoadUnsaved { get; set; }
     [BindProperty(SupportsGet = true)] public string? Unit { get; set; }
@@ -22,15 +23,51 @@ public class MapModel(ILogger<MapModel> logger,
     [BindProperty] public string? Delete { get; set; }
     public bool IsRouteDeleted { get; private set; }
     public bool IsLoggedIn => userService.IsLoggedIn;
+    public string ShareLinkUrl { get; private set; } = "";
 
     public async Task<IActionResult> OnGet()
     {
+        if (!string.IsNullOrEmpty(ShareLink))
+        {
+            if (RouteId != null)
+            {
+                logger.LogInformation("RouteId should not be used when ShareLink is provided");
+                return BadRequest();
+            }
+
+            var route = await routeRepository.FindRouteByShareLinkAsync(ShareLink);
+            if (route == null)
+            {
+                // TODO: should redirect to a "not found" page
+                logger.LogInformation("Route {ShareLink} cannot be found", ShareLink);
+                return BadRequest();
+            }
+
+            if (string.IsNullOrEmpty(route.MapPoints))
+            {
+                logger.LogInformation("Route {RouteId} is not a mapped route and should not be shared, cannot view this route", route.Id);
+                return BadRequest();
+            }
+
+            if (userService.IsLoggedIn && route.Creator == (await userAccountRepository.GetUserAccountAsync(User)).Id)
+            {
+                logger.LogInformation("Route {RouteId} is owned by the current user, redirecting to normal route view", route.Id);
+                return Redirect($"/routepal/map?routeid={route.Id}");
+            }
+
+            RouteName = route.Name;
+            Points = route.MapPoints ?? "";
+            Distance = route.Distance;
+            RouteNotes = route.Notes ?? "";
+            IsRouteDeleted = route.RouteType == Models.Route.DeletedRoute;
+        }
+
         if (RouteId != null)
         {
             if (!userService.IsLoggedIn)
             {
-                logger.LogInformation("No User authenticated, cannot load any route");
-                return BadRequest();
+                logger.LogInformation("No User authenticated, cannot load any route, redirecting to login page");
+                return LocalRedirect($"/signin?ReturnUrl={WebUtility.UrlEncode($"/routepal/map?routeid={RouteId}")}");
             }
 
             var userAccount = await userAccountRepository.GetUserAccountAsync(User);
@@ -41,11 +78,18 @@ public class MapModel(ILogger<MapModel> logger,
                 return BadRequest();
             }
 
+            if (string.IsNullOrEmpty(route.MapPoints))
+            {
+                logger.LogWarning("Route {RouteId} is not a mapped route, cannot view this route", RouteId);
+                return BadRequest();
+            }
+
             RouteName = route.Name;
             Points = route.MapPoints ?? "";
             Distance = route.Distance;
             RouteNotes = route.Notes ?? "";
             IsRouteDeleted = route.RouteType == Models.Route.DeletedRoute;
+            ShareLinkUrl = string.IsNullOrEmpty(route.ShareLink) ? "" : Url.PageLink(pageName: "/routepal/map", values: new { route.ShareLink }, protocol: Request.Scheme) ?? "";
         }
 
         return Page();
@@ -56,8 +100,9 @@ public class MapModel(ILogger<MapModel> logger,
         if (!userService.IsLoggedIn)
         {
             logger.LogWarning("No User authenticated, redirecting to login page");
-            return Redirect($"/signin?ReturnUrl={WebUtility.UrlEncode("/routepal/map?loadunsaved=true")}");
+            return LocalRedirect($"/signin?ReturnUrl={WebUtility.UrlEncode("/routepal/map?loadunsaved=true")}");
         }
+
         if (string.IsNullOrWhiteSpace(RouteName) || string.IsNullOrWhiteSpace(Points))
         {
             logger.LogInformation("Route is missing a name or points, cannot save");

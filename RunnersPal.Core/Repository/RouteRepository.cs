@@ -9,6 +9,9 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
     public ValueTask<Models.Route?> GetRouteAsync(int routeId)
         => context.Route.FindAsync(routeId);
 
+    public Task<Models.Route?> FindRouteByShareLinkAsync(string shareLink)
+        => context.Route.FirstOrDefaultAsync(r => r.ShareLink == shareLink);
+
     public async Task<Models.Route> CreateNewRouteAsync(UserAccount user, string name, string points, decimal distance, string? notes, int? replacesRouteId)
     {
         logger.LogDebug("Creating new route [{Name}] for [{User}]", name, user.Id);
@@ -62,4 +65,17 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
             (string.IsNullOrEmpty(find) || EF.Functions.Like(r.Name, $"%{find.Trim()}%") || (r.Notes != null && EF.Functions.Like(r.Notes, $"%{find.Trim()}%")))).ToListAsync();
 
     public IAsyncEnumerable<Models.Route> GetSystemRoutesAsync() => context.Route.Where(r => r.RouteType == Models.Route.SystemRoute).OrderBy(r => r.Id).AsAsyncEnumerable();
+
+    public async Task<string> GenerateShareLinkAsync(Models.Route route)
+    {
+        route.ShareLink = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace('+', '-').Replace('/', '_').Replace("=", "");
+        await context.SaveChangesAsync();
+        return route.ShareLink;
+    }
+
+    public Task RemoveShareLinkAsync(Models.Route route)
+    {
+        route.ShareLink = null;
+        return context.SaveChangesAsync();
+    }
 }

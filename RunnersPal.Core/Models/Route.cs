@@ -25,4 +25,5 @@ public class Route
     public string? MapPoints { get; set; }
     public int? ReplacesRouteId { get; set; }
     public Route? ReplacesRoute { get; set; }
+    public string? ShareLink { get; set; }
 }
