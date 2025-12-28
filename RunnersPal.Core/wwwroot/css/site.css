@@ -244,6 +244,10 @@ li.rp-list-item:hover {
     line-height: 18px;
 }
 
+.rp-share-shared {
+    color: #d866eb;
+}
+
 #map {
     width: 100%;
     min-height: 300px;

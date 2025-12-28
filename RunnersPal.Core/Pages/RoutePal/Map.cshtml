@@ -11,6 +11,7 @@
     <input type="hidden" name="points" value="@Model.Points" />
     <input type="hidden" name="distance" value="@Model.Distance" />
     <input type="hidden" name="routeid" value="@Model.RouteId" />
+    <input type="hidden" name="share-link-url" value="@Model.ShareLinkUrl" />
     <h1 class="rp-map-head">Route mapping</h1>
     <div>
     @if (!Model.IsRouteDeleted && Model.ShareLink == null) {
@@ -31,9 +32,10 @@
     }
     <button type="button" name="elevation" title="Show/Hide map elevation">&Delta;</button>
     @if (Model.ShareLink == null) {
-    <button type="button" name="show-share" title="Share route" class="rp-share">&mapstoup;</button>
+    <button type="button" name="show-share" title="Share route" class="rp-share @if (!string.IsNullOrEmpty(Model.ShareLinkUrl)) {<text>rp-share-shared</text>}">&mapstoup;</button>
     <button type="button" name="share" title="Share route">Share</button>
-    <span>Share link: <input type="text" name="share-link" value="@Model.ShareLinkUrl" /> <button type="button" name="unshare" title="Remove the share link">Un-share</button></span>
+    <span class="rp-share-link">Share link: <input type="text" name="share-link" value="@Model.ShareLinkUrl" /></span>
+    <button type="button" name="unshare" title="Remove the share link">Un-share</button>
     }
     </div>
 
@@ -55,7 +57,7 @@
 </article>
 
 @section Head {
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/css/highcharts.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highcharts@12.4.0/css/highcharts.min.css">
 <style type="text/css">
     :root {
         --highcharts-color-0: #87eb66;
@@ -63,7 +65,7 @@
 </style>
 }
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/highcharts@12.1.2/highcharts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@12.4.0/highcharts.min.js"></script>
 <script type="text/javascript">
     const map = L.map('map');
 
@@ -71,6 +73,12 @@
         const routeNameEl = $('form[name="rp-map"] input[name="routename"]');
         const mapPointsEl = $('form[name="rp-map"] input[name="points"]');
         const elevationBtnEl = $('form[name="rp-map"] button[name="elevation"]');
+        const showShareBtnEl = $('form[name="rp-map"] button[name="show-share"]');
+        const shareBtnEl = $('form[name="rp-map"] button[name="share"]');
+        const shareLinkEl = $('form[name="rp-map"] span[class="rp-share-link"]');
+        const shareLinkBtnEl = $('form[name="rp-map"] input[name="share-link"]');
+        const unshareBtnEl = $('form[name="rp-map"] button[name="unshare"]');
+        const shareLinkUrlEl = $('form[name="rp-map"] input[name="share-link-url"]');
 
         const elevationEl = $('#elevation');
         elevationEl.hide();
@@ -203,24 +211,57 @@
             }
         });
 
-        $('form[name="rp-map"] button[name="share"]').click(function() {
+        let showShareOptions = false;
+        shareBtnEl.hide();
+        shareLinkEl.hide();
+        unshareBtnEl.hide();
+        showShareBtnEl.click(function() {
+            shareLinkEl.hide();
+            unshareBtnEl.hide();
+            if (showShareOptions) {
+                showShareOptions = false;
+                shareBtnEl.hide();
+            } else {
+                showShareOptions = true;
+                if (shareLinkUrlEl.val().length > 0) {
+                    unshareBtnEl.show();
+                    shareLinkEl.show();
+                    shareLinkBtnEl.val(shareLinkUrlEl.val());
+                    shareLinkBtnEl.focus();
+                    shareLinkBtnEl.select();
+                } else {
+                    shareBtnEl.show();
+                }
+            }
+        });
+
+        shareBtnEl.click(function() {
             $.post('/api/route/share/@Model.RouteId')
             .done(function(data) {
                 console.log('share link created: ' + data.shareLink);
-                const shareLinkEl = $('form[name="rp-map"] input[name="share-link"]');
-                shareLinkEl.val(data.shareLink);
-                shareLinkEl.focus();
-                shareLinkEl.select();
+                shareLinkUrlEl.val(data.shareLink);
+                showShareBtnEl.addClass('rp-share-shared');
+                shareBtnEl.hide();
+                shareLinkEl.show();
+                unshareBtnEl.show();
+                shareLinkBtnEl.val(data.shareLink);
+                shareLinkBtnEl.focus();
+                shareLinkBtnEl.select();
             })
             .fail(function() {
                 console.warn('failed creating share link');
             });
         });
 
-        $('form[name="rp-map"] button[name="unshare"]').click(function() {
+        unshareBtnEl.click(function() {
             $.ajax({url: '/api/route/share/@Model.RouteId', type: 'DELETE'})
             .done(function() {
                 console.log('share link removed');
+                shareLinkUrlEl.val('');
+                showShareBtnEl.removeClass('rp-share-shared');
+                shareBtnEl.show();
+                shareLinkEl.hide();
+                unshareBtnEl.hide();
             })
             .fail(function() {
                 console.warn('failed removing share link');
