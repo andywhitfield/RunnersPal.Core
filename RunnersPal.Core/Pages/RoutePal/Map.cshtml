@@ -83,6 +83,7 @@
         const elevationEl = $('#elevation');
         elevationEl.hide();
         elevationBtnEl.prop('disabled', true);
+        showShareBtnEl.prop('disabled', true);
         elevationBtnEl.click(function() {
             if (elevationEl.is(':hidden')) {
                 $('#rp-elevation-chart').empty();
@@ -189,6 +190,7 @@
             const noMapPoints = distanceFormEl.val() === '' || distanceFormEl.val() === '0';
             const noRouteName = !routeNameEl.val() || /^\s*$/.test(routeNameEl.val());
             elevationBtnEl.prop('disabled', noMapPoints);
+            showShareBtnEl.prop('disabled', noMapPoints);
             const isSaveDisabled = noRouteName || noMapPoints;
             saveBtnEl.prop('disabled', isSaveDisabled);
 
