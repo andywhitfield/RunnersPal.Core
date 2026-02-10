@@ -2,6 +2,7 @@ using System.Net.Mime;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RunnersPal.Core.Controllers.ApiModels;
+using RunnersPal.Core.Models;
 using RunnersPal.Core.Repository;
 using RunnersPal.Core.Services;
 
@@ -29,6 +30,27 @@ public class RouteController(ILogger<RouteController> logger,
         return new(
             new Pagination(routes.Page, routes.PageCount),
             routes.Items.Select(r => new RouteApiModel(r.Id, r.Name, userService.ToUserDistance(r.Distance, userAccount), lastRunsForRoutes.TryGetValue(r.Id, out var runLog) ? DateOnly.FromDateTime(runLog.Date).ToString("D") : "")));
+    }
+
+    [AllowAnonymous, HttpPost("share/new")] // as this is anonymous, it might be worth thinking about rate limiting / restrict the number of points / etc.
+    public async Task<ShareApiModel> ShareNew([FromForm] string points, [FromForm] string name, [FromForm] decimal distance, [FromForm] string? notes = null)
+    {
+        logger.LogDebug("Sharing a new un-saved route with [{Points}] points, name = {RouteName}, notes = {Notes}", points, name, notes);
+        UserAccount userAccount;
+        if (User?.Identity?.IsAuthenticated ?? false)
+        {
+            logger.LogDebug("User is authenticated, sharing an un-saved route");
+            userAccount = await userAccountRepository.GetUserAccountAsync(User);
+        }
+        else
+        {
+            logger.LogDebug("User is not authenticated, sharing an un-saved route for an anonymous user");
+            userAccount = await userAccountRepository.GetAdminUserAccountAsync();
+        }
+        
+        var shareLink = await routeRepository.CreateUnsavedRouteShareLinkAsync(userAccount, name, points, distance, notes);
+        var shareUri = Url.PageLink(pageName: "/routepal/map", values: new { shareLink }, protocol: Request.Scheme) ?? throw new InvalidOperationException("Could not generate share link");
+        return new(shareUri);
     }
 
     [HttpPost("share/{routeId}")]

@@ -9,6 +9,7 @@ public class Route
     public const char PrivateRoute = 'M';
     public const char SystemRoute = 'Z';
     public const char DeletedRoute = 'D';
+    public const char UnsavedSharedRoute = 'S';
 
     public int Id { get; set; }
     [Required]

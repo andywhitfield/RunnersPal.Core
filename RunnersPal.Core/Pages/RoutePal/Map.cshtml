@@ -190,9 +190,9 @@
             const noMapPoints = distanceFormEl.val() === '' || distanceFormEl.val() === '0';
             const noRouteName = !routeNameEl.val() || /^\s*$/.test(routeNameEl.val());
             elevationBtnEl.prop('disabled', noMapPoints);
-            showShareBtnEl.prop('disabled', noMapPoints);
             const isSaveDisabled = noRouteName || noMapPoints;
             saveBtnEl.prop('disabled', isSaveDisabled);
+            showShareBtnEl.prop('disabled', isSaveDisabled);
 
             if (!isSaveDisabled)
                 $('form[name="rp-map"] button[name="loadunsaved"]').hide();
@@ -238,7 +238,15 @@
         });
 
         shareBtnEl.click(function() {
+            @if (Model.RouteId == null) {
+            <text>
+            $.post('/api/route/share/new', { points: mapPointsEl.val(), name: routeNameEl.val(), distance: distanceFormEl.val(), notes: $('form[name="rp-map"] textarea[name="routenotes"]').val() })
+            </text>
+            } else {
+            <text>
             $.post('/api/route/share/@Model.RouteId')
+            </text>
+            }
             .done(function(data) {
                 console.log('share link created: ' + data.shareLink);
                 shareLinkUrlEl.val(data.shareLink);

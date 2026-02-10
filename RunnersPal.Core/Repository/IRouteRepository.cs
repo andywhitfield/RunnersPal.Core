@@ -13,4 +13,5 @@ public interface IRouteRepository
     IAsyncEnumerable<Models.Route> GetSystemRoutesAsync();
     Task<string> GenerateShareLinkAsync(Models.Route route);
     Task RemoveShareLinkAsync(Models.Route route);
+    Task<string> CreateUnsavedRouteShareLinkAsync(UserAccount user, string name, string points, decimal distance, string? notes);
 }

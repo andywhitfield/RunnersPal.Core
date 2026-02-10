@@ -62,4 +62,7 @@ public class UserAccountRepository(ILogger<UserAccountRepository> logger, Sqlite
         userAccount.LastActivityDate = DateTime.UtcNow;
         return context.SaveChangesAsync();
     }
+
+    public Task<UserAccount> GetAdminUserAccountAsync()
+        => context.UserAccount.FirstAsync(ua => ua.DisplayName == "Admin" && ua.UserType == 'A');
 }

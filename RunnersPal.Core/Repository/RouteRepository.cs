@@ -78,4 +78,20 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
         route.ShareLink = null;
         return context.SaveChangesAsync();
     }
+
+    public async Task<string> CreateUnsavedRouteShareLinkAsync(UserAccount user, string name, string points, decimal distance, string? notes)
+    {
+        logger.LogDebug("Creating new share link for an unsaved route [{Name}] for [{User}]", name, user.Id);
+        var newRoute = context.Route.Add(new()
+        {
+            CreatorAccount = user,
+            Name = name,
+            MapPoints = points,
+            Distance = distance,
+            DistanceUnits = (int)DistanceUnits.Meters,
+            Notes = notes,
+            RouteType = Models.Route.UnsavedSharedRoute
+        });
+        return await GenerateShareLinkAsync(newRoute.Entity);
+    }
 }
