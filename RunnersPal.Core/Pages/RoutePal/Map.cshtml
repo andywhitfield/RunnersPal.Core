@@ -31,7 +31,7 @@
     <span class="rp-route-deleted">This route has been deleted</span>
     }
     <button type="button" name="elevation" title="Show/Hide map elevation">&Delta;</button>
-    @if (Model.ShareLink == null) {
+    @if (!Model.IsRouteDeleted && Model.ShareLink == null) {
     <button type="button" name="show-share" title="Share route" class="rp-share @if (!string.IsNullOrEmpty(Model.ShareLinkUrl)) {<text>rp-share-shared</text>}">&mapstoup;</button>
     <button type="button" name="share" title="Share route">Share</button>
     <span class="rp-share-link">Share link: <input type="text" name="share-link" value="@Model.ShareLinkUrl" /></span>

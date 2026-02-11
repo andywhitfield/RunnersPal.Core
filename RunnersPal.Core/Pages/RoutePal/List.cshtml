@@ -47,7 +47,12 @@
                 <div>
                     <a title="View the mapped route" href="/routepal/map?routeid=@route.Id">@route.Name</a>
                 </div>
-                <div>@(await Model.RouteDistanceAsync(route))</div>
+                <div>
+                    <span>@(await Model.RouteDistanceAsync(route))</span>
+                    @if (!string.IsNullOrEmpty(route.ShareLink)) {
+                    <span class="rp-share rp-share-shared" title="This route has been shared">&mapstoup;</span>
+                    }
+                </div>
                 @{ Models.RunLog? lastRun = null; }
                 @if ((lastRun = Model.LastRun(route)) != null) {
                 <div>Last run on <a title="View this run activity" href="/runlog/activity?activityid=@lastRun.Id">@lastRun.Date.ToString("D")</a></div>

@@ -49,7 +49,7 @@ public class MapModel(ILogger<MapModel> logger,
                 return BadRequest();
             }
 
-            if (userService.IsLoggedIn && route.Creator == (await userAccountRepository.GetUserAccountAsync(User)).Id)
+            if (userService.IsLoggedIn && route.RouteType == Models.Route.PrivateRoute && route.Creator == (await userAccountRepository.GetUserAccountAsync(User)).Id)
             {
                 logger.LogInformation("Route {RouteId} is owned by the current user, redirecting to normal route view", route.Id);
                 return Redirect($"/routepal/map?routeid={route.Id}");
