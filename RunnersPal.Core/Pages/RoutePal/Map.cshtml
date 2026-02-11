@@ -226,7 +226,11 @@
             } else {
                 showShareOptions = true;
                 if (shareLinkUrlEl.val().length > 0) {
+                    @if (Model.RouteId != null) {
+                    <text>
                     unshareBtnEl.show();
+                    </text>
+                    }
                     shareLinkEl.show();
                     shareLinkBtnEl.val(shareLinkUrlEl.val());
                     shareLinkBtnEl.focus();
@@ -253,7 +257,11 @@
                 showShareBtnEl.addClass('rp-share-shared');
                 shareBtnEl.hide();
                 shareLinkEl.show();
+                @if (Model.RouteId != null) {
+                <text>
                 unshareBtnEl.show();
+                </text>
+                }
                 shareLinkBtnEl.val(data.shareLink);
                 shareLinkBtnEl.focus();
                 shareLinkBtnEl.select();
