@@ -5,7 +5,7 @@ namespace RunnersPal.Elevation.Cli;
 
 public class SrtmExtractor(string defaultElevationDataDirectory)
 {
-    public void Extract()
+    public async Task ExtractAsync()
     {
         var defaultElevationDownloadDirectory = Path.Combine(defaultElevationDataDirectory, "download");
         Console.Write($"Directory containing download rar files [{defaultElevationDownloadDirectory}]: ");
@@ -34,20 +34,20 @@ public class SrtmExtractor(string defaultElevationDataDirectory)
         foreach (var rarFile in rarFiles)
         {
             Console.WriteLine($"Extracting rar file: {Path.GetFileName(rarFile)}");
-            ExtractRar(rarFile, downloadDirectory);
+            await ExtractRarAsync(rarFile, downloadDirectory);
         }
 
         Console.WriteLine("Successfully extracted rar files");
     }
 
-    static void ExtractRar(string rarFile, string destinationDirectory)
+    static async Task ExtractRarAsync(string rarFile, string destinationDirectory)
     {
-        using var archive = RarArchive.Open(rarFile);
-        foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory && (entry.Key?.EndsWith(".tif") ?? false)))
+        await using var archive = RarArchive.OpenAsyncArchive(rarFile, new() { ExtractFullPath = true, Overwrite = true });
+        await foreach (var entry in archive.EntriesAsync.Where(entry => !entry.IsDirectory && (entry.Key?.EndsWith(".tif") ?? false)))
         {
             var extractedFile = Path.Combine(destinationDirectory, entry.Key!);
             Console.WriteLine($"Extracting rar entry [{entry.Key}] to [{extractedFile}]");
-            entry.WriteToFile(extractedFile, new() { ExtractFullPath = true, Overwrite = true });
+            await entry.WriteToFileAsync(extractedFile);
         }
     }
 }

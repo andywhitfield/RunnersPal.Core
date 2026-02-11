@@ -44,7 +44,7 @@ x. Exit
             await srtmDownload.DownloadAsync();
             break;
         case "2":
-            srtmExtractor.Extract();
+            await srtmExtractor.ExtractAsync();
             break;
         case "3":
             srtmTiler.CreateTiles();
