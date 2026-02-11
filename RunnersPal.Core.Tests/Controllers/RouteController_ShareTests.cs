@@ -111,6 +111,60 @@ public class RouteController_ShareTests
         Assert.AreEqual("test-share-link", updatedRoute.ShareLink);
     }
 
+    [TestMethod]
+    public async Task Can_share_unsaved_route_when_logged_in()
+    {
+        using var client = _webApplicationFactory.CreateClient(true, false);
+        using var response = await client.PostAsync("/api/route/share/new", new FormUrlEncodedContent(new Dictionary<string, string?>
+        {
+            ["points"] = "[]",
+            ["name"] = "unsaved route name",
+            ["distance"] = "101"
+        }));
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var shared = await response.Content.ReadFromJsonAsync<ShareApiModel>();
+        Assert.IsNotNull(shared);
+        var shareUrlPrefix = "http://localhost/RoutePal/Map?shareLink=";
+        Assert.StartsWith(shareUrlPrefix, shared.ShareLink);
+
+        await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
+        await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
+        var sharedRoute = await context.Route.SingleAsync(r => r.Name == "unsaved route name");
+        Assert.IsFalse(string.IsNullOrEmpty(sharedRoute.ShareLink));
+        Assert.AreEqual(shared.ShareLink[shareUrlPrefix.Length..], sharedRoute.ShareLink);
+        Assert.AreEqual(Route.UnsavedSharedRoute, sharedRoute.RouteType);
+        Assert.AreEqual(101, sharedRoute.Distance);
+        var testUser = await context.UserAccount.SingleAsync(ua => ua.EmailAddress == TestStubAuthHandler.TestUserEmail);
+        Assert.AreEqual(testUser.Id, sharedRoute.Creator);
+    }
+
+    [TestMethod]
+    public async Task Can_share_unsaved_route_when_not_logged_in()
+    {
+        using var client = _webApplicationFactory.CreateClient(false, false);
+        using var response = await client.PostAsync("/api/route/share/new", new FormUrlEncodedContent(new Dictionary<string, string?>
+        {
+            ["points"] = "[]",
+            ["name"] = "unsaved route name for anon user",
+            ["distance"] = "102"
+        }));
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        var shared = await response.Content.ReadFromJsonAsync<ShareApiModel>();
+        Assert.IsNotNull(shared);
+        var shareUrlPrefix = "http://localhost/RoutePal/Map?shareLink=";
+        Assert.StartsWith(shareUrlPrefix, shared.ShareLink);
+
+        await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
+        await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
+        var sharedRoute = await context.Route.SingleAsync(r => r.Name == "unsaved route name for anon user");
+        Assert.IsFalse(string.IsNullOrEmpty(sharedRoute.ShareLink));
+        Assert.AreEqual(shared.ShareLink[shareUrlPrefix.Length..], sharedRoute.ShareLink);
+        Assert.AreEqual(Route.UnsavedSharedRoute, sharedRoute.RouteType);
+        Assert.AreEqual(102, sharedRoute.Distance);
+        var adminUser = await context.UserAccount.SingleAsync(ua => ua.UserType == 'A');
+        Assert.AreEqual(adminUser.Id, sharedRoute.Creator);
+    }
+
     private async Task<Route> CreateRouteAsync(string name, decimal distance, bool isMappedRoute, string? shareLink = null, char routeType = Route.PrivateRoute)
     {
         await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
