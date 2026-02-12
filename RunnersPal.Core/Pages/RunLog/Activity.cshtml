@@ -95,6 +95,8 @@
         </div>
         <div id="tab-saved-routes">
             <input type="text" name="findroute" /> <button name="rp-route-find" type="button">Find...</button>
+            <span>Sort by: <button name="rp-route-sort" type="button">distance</button>
+            </span>
             <div class="rp-saved-routes">
             <span>You have no saved routes. Log a run by mapping a new route or enter a manual distance.</span>
             <div class="pagination"></div>
@@ -273,6 +275,13 @@ $().ready(function() {
             return false;
         }
     });
+    const runLogRouteSort = $('form[name="rp-runlog"] button[name="rp-route-sort"]');
+    runLogRouteSort.click(function() {
+        const sortBy = runLogRouteSort.attr('data-sort');
+        runLogRouteSort.attr('data-sort', sortBy === 'distance' ? 'lastrun' : 'distance');
+        runLogRouteSort.text(sortBy === 'distance' ? 'distance' : 'last run');
+        loadRunLogUserRoutes(1);
+    });
     function onSelectRunRoute() {
         runLogDistanceType.val($(this).attr('data-routetype'));
         runLogRouteId.val($(this).attr('data-routeid'));
@@ -328,7 +337,8 @@ $().ready(function() {
         console.log('getting page '+pageNumber+' of user routes with find filter ['+runLogUserRoutesFind.val()+']');
         $.getJSON('/api/route/list', {
             pageNumber: pageNumber,
-            find: runLogUserRoutesFind.val()
+            find: runLogUserRoutesFind.val(),
+            sort: runLogRouteSort.attr('data-sort')
         })
         .done(onRunLogUserRoutesLoaded)
         .fail(function() {
