@@ -17,6 +17,7 @@ public class ListModel(IUserAccountRepository userAccountRepository,
     private UserAccount? _userAccount;
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
     [BindProperty(SupportsGet = true)] public string? Find { get; set; }
+    [BindProperty(SupportsGet = true)] public string? Sort { get; set; }
     public IEnumerable<Models.Route> Routes { get; private set; } = [];
     public Pagination Pagination { get; private set; } = Pagination.Empty;
 
@@ -24,7 +25,7 @@ public class ListModel(IUserAccountRepository userAccountRepository,
     {
         _userAccount = await userAccountRepository.GetUserAccountAsync(User);
         Find = string.IsNullOrEmpty(Find) ? null : Find.Trim();
-        var (userRoutes, lastRunsForRoutes) = await userRouteService.GetUserRoutesAsync(_userAccount, Find);
+        var (userRoutes, lastRunsForRoutes) = await userRouteService.GetUserRoutesAsync(_userAccount, Find, Sort);
         _lastRunsForRoutes = lastRunsForRoutes;
         var routes = Pagination.Paginate(userRoutes, PageNumber);
         Routes = routes.Items;
