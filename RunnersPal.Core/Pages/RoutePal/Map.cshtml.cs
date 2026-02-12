@@ -38,9 +38,8 @@ public class MapModel(ILogger<MapModel> logger,
             var route = await routeRepository.FindRouteByShareLinkAsync(ShareLink);
             if (route == null)
             {
-                // TODO: should redirect to a "not found" page
                 logger.LogInformation("Route {ShareLink} cannot be found", ShareLink);
-                return BadRequest();
+                return Redirect($"/routepal/mapnotfound?sharelink={ShareLink}");
             }
 
             if (string.IsNullOrEmpty(route.MapPoints))

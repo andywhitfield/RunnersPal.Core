@@ -80,6 +80,16 @@ public class Map_Share_Tests
         }
     }
 
+    [TestMethod]
+    public async Task Given_a_share_link_which_does_not_exist_should_redirect_to_map_notfound_page()
+    {
+        var route = await CreateTestRouteAsync();
+        using var client = _webApplicationFactory.CreateClient(true, allowAutoRedirect: false);
+        using var response = await client.GetAsync("/routepal/map?sharelink=doesnotexist");
+        Assert.AreEqual(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.AreEqual("/routepal/mapnotfound?sharelink=doesnotexist", response.Headers.Location?.ToString());
+    }
+
     [TestCleanup]
     public void Cleanup() => _webApplicationFactory.Dispose();
 
