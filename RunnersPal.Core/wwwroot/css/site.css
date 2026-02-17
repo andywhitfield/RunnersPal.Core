@@ -353,6 +353,15 @@ form[name="rp-runlog"] textarea {
     height: 60px;
 }
 
+div.rp-map-name label,
+div.rp-map-notes label {
+    width: 65px;
+}
+
+#rp-map-name {
+    width: 298px;
+}
+
 #rp-distance {
     display: inline-block;
     width: 100%;
@@ -479,4 +488,9 @@ img.rp-calc {
         margin: 2px;
         border: 1px solid #666666;
     }
+}
+
+.rp-map-menu-offset {
+    top: 58px;
+    right: 20px;
 }

@@ -114,17 +114,18 @@
         <div id="tab-map-new-route">
             <input type="hidden" name="rp-map-points" value="" />
             <input type="hidden" name="rp-map-distance" value="" />
+            <div class="map-menu rp-map-menu-offset">
             <div class="rp-map-name">
                 <label for="rp-map-name">Name:</label>
                 <input type="text" id="rp-map-name" name="rp-map-name" class="rp-map-name" />
-                Distance: <span class="rp-map-distance">0</span>
             </div>
-            <div>
+            <div class="rp-map-notes">
                 <label for="rp-map-notes">Notes:<br/><small>(optional)</small></label>
                 <textarea id="rp-map-notes" name="rp-map-notes" class="rp-map-notes" wrap="off"></textarea>
             </div>
-
-            <div id="map"></div>
+            <div>
+                Distance: <span class="rp-map-distance">0</span>
+            </div>
             <div>
             <button name="rp-distance-select-map-ok" type="button">OK</button>
             <button name="rp-distance-select-cancel" type="button">Cancel</button>
@@ -132,6 +133,8 @@
             <button type="button" name="undo">Undo</button>
             <button type="button" name="clear">Clear</button>
             </div>
+            </div>
+            <div id="map"></div>
         </div>
         <div id="tab-manual-distance">
             <label for="rp-distance-select-manual-value">Manual distance:</label>
