@@ -209,6 +209,14 @@ li.rp-list-item:hover {
     border-color: #87eb66;
 }
 
+div.rp-map-distance>span {
+    padding-left: 12px;
+}
+
+div.rp-map-distance, div.rp-map-distance>span {
+    font-size: small;
+}
+
 .pagination {
     display: inline-block;
 }
