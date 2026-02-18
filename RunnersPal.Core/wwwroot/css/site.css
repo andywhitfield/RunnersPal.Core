@@ -407,7 +407,8 @@ form[name="rp-map"] input[type="text"] {
 }
 
 .rp-pace,
-.rp-pace span {
+.rp-pace span,
+.rp-pace-manual {
     font-size: small;
     padding-bottom: 4px;
 }
