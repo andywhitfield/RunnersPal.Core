@@ -182,19 +182,27 @@ public class CalculatorControllerTests
     }
 
     [TestMethod]
-    [DataRow(null, null, null, null, null, false, "")]
-    [DataRow("26:20", 1, null, "5 Kilometers", null, true, "8:28 min/mile")]
-    [DataRow("26:20", 1, null, null, null, false, "")]
-    [DataRow("26:20", 2, 4.5d /* miles */, null, null, true, "5:51 min/mile")]
-    [DataRow("26:20", 2, null, null, null, false, "")]
-    [DataRow("26:20", 2, 0d, null, null, false, "")]
-    [DataRow("26:20", 3, null, "route 1", null, true, "1.9miles @ 14:07 min/mile")]
-    [DataRow("26:20", 3, null, "other user route 1", null, false, "")]
-    [DataRow("26:20", 3, null, "unknown route", null, false, "")]
-    [DataRow("26:20", 4, null, null, 6200d, true, "3.9miles @ 6:50 min/mile")]
-    [DataRow("26:20", 4, null, null, 0d, false, "")]
+    [DataRow(null, null, null, null, null, null, false, "")]
+    [DataRow("26:20", 1, null, "5 Kilometers", null, null, true, "8:28 min/mile")]
+    [DataRow("26:20", 1, null, "5 Kilometers", null, true, true, "8:28 min/mile")]
+    [DataRow("26:20", 1, null, "5 Kilometers", null, false, true, "8:28 min/mile")]
+    [DataRow("26:20", 1, null, null, null, null, false, "")]
+    [DataRow("26:20", 2, 4.5d /* miles */, null, null, null, true, "5:51 min/mile")]
+    [DataRow("26:20", 2, 4.5d /* miles */, null, null, true, true, "5:51 min/mile")]
+    [DataRow("26:20", 2, 4.5d /* miles */, null, null, false, true, "5:51 min/mile")]
+    [DataRow("26:20", 2, null, null, null, null, false, "")]
+    [DataRow("26:20", 2, 0d, null, null, null, false, "")]
+    [DataRow("26:20", 3, null, "route 1", null, null, true, "1.9miles @ 14:07 min/mile")]
+    [DataRow("26:20", 3, null, "route 1", null, true, true, "1.9miles @ 14:07 min/mile")]
+    [DataRow("26:20", 3, null, "route 1", null, false, true, "14:07 min/mile")]
+    [DataRow("26:20", 3, null, "other user route 1", null, null, false, "")]
+    [DataRow("26:20", 3, null, "unknown route", null, null, false, "")]
+    [DataRow("26:20", 4, null, null, 6200d, null, true, "3.9miles @ 6:50 min/mile")]
+    [DataRow("26:20", 4, null, null, 6200d, true, true, "3.9miles @ 6:50 min/mile")]
+    [DataRow("26:20", 4, null, null, 6200d, false, true, "6:50 min/mile")]
+    [DataRow("26:20", 4, null, null, 0d, null, false, "")]
     public async Task Calculate_pace(string? timeTaken, int? distanceType, double? distanceManual, string? routeName, double? mapDistance,
-        bool expectOk, string expectedPace)
+        bool? includeDistance, bool expectOk, string expectedPace)
     {
         await using var serviceScope = _webApplicationFactory.Services.CreateAsyncScope();
         await using var context = serviceScope.ServiceProvider.GetRequiredService<SqliteDataContext>();
@@ -202,11 +210,14 @@ public class CalculatorControllerTests
         var routeId = context.Route.FirstOrDefault(r => r.Name == routeName)?.Id;
 
         using var client = _webApplicationFactory.CreateClient(true);
-        using var response = await client.GetAsync(QueryHelpers.AddQueryString("/api/calculator/pace", new Dictionary<string, string?>()
+        Dictionary<string, string?> apiParams = new()
         {
             { "timeTaken", timeTaken }, { "distanceType", distanceType.ToString() }, { "distanceManual", distanceManual.ToString() },
             { "routeId", routeId.ToString() }, { "mapDistance", mapDistance.ToString() }
-        }));
+        };
+        if (includeDistance.HasValue)
+            apiParams.Add("includeDistance", includeDistance.Value.ToString());
+        using var response = await client.GetAsync(QueryHelpers.AddQueryString("/api/calculator/pace", apiParams));
         if (!expectOk)
         {
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
