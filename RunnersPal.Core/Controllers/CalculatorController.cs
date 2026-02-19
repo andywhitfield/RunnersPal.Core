@@ -117,7 +117,7 @@ public class CalculatorController(
     [Authorize]
     [HttpGet("pace")]
     public async Task<ActionResult<PaceApiModel>> Pace([FromQuery] string? timeTaken, [FromQuery] int? distanceType,
-        decimal? distanceManual, int? routeId, decimal? mapDistance)
+        decimal? distanceManual, int? routeId, decimal? mapDistance, bool? includeDistance)
     {
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
         decimal? routeDistanceInMeters = null;
@@ -160,7 +160,7 @@ public class CalculatorController(
                 var userRoute = await routeRepository.GetRouteAsync(routeId.Value);
                 if (userRoute == null || userRoute.RouteType != Models.Route.PrivateRoute || userRoute.Creator != userAccount.Id)
                 {
-                    logger.LogWarning("Getting pace for a user route, but route id passed is not a user route: {RouteId}", routeId);
+                    logger.LogWarning("Getting pace for a user route, but route id passed is not a user route (possibly deleted): {RouteId}", routeId);
                     return BadRequest();
                 }
 
@@ -186,7 +186,7 @@ public class CalculatorController(
         if (pace == null)
             return BadRequest();
 
-        return Ok(new PaceApiModel((distance ?? "") + pace));
+        return Ok(new PaceApiModel((((includeDistance ?? true) ? distance : null) ?? "") + pace));
     }
 
     private PaceAllApiModel? CalculateDistance(string? timeTaken, string? pace)
