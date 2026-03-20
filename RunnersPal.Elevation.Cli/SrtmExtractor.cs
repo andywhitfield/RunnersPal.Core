@@ -42,7 +42,7 @@ public class SrtmExtractor(string defaultElevationDataDirectory)
 
     static async Task ExtractRarAsync(string rarFile, string destinationDirectory)
     {
-        await using var archive = RarArchive.OpenAsyncArchive(rarFile, new() { ExtractFullPath = true, Overwrite = true });
+        await using var archive = await RarArchive.OpenAsyncArchive(rarFile);
         await foreach (var entry in archive.EntriesAsync.Where(entry => !entry.IsDirectory && (entry.Key?.EndsWith(".tif") ?? false)))
         {
             var extractedFile = Path.Combine(destinationDirectory, entry.Key!);
