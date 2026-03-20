@@ -7,6 +7,9 @@
 
 <article>
     <h1 class="rp-map-head">Route mapping</h1>
+    @if (Model.RouteId != null) {
+    <span class="rp-map-links"><a href="/runlog/list?routeid=@Model.RouteId" title="View all your runs for this route">View all runs</a> | <a href="/runlog/activity?routeid=@Model.RouteId" title="Log a new run for this route">Log</a></span>
+    }
     <div class="map-container">
         <div class="map-menu">
         <form name="rp-map" method="post">

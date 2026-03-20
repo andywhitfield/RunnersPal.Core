@@ -386,8 +386,12 @@ div.rp-map-notes label {
 }
 
 .rp-map-head {
-    float: left;
     padding-right: 8px;
+    display: inline-block;
+}
+
+.rp-map-links {
+    float: right;
 }
 
 form[name="rp-map"] textarea {
@@ -451,7 +455,7 @@ img.rp-calc {
         z-index: 2000;
         position: absolute;
         padding: 10px;
-        top: 28px;
+        top: 6px;
         right: 6px;
         max-width: 85%;
         background-color: white;
