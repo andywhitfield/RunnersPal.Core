@@ -18,7 +18,7 @@ public class Map_UnAuthenticated_Tests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var responseContent = await response.Content.ReadAsStringAsync();
         StringAssert.Contains(responseContent, "Login");
-        StringAssert.Contains(responseContent, "<div id=\"map\">");
+        StringAssert.Contains(responseContent, "<div id=\"map\" class=\"rp-map-route\">");
         StringAssert.Contains(responseContent, "switch to miles");
     }
 

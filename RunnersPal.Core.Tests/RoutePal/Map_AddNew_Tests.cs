@@ -21,7 +21,7 @@ public class Map_AddNew_Tests
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         var responseContent = await response.Content.ReadAsStringAsync();
         StringAssert.Contains(responseContent, "Logout");
-        StringAssert.Contains(responseContent, "<div id=\"map\">");
+        StringAssert.Contains(responseContent, "<div id=\"map\" class=\"rp-map-route\">");
         StringAssert.DoesNotMatch(responseContent, new("switch to miles"));
     }
 

@@ -263,6 +263,13 @@ div.rp-map-distance, div.rp-map-distance>span {
 #map {
     width: 100%;
     min-height: 300px;
+}
+
+.rp-map-route {
+    height: calc(100vh - 160px);
+}
+
+.rp-map-activity {
     height: calc(100vh - 240px);
 }
 
