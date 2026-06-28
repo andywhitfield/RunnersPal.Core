@@ -8,9 +8,6 @@ using RunnersPal.Elevation;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
-#if DEBUG
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
-#endif
 builder.Services.AddControllers();
 builder.Services.AddDbContext<SqliteDataContext>((serviceProvider, options) =>
 {
