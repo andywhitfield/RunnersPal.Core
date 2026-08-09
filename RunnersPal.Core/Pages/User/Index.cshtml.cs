@@ -17,6 +17,7 @@ public class IndexModel(
     public string? ByPeriod { get; set; }
     [BindProperty(SupportsGet = true)]
     public int? RouteId { get; set; }
+    public string? RouteName { get; private set; }
     public bool ShowGraph { get; set; }
     public string ChartType { get; set; } = "line";
     public string DateSeries { get; set; } = "[]";
@@ -47,7 +48,7 @@ public class IndexModel(
             }
 
             ShowGraph = true;
-            ByPeriod = "all";
+            ByPeriod = "byroute";
             var allDatesAndDistances = allActivities.Select(r => new { r.Date, r.Route.Distance, Pace = paceService.CalculatePaceAsTimeSpan(userAccount, r) ?? TimeSpan.Zero });
 
             if (allActivities.Count == 1)
@@ -55,6 +56,7 @@ public class IndexModel(
             DateSeries = "[" + string.Join(',', allActivities.Select(a => $"'{a.Date:dd MMM yyyy}'")) + "]";
             Distance = "[" + string.Join(',', allActivities.Select(a => a.Route.Distance)) + "]";
             Pace = "[" + string.Join(',', allActivities.Select(a => decimal.Round(Convert.ToDecimal((paceService.CalculatePaceAsTimeSpan(userAccount, a) ?? TimeSpan.Zero).TotalSeconds / 60), 2))) + "]";
+            RouteName = allActivities.First().Route.Name;
             return;
         }
 

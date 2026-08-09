@@ -8,6 +8,9 @@
 <article>
     <h1>Stats</h1>
     @if (Model.ShowGraph) {
+    if (Model.ByPeriod == "byroute") {
+    <p>Pace chart for route: <a href="routepal/map?routeid=@Model.RouteId">@Model.RouteName</a></p>
+    } else {
     <p>Chart run log activities by:
     @if (Model.ByPeriod == "byweek") {
     <strong>Week</strong>
@@ -27,6 +30,7 @@
     <a href="/user/byyear">Year</a>
     }
     </p>
+    }
     <p>
         <div id="rp-stats-chart"></div>
     </p>
@@ -56,13 +60,25 @@ $().ready(function() {
             styledMode: true
         },
         title: {
-            text: 'Total Distance / Average Pace',
+            text: '@(Model.ByPeriod == "byroute" ? "Pace" : "Total Distance / Average Pace")',
             x: -20
         },
         xAxis: {
             categories: dateSeries
         },
-        yAxis: [{
+        yAxis: [
+        @if (Model.ByPeriod == "byroute") {
+        <text>
+        {
+            title: {
+                text: '@Model.PaceUnit'
+            },
+            min: 0.0
+        }
+        </text>
+        } else {
+        <text>
+        {
             title: {
                 text: '@Model.DistanceUnit'
             },
@@ -73,15 +89,37 @@ $().ready(function() {
             },
             min: 0.0,
             opposite: true
+        }
+        </text>
         }],
         tooltip: {
             formatter: function () {
+                @if (Model.ByPeriod == "byroute") {
+                <text>
+                return ('<b>Pace</b><br/>' + dateSeries[this.x] + ': ' + this.y + '@Model.PaceUnit');
+                </text>
+                } else {
+                <text>
                 return this.series.name == 'Distance'
                     ? ('<b>Total distance</b><br/>@(Model.ByPeriod == "byweek" ? "w/e " : "")' + dateSeries[this.x] + ': ' + this.y + '@Model.DistanceUnit')
                     : ('<b>Average pace</b><br/>@(Model.ByPeriod == "byweek" ? "w/e " : "")' + dateSeries[this.x] + ': ' + this.y + '@Model.PaceUnit');
+                </text>
+                }
             }
         },
-        series: [{
+        series: [
+        @if (Model.ByPeriod == "byroute") {
+        <text>
+        {
+            name: 'Pace',
+            data: @Html.Raw(Model.Pace),
+            type: '@Model.ChartType',
+            animation: false
+        }
+        </text>
+        } else {
+        <text>
+        {
             name: 'Distance',
             data: @Html.Raw(Model.Distance),
             type: '@Model.ChartType',
@@ -92,6 +130,8 @@ $().ready(function() {
             data: @Html.Raw(Model.Pace),
             type: '@Model.ChartType',
             animation: false
+        }
+        </text>
         }]
     });
 });
