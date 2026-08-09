@@ -52,10 +52,10 @@ public class RunLogRepository(ILogger<RunLogRepository> logger, SqliteDataContex
             .Where(r => r.UserAccountId == userAccount.Id && r.Date >= fromInclusive && r.Date < toExclusive && r.LogState == RunLog.LogStateValid)
             .AsAsyncEnumerable();
 
-    public IAsyncEnumerable<RunLog> GetAllLogRunsAsync(UserAccount userAccount)
+    public IAsyncEnumerable<RunLog> GetAllLogRunsAsync(UserAccount userAccount, int? routeId)
         => context.RunLog
             .Include(r => r.Route)
-            .Where(r => r.UserAccountId == userAccount.Id && r.LogState == RunLog.LogStateValid)
+            .Where(r => r.UserAccountId == userAccount.Id && r.LogState == RunLog.LogStateValid && (routeId == null || routeId == r.RouteId))
             .AsAsyncEnumerable();
 
     public Task DeleteRunLogAsync(RunLog existingActivity)

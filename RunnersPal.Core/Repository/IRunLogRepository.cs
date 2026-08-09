@@ -10,6 +10,6 @@ public interface IRunLogRepository
     IAsyncEnumerable<RunLog> GetLatestRunByRouteAsync(UserAccount userAccount, IEnumerable<Models.Route> routes);
     Task<RunLog?> GetLatestRunLogAsync(UserAccount userAccount);
     IAsyncEnumerable<RunLog> GetRunLogByDateRangeAsync(UserAccount userAccount, DateTime fromInclusive, DateTime toExclusive);
-    IAsyncEnumerable<RunLog> GetAllLogRunsAsync(UserAccount userAccount);
+    IAsyncEnumerable<RunLog> GetAllLogRunsAsync(UserAccount userAccount, int? routeId);
     Task DeleteRunLogAsync(RunLog existingActivity);
 }

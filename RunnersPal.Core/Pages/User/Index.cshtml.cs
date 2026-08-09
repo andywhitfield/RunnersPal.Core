@@ -15,6 +15,8 @@ public class IndexModel(
 {
     [BindProperty(SupportsGet = true)]
     public string? ByPeriod { get; set; }
+    [BindProperty(SupportsGet = true)]
+    public int? RouteId { get; set; }
     public bool ShowGraph { get; set; }
     public string ChartType { get; set; } = "line";
     public string DateSeries { get; set; } = "[]";
@@ -32,6 +34,30 @@ public class IndexModel(
         }
 
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
+        DistanceUnit = userAccount.DistanceUnits == (int)Models.DistanceUnits.Miles ? "miles" : "km";
+        PaceUnit = userAccount.DistanceUnits == (int)Models.DistanceUnits.Miles ? "min/miles" : "min/km";
+
+        if (RouteId != null)
+        {
+            var allActivities = await runLogRepository.GetAllLogRunsAsync(userAccount, RouteId).ToListAsync();
+            if (allActivities.Count == 0)
+            {
+                logger.LogInformation("No run activities for route {RouteId}, nothing to show", RouteId);
+                return;
+            }
+
+            ShowGraph = true;
+            ByPeriod = "all";
+            var allDatesAndDistances = allActivities.Select(r => new { r.Date, r.Route.Distance, Pace = paceService.CalculatePaceAsTimeSpan(userAccount, r) ?? TimeSpan.Zero });
+
+            if (allActivities.Count == 1)
+                ChartType = "column";
+            DateSeries = "[" + string.Join(',', allActivities.Select(a => $"'{a.Date:dd MMM yyyy}'")) + "]";
+            Distance = "[" + string.Join(',', allActivities.Select(a => a.Route.Distance)) + "]";
+            Pace = "[" + string.Join(',', allActivities.Select(a => decimal.Round(Convert.ToDecimal((paceService.CalculatePaceAsTimeSpan(userAccount, a) ?? TimeSpan.Zero).TotalSeconds / 60), 2))) + "]";
+            return;
+        }
+
         var mostRecentActivity = await runLogRepository.GetLatestRunLogAsync(userAccount);
         if (mostRecentActivity == null)
         {
@@ -40,9 +66,6 @@ public class IndexModel(
         }
 
         ShowGraph = true;
-        DistanceUnit = userAccount.DistanceUnits == (int)Models.DistanceUnits.Miles ? "miles" : "km";
-        PaceUnit = userAccount.DistanceUnits == (int)Models.DistanceUnits.Miles ? "min/miles" : "min/km";
-
         IAsyncEnumerable<Models.RunLog> qualifyingActivities;
         Func<DateTime, DateTime> periodGrouping;
         Func<DateTime, DateTime> nextPeriod;

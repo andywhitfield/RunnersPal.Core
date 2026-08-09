@@ -30,7 +30,7 @@ public class RunLogModel(
         {
             csv.WriteHeader<DownloadRunLogEventViewModel>();
             csv.NextRecord();
-            await foreach (var runLog in runLogRepository.GetAllLogRunsAsync(userAccount).OrderBy(x => x.Date).ThenBy(x => x.CreatedDate))
+            await foreach (var runLog in runLogRepository.GetAllLogRunsAsync(userAccount, null).OrderBy(x => x.Date).ThenBy(x => x.CreatedDate))
             {
                 csv.WriteRecord(new DownloadRunLogEventViewModel
                 {

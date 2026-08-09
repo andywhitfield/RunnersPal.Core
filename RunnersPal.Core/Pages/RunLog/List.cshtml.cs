@@ -34,7 +34,7 @@ public class ListModel(
             var route = await routeRepository.GetRouteAsync(RouteId.Value);
             if (route == null || route.Creator != userAccount.Id)
             {
-                logger.LogWarning("Cannot find route {} or doesn't belong to user {}, ignoring passed route id", RouteId, userAccount.Id);
+                logger.LogWarning("Cannot find route {RouteId} or doesn't belong to user {UserAccountId}, ignoring passed route id", RouteId, userAccount.Id);
                 RouteId = null;
             }
             else
@@ -44,7 +44,7 @@ public class ListModel(
         }
 
         var activities = await runLogRepository
-            .GetAllLogRunsAsync(userAccount)
+            .GetAllLogRunsAsync(userAccount, null)
             .Where(r => RouteId == null || RouteId == r.RouteId)
             .OrderByDescending(r => r.Date)
             .ThenBy(r => r.CreatedDate)
