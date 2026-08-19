@@ -10,6 +10,8 @@
     @if (Model.ShowGraph) {
     if (Model.ByPeriod == "byroute") {
     <p>Pace chart for route: <a href="routepal/map?routeid=@Model.RouteId">@Model.RouteName</a></p>
+    } else if (Model.ByPeriod == "byroutesystem") {
+    <p>Pace chart for route: @Model.RouteName</p>
     } else {
     <p>Chart run log activities by:
     @if (Model.ByPeriod == "byweek") {
@@ -60,14 +62,14 @@ $().ready(function() {
             styledMode: true
         },
         title: {
-            text: '@(Model.ByPeriod == "byroute" ? "Pace" : "Total Distance / Average Pace")',
+            text: '@(Model.ByPeriod?.StartsWith("byroute") ?? false ? "Pace" : "Total Distance / Average Pace")',
             x: -20
         },
         xAxis: {
             categories: dateSeries
         },
         yAxis: [
-        @if (Model.ByPeriod == "byroute") {
+        @if (Model.ByPeriod?.StartsWith("byroute") ?? false) {
         <text>
         {
             title: {
@@ -94,7 +96,7 @@ $().ready(function() {
         }],
         tooltip: {
             formatter: function () {
-                @if (Model.ByPeriod == "byroute") {
+                @if (Model.ByPeriod?.StartsWith("byroute") ?? false) {
                 <text>
                 return ('<b>Pace</b><br/>' + dateSeries[this.x] + ': ' + this.y + '@Model.PaceUnit');
                 </text>
@@ -108,7 +110,7 @@ $().ready(function() {
             }
         },
         series: [
-        @if (Model.ByPeriod == "byroute") {
+        @if (Model.ByPeriod?.StartsWith("byroute") ?? false) {
         <text>
         {
             name: 'Pace',

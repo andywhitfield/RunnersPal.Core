@@ -32,6 +32,7 @@
         <input type="text" name="rp-distance-selected" readonly />
         <button type="button" name="rp-distance-selected-edit">Edit...</button>
         <a name="rp-distance-selected-routelink" href="/routepal/map?routeid=@Model.RouteId" title="Open route in a new tab" target="_blank">&RightArrowBar;</a>
+        <a name="rp-distance-selected-routestats" href="/user?routeid=@Model.RouteId" title="Open stats for this route in a new tab" target="_blank" class="rp-stats-link-glyph">&#8982;</a>
     </div>
     <div>
         <label for="rp-runlog-timetaken">Time taken:</label>
@@ -83,7 +84,7 @@
                         <div><a href="#" data-routetype="1" data-routeid="@systemRoute.Id">@systemRoute.Name</a></div>
                         <div></div>
                     </div>
-                    <div></div>
+                    <div><a name="rp-distance-selected-routestats" href="/user?routeid=@systemRoute.Id" title="Open stats for this route in a new tab" target="_blank" class="rp-stats-link-glyph">&#8982;</a></div>
                     </li>
                     }
                     </ul>
@@ -190,6 +191,7 @@ $().ready(function() {
     const runLogDistanceSelected = $('form[name="rp-runlog"] input[name="rp-distance-selected"]');
     const runLogDistanceSelectedEdit = $('form[name="rp-runlog"] button[name="rp-distance-selected-edit"]');
     const runLogDistanceSelectedRouteLink = $('form[name="rp-runlog"] a[name="rp-distance-selected-routelink"]');
+    const runLogDistanceSelectedRouteStats = $('form[name="rp-runlog"] a[name="rp-distance-selected-routestats"]');
     const runLogManualDistanceInput = $('form[name="rp-runlog"] input[name="rp-distance-select-manual-value"]');
     const runLogMapTab = $('#tab-map-new-route');
     const runLogMapDistance = $('form[name="rp-runlog"] input[name="mapdistance"]');
@@ -197,6 +199,7 @@ $().ready(function() {
     runLogDistanceSelected.hide();
     runLogDistanceSelectedEdit.hide();
     runLogDistanceSelectedRouteLink.hide();
+    runLogDistanceSelectedRouteStats.hide();
     runLogDistanceSelection.click(function() {
         runLogDistanceSelector.show();
         runLogMainForm.hide();
@@ -306,16 +309,21 @@ $().ready(function() {
         loadRunLogUserRoutes(1);
     });
     function onSelectRunRoute() {
+        console.log('selected route type '+$(this).attr('data-routetype')+' with id '+$(this).attr('data-routeid'));
         runLogDistanceType.val($(this).attr('data-routetype'));
         runLogRouteId.val($(this).attr('data-routeid'));
         runLogDistanceSelected.val($(this).text());
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
-        if (runLogDistanceType.val() === '3') {
-            runLogDistanceSelectedRouteLink.attr('href', '/routepal/map?routeid='+$(this).attr('data-routeid'));
-            runLogDistanceSelectedRouteLink.show();
-        } else {
-            runLogDistanceSelectedRouteLink.hide();
+        runLogDistanceSelectedRouteLink.hide();
+        runLogDistanceSelectedRouteStats.hide();
+        if (runLogDistanceType.val() === '1' || runLogDistanceType.val() === '3') {
+            runLogDistanceSelectedRouteStats.attr('href', '/user?routeid='+$(this).attr('data-routeid'));
+            runLogDistanceSelectedRouteStats.show();
+            if (runLogDistanceType.val() === '3') {
+                runLogDistanceSelectedRouteLink.attr('href', '/routepal/map?routeid='+$(this).attr('data-routeid'));
+                runLogDistanceSelectedRouteLink.show();
+            }
         }
         runLogDistanceSelection.hide();
         runLogMainForm.show();
@@ -331,6 +339,7 @@ $().ready(function() {
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
         runLogDistanceSelectedRouteLink.hide();
+        runLogDistanceSelectedRouteStats.hide();
         runLogDistanceSelection.hide();
         runLogMainForm.show();
         runLogDistanceSelector.hide();
@@ -385,7 +394,7 @@ $().ready(function() {
                     '<div><a data-routetype="3" data-routeid="'+runLogUserRoute.id+'" href="#" title="Select this route"></a> <span></span></div>'+
                     '<div></div>'+
                     '</div>' +
-                    '<div><a href="/routepal/map?routeid='+runLogUserRoute.id+'" title="Open route in a new tab" target="_blank">&RightArrowBar;</a></div>' +
+                    '<div><a href="/routepal/map?routeid='+runLogUserRoute.id+'" title="Open route in a new tab" target="_blank">&RightArrowBar;</a> <a href="/user?routeid='+runLogUserRoute.id+'" title="Open stats for this route in a new tab" target="_blank" class="rp-stats-link-glyph">&#8982;</a></div>' +
                     '</li>');
                 $('div[data-routeid="'+runLogUserRoute.id+'"] a:first', newRouteItem).text(runLogUserRoute.name);
                 $('div[data-routeid="'+runLogUserRoute.id+'"] div:nth-child(2) span', newRouteItem).text(runLogUserRoute.distance);
@@ -448,6 +457,7 @@ $().ready(function() {
             runLogDistanceSelected.show();
             runLogDistanceSelectedEdit.show();
             runLogDistanceSelectedRouteLink.hide();
+            runLogDistanceSelectedRouteStats.hide();
             runLogDistanceSelection.hide();
             runLogMainForm.show();
             runLogDistanceSelector.hide();
@@ -508,10 +518,13 @@ $().ready(function() {
         }
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
-        if (runLogDistanceType.val() === '3')
+        if (runLogDistanceType.val() === '3') {
             runLogDistanceSelectedRouteLink.show();
-        else
+            runLogDistanceSelectedRouteStats.show();
+        } else {
             runLogDistanceSelectedRouteLink.hide();
+            runLogDistanceSelectedRouteStats.hide();
+        }
         runLogDistanceSelection.hide();
         runLogMainForm.show();
         runLogDistanceSelector.hide();
@@ -522,6 +535,8 @@ $().ready(function() {
         runLogDistanceSelectedEdit.show();
         runLogDistanceSelectedRouteLink.attr('href', '/routepal/map?routeid='+runLogRouteId.val());
         runLogDistanceSelectedRouteLink.show();
+        runLogDistanceSelectedRouteStats.attr('href', '/user?routeid='+runLogRouteId.val());
+        runLogDistanceSelectedRouteStats.show();
         runLogDistanceSelection.hide();
         runLogMainForm.show();
         runLogDistanceSelector.hide();

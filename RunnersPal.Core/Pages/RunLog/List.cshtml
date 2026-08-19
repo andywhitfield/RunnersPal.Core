@@ -11,7 +11,11 @@
 } else {
 <h1>Run Log : List of all runs on route @Model.RouteName</h1>
 }
-<p><a href="/runlog/activity">Log a new run</a> | <a href="/runlog?date=@Model.Date" title="Switch back to the calendar view">Calendar view</a></p>
+<p>
+    <a href="/user?routeid=@Model.RouteId" title="View your stats for this route">Stats</a> |
+    <a href="/runlog/activity">Log a new run</a> |
+    <a href="/runlog?date=@Model.Date" title="Switch back to the calendar view">Calendar view</a>
+</p>
 @if (!Model.Activities.Any()) {
 <p>No run entries logged yet. <a href="/runlog/activity">Log a new run</a> today.</p>
 } else {

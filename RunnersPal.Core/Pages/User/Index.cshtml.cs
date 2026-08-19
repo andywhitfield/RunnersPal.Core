@@ -9,6 +9,7 @@ public class IndexModel(
     ILogger<IndexModel> logger,
     IUserService userService,
     IUserAccountRepository userAccountRepository,
+    IRouteRepository routeRepository,
     IRunLogRepository runLogRepository,
     IPaceService paceService)
     : PageModel
@@ -26,12 +27,12 @@ public class IndexModel(
     public string DistanceUnit { get; set; } = "";
     public string PaceUnit { get; set; } = "";
 
-    public async Task OnGet()
+    public async Task<IActionResult> OnGet()
     {
         if (!userService.IsLoggedIn)
         {
             logger.LogInformation("User is not logged on, nothing to show");
-            return;
+            return Page();
         }
 
         var userAccount = await userAccountRepository.GetUserAccountAsync(User);
@@ -40,15 +41,23 @@ public class IndexModel(
 
         if (RouteId != null)
         {
+            var route = await routeRepository.GetRouteAsync(RouteId.Value);
+            if (route == null ||
+                (route.RouteType != Models.Route.SystemRoute && string.IsNullOrEmpty(route.MapPoints)))
+            {
+                logger.LogInformation("Route {RouteId} cannot be found or is a manual distance route", RouteId);
+                return BadRequest();
+            }
+
             var allActivities = await runLogRepository.GetAllLogRunsAsync(userAccount, RouteId).ToListAsync();
             if (allActivities.Count == 0)
             {
                 logger.LogInformation("No run activities for route {RouteId}, nothing to show", RouteId);
-                return;
+                return Page();
             }
 
             ShowGraph = true;
-            ByPeriod = "byroute";
+            ByPeriod = route.RouteType == Models.Route.SystemRoute ? "byroutesystem" : "byroute";
             var allDatesAndDistances = allActivities.Select(r => new { r.Date, r.Route.Distance, Pace = paceService.CalculatePaceAsTimeSpan(userAccount, r) ?? TimeSpan.Zero });
 
             if (allActivities.Count == 1)
@@ -57,14 +66,15 @@ public class IndexModel(
             Distance = "[" + string.Join(',', allActivities.Select(a => a.Route.Distance)) + "]";
             Pace = "[" + string.Join(',', allActivities.Select(a => decimal.Round(Convert.ToDecimal((paceService.CalculatePaceAsTimeSpan(userAccount, a) ?? TimeSpan.Zero).TotalSeconds / 60), 2))) + "]";
             RouteName = allActivities.First().Route.Name;
-            return;
+
+            return Page();
         }
 
         var mostRecentActivity = await runLogRepository.GetLatestRunLogAsync(userAccount);
         if (mostRecentActivity == null)
         {
             logger.LogInformation("No run activities, nothing to show");
-            return;
+            return Page();
         }
 
         ShowGraph = true;
@@ -128,6 +138,8 @@ public class IndexModel(
         DateSeries = "[" + string.Join(',', allAggregated.Select(a => $"'{a.Period.ToString(periodDateFormat)}'")) + "]";
         Distance = "[" + string.Join(',', allAggregated.Select(a => a.Distance)) + "]";
         Pace = "[" + string.Join(',', allAggregated.Select(a => a.Pace)) + "]";
+
+        return Page();
     }
 
     private static IEnumerable<DateTime> DateRange(DateTime fromDate, DateTime toDate, Func<DateTime, DateTime> incrementFunc)
