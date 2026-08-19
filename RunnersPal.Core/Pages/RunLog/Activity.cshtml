@@ -518,12 +518,13 @@ $().ready(function() {
         }
         runLogDistanceSelected.show();
         runLogDistanceSelectedEdit.show();
-        if (runLogDistanceType.val() === '3') {
+        runLogDistanceSelectedRouteLink.hide();
+        runLogDistanceSelectedRouteStats.hide();
+        if (runLogDistanceType.val() === '1') {
+            runLogDistanceSelectedRouteStats.show();
+        } else if (runLogDistanceType.val() === '3') {
             runLogDistanceSelectedRouteLink.show();
             runLogDistanceSelectedRouteStats.show();
-        } else {
-            runLogDistanceSelectedRouteLink.hide();
-            runLogDistanceSelectedRouteStats.hide();
         }
         runLogDistanceSelection.hide();
         runLogMainForm.show();
