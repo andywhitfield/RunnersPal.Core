@@ -14,10 +14,9 @@ public class IndexModel(
     IPaceService paceService)
     : PageModel
 {
-    [BindProperty(SupportsGet = true)]
-    public string? ByPeriod { get; set; }
-    [BindProperty(SupportsGet = true)]
-    public int? RouteId { get; set; }
+    [BindProperty(SupportsGet = true)] public string? ByPeriod { get; set; }
+    [BindProperty(SupportsGet = true)] public int? RouteId { get; set; }
+
     public string? RouteName { get; private set; }
     public bool ShowGraph { get; set; }
     public string ChartType { get; set; } = "line";
@@ -43,16 +42,17 @@ public class IndexModel(
         {
             var route = await routeRepository.GetRouteAsync(RouteId.Value);
             if (route == null ||
-                (route.RouteType != Models.Route.SystemRoute && string.IsNullOrEmpty(route.MapPoints)))
+                (route.RouteType != Models.Route.SystemRoute && string.IsNullOrEmpty(route.MapPoints)) ||
+                (route.RouteType != Models.Route.SystemRoute && route.Creator != userAccount.Id))
             {
-                logger.LogInformation("Route {RouteId} cannot be found or is a manual distance route", RouteId);
+                logger.LogWarning("Route {RouteId} cannot be found, is a manual distance route, or is not owned by the current user {UserAccountId}", RouteId, userAccount.Id);
                 return BadRequest();
             }
 
-            var allActivities = await runLogRepository.GetAllLogRunsAsync(userAccount, RouteId).ToListAsync();
+            var allActivities = await runLogRepository.GetAllLogRunsAsync(userAccount, route.Id).ToListAsync();
             if (allActivities.Count == 0)
             {
-                logger.LogInformation("No run activities for route {RouteId}, nothing to show", RouteId);
+                logger.LogInformation("No run activities for route {RouteId}, nothing to show", route.Id);
                 return Page();
             }
 
