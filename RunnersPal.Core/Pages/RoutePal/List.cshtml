@@ -69,7 +69,10 @@
                 }
             </div>
             <div>
+                @if (lastRun != null) {
+                <div><a href="/user?routeid=@route.Id" title="View your stats for this route">Stats</a></div>
                 <div><a href="/runlog/list?routeid=@route.Id" title="View all runs for this route">View all runs</a></div>
+                }
                 <div><a href="/runlog/activity?routeid=@route.Id" title="Log a new run for this route">Log a run</a></div>
             </div>
             </li>
