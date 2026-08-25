@@ -39,7 +39,7 @@ public class RouteRepository(ILogger<UserAccountRepository> logger, SqliteDataCo
             Name = name,
             MapPoints = points,
             Distance = distance,
-            DistanceUnits = (int)DistanceUnits.Kilometers,
+            DistanceUnits = (int)DistanceUnits.Meters,
             Notes = notes,
             RouteType = Models.Route.PrivateRoute,
             ReplacesRoute = route

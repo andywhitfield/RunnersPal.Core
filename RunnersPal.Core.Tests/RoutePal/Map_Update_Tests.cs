@@ -54,6 +54,8 @@ public class Map_Update_Tests
         var updatedRoute = context.Route.SingleOrDefault(r => r.Name == "test-route-updated");
         Assert.IsNotNull(originalRoute);
         Assert.IsNotNull(updatedRoute);
+        Assert.AreEqual((int)DistanceUnits.Meters, originalRoute.DistanceUnits);
+        Assert.AreEqual((int)DistanceUnits.Meters, updatedRoute.DistanceUnits);
         Assert.AreEqual(new Uri($"/routepal/map?routeid={updatedRoute.Id}", UriKind.Relative), responsePost.Headers.Location);
     }
 
