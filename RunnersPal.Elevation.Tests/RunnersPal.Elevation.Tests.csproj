@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Moq" Version="4.20.*" />
+    <PackageReference Include="Moq" Version="4.21.*" />
   </ItemGroup>
 
   <ItemGroup>

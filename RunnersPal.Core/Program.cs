@@ -60,8 +60,8 @@ builder.Services
     .AddSession(options => options.IdleTimeout = TimeSpan.FromMinutes(5))
     .AddFido2(options =>
     {
-        options.ServerName = "runners:pal";
-        options.ServerDomain = builder.Configuration.GetValue<string>("FidoDomain");
+        options.RPName = "runners:pal";
+        options.RPID = builder.Configuration.GetValue<string>("FidoDomain");
         options.Origins = new HashSet<string>([builder.Configuration.GetValue<string>("FidoOrigins") ?? ""]);
     });
 

@@ -1,0 +1,12 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="RunnersPal.Core.Tests/RunnersPal.Core.Tests.csproj" />
+  <Project Path="RunnersPal.Core/RunnersPal.Core.csproj" />
+  <Project Path="RunnersPal.Elevation.Cli/RunnersPal.Elevation.Cli.csproj" />
+  <Project Path="RunnersPal.Elevation.Tests/RunnersPal.Elevation.Tests.csproj" />
+  <Project Path="RunnersPal.Elevation/RunnersPal.Elevation.csproj" />
+</Solution>
