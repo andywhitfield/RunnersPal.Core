@@ -221,15 +221,24 @@ class MapRoute {
         self._distanceDisplayElement = distanceDisplayElement;
         self._nextDistanceMarker = 1;
         self._changeCallbacks = [];
+        self._freezePoints = false;
         self.updatePointsFormElement();
     }
     onChange(callback) {
         var self = this;
         self._changeCallbacks.push(callback);
     }
-    addPoint(latlng) {
-        console.log('adding point @ ' + latlng);
+    freezePoints() {
         var self = this;
+        self._freezePoints = true;
+    }
+    addPoint(latlng) {
+        var self = this;
+        if (self._freezePoints) {
+            console.log('not adding point, map points have been frozen. Point @ ' + latlng);
+            return;
+        }
+        console.log('adding point @ ' + latlng);
         if (self._startMarker === null) {
             self._startMarker = L.marker(latlng, {
                 alt: 'Start of route',

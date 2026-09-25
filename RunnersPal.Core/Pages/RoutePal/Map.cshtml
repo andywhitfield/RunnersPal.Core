@@ -181,6 +181,9 @@
         for (const mapPoint of mapPoints) {
             route.addPoint(mapPoint);
         }
+        @if (Model.ShareLink != null) {
+        <text>route.freezePoints()</text>
+        }
 
         const saveBtnEl = $('form[name="rp-map"] input[name="save"]');
         rpUpdateSaveButton(true);
