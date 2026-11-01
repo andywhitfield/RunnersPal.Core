@@ -341,9 +341,8 @@ div.rp-map-distance, div.rp-map-distance>span {
 }
 
 :root {
-    --fc-event-text-color: white;
-    --fc-event-bg-color: black;
-    --fc-event-border-color: white;
+    --fc-classic-primary: black !important;
+    --fc-classic-primary-foreground: white !important;
 }
 
 .rp-event-title {
@@ -502,9 +501,8 @@ img.rp-calc {
     }
 
     :root {
-        --fc-event-text-color: black;
-        --fc-event-bg-color: white;
-        --fc-event-border-color: black;
+        --fc-classic-primary: white !important;
+        --fc-classic-primary-foreground: black !important;
     }
 
     ul.rp-list-item>li {

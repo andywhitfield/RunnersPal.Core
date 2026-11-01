@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using System.Text;
 using CsvHelper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,13 +25,12 @@ public class RunLogModel(
 
         using MemoryStream stream = new();
         using (StreamWriter writer = new(stream, Encoding.UTF8))
-        using (CsvWriter csv = new(writer, CultureInfo.InvariantCulture))
+        using (CsvWriter csv = CsvWriter.Create(writer))
         {
             csv.WriteHeader<DownloadRunLogEventViewModel>();
-            csv.NextRecord();
             await foreach (var runLog in runLogRepository.GetAllLogRunsAsync(userAccount, null).OrderBy(x => x.Date).ThenBy(x => x.CreatedDate))
             {
-                csv.WriteRecord(new DownloadRunLogEventViewModel
+                await csv.WriteRecordAsync(new DownloadRunLogEventViewModel
                 {
                     Date = runLog.Date.ToString("yyyy-MM-dd"),
                     Distance = userService.ToUserDistanceUnits(runLog.Route.Distance, userAccount).ToString("0.####"),
@@ -41,7 +39,6 @@ public class RunLogModel(
                     RouteName = runLog.Route.Name,
                     Comment = runLog.Comment ?? ""
                 });
-                csv.NextRecord();
             }
         }
 
